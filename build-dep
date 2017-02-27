@@ -1,0 +1,60 @@
+#!/bin/sh
+
+log()
+{
+    local color="$1"
+    local title="$2"
+    shift
+    shift
+
+    local mes="$@"
+    local NC="$(tput sgr0)"
+
+    if [ -t 1 ]; then
+        title="${color}${title}${NC}"
+    fi
+    echo "$title $mes"
+}
+
+ok() {
+    local Green="$(tput setaf 2)"
+    log "${Green}" "$@"
+}
+
+info() {
+    local White="$(tput bold; tput setaf 7)"
+    log "${White}" "$@"
+}
+
+die()
+{
+    echo "ERR: $@" >&2
+    exit 1
+}
+
+while read url branch folder; do
+
+    test -z "$url" && continue
+
+    info "====== $folder" '<--' $url $branch
+
+    git clone $url $folder >/dev/null 2>/dev/null \
+        && ok  "clone " $folder '<--' $url \
+        || ok  "exist " $folder '<--' $url
+
+    (
+    cd $folder \
+        && git fetch \
+        && git checkout $branch \
+        && git merge origin/$branch --ff-only \
+        && git status
+    ) \
+        && ok  "update" $folder \
+        || die "update" $folder
+
+    sh dep-build/${folder##*/} || die build ${folder}
+
+done <<-END
+https://github.com/drmingdrmer/libluafs.git         master dep/libluafs
+https://github.com/drmingdrmer/lua-cjson.git        master dep/cjson
+END
