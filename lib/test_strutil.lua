@@ -24,6 +24,65 @@ function test_split(t)
 
 end
 
+function test_join(t)
+    local j = strutil.join
+    local pcall_j = function(...)
+        local ok, err = pcall(j, ...)
+        if ok then
+            return err
+        else
+            return nil
+        end
+    end
+
+    t:eq('', j())
+    t:eq('', j(''))
+    t:eq('', j('?'))
+    t:eq('', j('\\'))
+    t:eq('', j('a/b'))
+
+    t:eq('a',           j(nil, 'a'))
+    t:eq('ab',          j(nil, 'a', 'b'))
+    t:eq('acbb',        j(nil, 'a', 'c', 'bb'))
+    t:eq('a100c100bb',  j(100, 'a', 'c', 'bb'))
+    t:eq('a15c15bb',    j(0xf, 'a', 'c', 'bb'))
+
+    t:eq('',                j('/', ''))
+    t:eq('a',               j('/', 'a'))
+    t:eq('abc',             j('/', 'abc'))
+    t:eq('a/c/bb',          j('/', 'a', 'c', 'bb'))
+    t:eq('a//c/bb',         j('/', 'a', '/c', 'bb'))
+    t:eq('/c/bb',           j('/', '', 'c', 'bb'))
+    t:eq('a/c/bb/',         j('/', 'a', 'c', 'bb', ''))
+    t:eq('*a?(.)//c/bb',    j('/', '*a?(.)', '/c', 'bb'))
+
+    t:eq('10/c/bb',  j('/', 10, 'c', 'bb'))
+    t:eq('10/16/bb', j('/', 10, 0x10, 'bb'))
+    t:eq('10/15/bb', j('/', 10, 0xf, 'bb'))
+    t:eq('10/15/bb', j('/', 10, 0xF, 'bb'))
+
+    t:eq('a\\c\\bb',    j('\\', 'a', 'c', 'bb'))
+    t:eq('a\\?c\\?bb',  j('\\?', 'a', 'c', 'bb'))
+    t:eq('a.c.bb',      j('.', 'a', 'c', 'bb'))
+    t:eq('a*c*bb',      j('*', 'a', 'c', 'bb'))
+    t:eq('a--c--bb',    j('--', 'a', 'c', 'bb'))
+    t:eq('10--16--bb',  j('--', 10, 0x10, 'bb'))
+
+    t:eq(nil, pcall_j({}, 'a', 'c', 'bb'))
+    t:eq(nil, pcall_j(table, 'a', 'c', 'bb'))
+    t:eq(nil, pcall_j(function() end, 'a', 'c', 'bb'))
+    t:eq(nil, pcall_j('/', nil, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', 'a', nil, 'bb'))
+    t:eq(nil, pcall_j('/', {}, nil, 'bb'))
+    t:eq(nil, pcall_j('/', {}, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', {'a'}, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', {'a', nil}, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', function() end, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', strutil, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', strutil.join, 'c', 'bb'))
+    t:eq(nil, pcall_j('/', table, 'c', 'bb'))
+end
+
 function test_startswith(t)
     local s = strutil.startswith
     t:eq(true, s( '', '' ) )
