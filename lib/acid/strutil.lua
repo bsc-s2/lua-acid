@@ -2,8 +2,11 @@ local _M = { _VERSION = "0.1" }
 
 local json = require( "cjson" )
 
+local table = table
+local string = string
+
 -- TODO test plain
-function  _M.split( str, pat, plain )
+function _M.split( str, pat, plain )
 
     local t = {}  -- NOTE: use {n = 0} in Lua-5.0
 
@@ -29,7 +32,11 @@ function  _M.split( str, pat, plain )
     return t
 end
 
-function  _M.strip( s, ptn )
+function _M.join(sep, ...)
+    return table.concat({...}, sep)
+end
+
+function _M.strip( s, ptn )
 
     if ptn == nil or ptn == "" then
         ptn = "%s"
@@ -39,11 +46,11 @@ function  _M.strip( s, ptn )
     return r
 end
 
-function  _M.startswith( s, pref )
+function _M.startswith( s, pref )
     return s:sub( 1, pref:len() ) == pref
 end
 
-function  _M.endswith( s, suf )
+function _M.endswith( s, suf )
     if suf == '' then
         return true
     end
