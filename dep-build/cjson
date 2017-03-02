@@ -1,7 +1,7 @@
 #!/bin/bash
 
 (
-p=dep/lua-cjson
+p=dep/cjson
 ( cd $p && CPATH=$CPATH:/usr/include/lua5.1 make; ) \
     && cp $p/cjson.so clib/ \
     && ( cd $p && make clean; )
