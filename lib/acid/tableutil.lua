@@ -330,8 +330,8 @@ function _M.get_len(tbl)
     return len
 end
 
--- TODO  test
-function _M.get_random_elements(tbl, n)
+
+function _M.random(tbl, n)
     local idx
     local rnd
     local tlen
@@ -356,6 +356,7 @@ function _M.get_random_elements(tbl, n)
 
     return elmts
 end
+
 
 function _M.extends( tbl, tvals )
 

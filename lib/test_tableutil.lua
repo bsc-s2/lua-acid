@@ -592,6 +592,35 @@ function test_remove(t)
 end
 
 
+function test_get_random_elements(t)
+
+    local cases = {
+        {1,         nil,        1},
+        {'123',     2,          '123'},
+        {{},        nil,        {}},
+        {{1},       nil,        {1}},
+    }
+
+    for _, c in ipairs(cases) do
+        local msg = to_str(c)
+        local tbl, n, expected = c[1], c[2], c[3]
+        local rst = tableutil.random(tbl, n)
+        t:eqdict(expected, rst, msg)
+    end
+
+    -- random continuous 
+
+    local expected = {
+        {1, 2, 3},
+        {2, 3, 1}, 
+        {3, 1, 2}
+    }
+
+    local rst = tableutil.random({1, 2, 3}, nil)
+    t:eqdict(expected[rst[1]], rst, 'rand {1, 2, 3}, nil')
+end
+
+
 function test_extends(t)
 
     local cases = {
