@@ -134,17 +134,9 @@ local testfuncs = {
 
 }
 
+
 local _mt = { __index= testfuncs }
 
-local function find_tests(tbl)
-    local tests = {}
-    for k, v in pairs(tbl) do
-        if k:sub( 1, 5 ) == 'test_' and type( v ) == 'function' then
-            tests[ k ] = v
-        end
-    end
-    return tests
-end
 
 function _M.test_one( suite, name, func )
 
