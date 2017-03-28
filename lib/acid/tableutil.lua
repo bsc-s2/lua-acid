@@ -291,16 +291,6 @@ function _M.has(tbl, value)
     return false
 end
 
--- TODO test. or use has()
-function _M.in_table(value, tbl)
-    for _, v in pairs(tbl) do
-        if v == value then
-            return true
-        end
-    end
-
-    return false
-end
 
 function _M.remove_value(tbl, value)
 
