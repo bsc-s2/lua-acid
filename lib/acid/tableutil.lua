@@ -333,17 +333,6 @@ function _M.remove_value(value, tbl)
     return removed
 end
 
--- TODO  test or remove this
-function _M.get_sub_table(tbl, keys)
-    local sub = {}
-
-    for _, k in ipairs(keys) do
-        table.insert(sub, tbl[k])
-    end
-
-    return sub
-end
-
 function _M.get_len(tbl)
     local len = 0
     for _, _ in pairs(tbl) do
