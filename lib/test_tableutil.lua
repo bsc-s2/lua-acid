@@ -63,6 +63,11 @@ function test_sub(t)
     t:neq( b, a )
     t:eq( b.c, a.c, "reference" )
 
+    -- explicitly specify to sub() as a table
+    local b = tableutil.sub( a, {"a", "b", "c"}, 'table' )
+    t:neq( b, a )
+    t:eq( b.c, a.c, "reference" )
+
     -- sub list
 
     local cases = {
@@ -74,7 +79,7 @@ function test_sub(t)
 
     for i, case in ipairs(cases) do
         local tbl, ks, expected = unpack(case)
-        local rst = tableutil.sub(tbl, ks, true)
+        local rst = tableutil.sub(tbl, ks, 'list')
         t:eqdict(expected, rst, to_str(i .. 'th case: ', case))
     end
 end

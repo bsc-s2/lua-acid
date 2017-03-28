@@ -91,7 +91,7 @@ function _M.sub(tbl, ks, list)
     ks = ks or {}
     local t = {}
     for _, k in ipairs(ks) do
-        if list then
+        if list == 'list' then
             table.insert(t, tbl[k])
         else
             t[k] = tbl[k]
