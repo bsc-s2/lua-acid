@@ -4,7 +4,7 @@ local strutil = require("acid.strutil")
 local tb_eq = tableutil.eq
 local to_str = strutil.to_str
 
-function test_nkeys(t)
+function test.nkeys(t)
     local cases = {
         {0, {}, 'nkeys of empty'},
         {1, {0}, 'nkeys of 1'},
@@ -25,14 +25,14 @@ function test_nkeys(t)
     end
 end
 
-function test_keys(t)
+function test.keys(t)
     t:eqdict( {}, tableutil.keys({}) )
     t:eqdict( {1}, tableutil.keys({1}) )
     t:eqdict( {1, 'a'}, tableutil.keys({1, a=1}) )
     t:eqdict( {1, 2, 'a'}, tableutil.keys({1, 3, a=1}) )
 end
 
-function test_duplist(t)
+function test.duplist(t)
     local du = tableutil.duplist
 
     local a = { 1 }
@@ -52,7 +52,7 @@ function test_duplist(t)
     t:eq( b[1], b[2] )
 end
 
-function test_sub(t)
+function test.sub(t)
     local a = { a=1, b=2, c={} }
     t:eqdict( {}, tableutil.sub( a, nil ) )
     t:eqdict( {}, tableutil.sub( a, {} ) )
@@ -84,7 +84,7 @@ function test_sub(t)
     end
 end
 
-function test_dup(t)
+function test.dup(t)
     local a = { a=1, 10, x={ y={z=3} } }
     a.self = a
     a.selfref = a
@@ -112,7 +112,7 @@ function test_dup(t)
 
 end
 
-function test_contains(t)
+function test.contains(t)
     local c = tableutil.contains
     t:eq( true, c( nil, nil ) )
     t:eq( true, c( 1, 1 ) )
@@ -189,7 +189,7 @@ function test_contains(t)
 
 end
 
-function test_eq(t)
+function test.eq(t)
     local c = tableutil.eq
     t:eq( true, c( nil, nil ) )
     t:eq( true, c( 1, 1 ) )
@@ -264,7 +264,7 @@ function test_eq(t)
 
 end
 
-function test_intersection(t)
+function test.intersection(t)
     local a = { a=1, 10 }
     local b = { 11, 12 }
     local c = tableutil.intersection( { a, b }, true )
@@ -282,12 +282,12 @@ function test_intersection(t)
 
 end
 
-function test_union(t)
+function test.union(t)
     local a = tableutil.union( { { a=1, b=2, c=3 }, { a=1, d=4 } }, 0 )
     t:eqdict( { a=0, b=0, c=0, d=0 }, a )
 end
 
-function test_mergedict(t)
+function test.mergedict(t)
     t:eqdict( { a=1, b=2, c=3 }, tableutil.merge( { a=1, b=2, c=3 } ) )
     t:eqdict( { a=1, b=2, c=3 }, tableutil.merge( {}, { a=1, b=2 }, { c=3 } ) )
     t:eqdict( { a=1, b=2, c=3 }, tableutil.merge( { a=1 }, { b=2 }, { c=3 } ) )
@@ -301,7 +301,7 @@ function test_mergedict(t)
     t:eq( 10, c.x )
 end
 
-function test_repr(t)
+function test.repr(t)
     local r = tableutil.repr
     local s1 = { sep=' ' }
     local s2 = { sep='  ' }
@@ -372,7 +372,7 @@ function test_repr(t)
 
 end
 
-function test_str(t)
+function test.str(t)
     local r = tableutil.str
     local s1 = { sep=' ' }
     local s2 = { sep='  ' }
@@ -444,7 +444,7 @@ function test_str(t)
 
 end
 
-function test_iter(t)
+function test.iter(t)
 
     for ks, v in tableutil.deep_iter({}) do
         t:err( "should not get any keys" )
@@ -516,7 +516,7 @@ function test_iter(t)
 end
 
 
-function test_has(t)
+function test.has(t)
     local cases = {
         {nil, {}, true},
         {1, {1}, true},
@@ -539,7 +539,7 @@ function test_has(t)
 end
 
 
-function test_remove(t)
+function test.remove(t)
     local t1 = {}
     local cases = {
         {{},                nil, {},                nil},
@@ -565,7 +565,7 @@ function test_remove(t)
 end
 
 
-function test_remove(t)
+function test.remove(t)
     local t1 = {}
     local cases = {
         {{},                   nil, {},                0},
@@ -592,7 +592,7 @@ function test_remove(t)
 end
 
 
-function test_get_random_elements(t)
+function test.get_random_elements(t)
 
     local cases = {
         {1,         nil,        1},
@@ -621,7 +621,7 @@ function test_get_random_elements(t)
 end
 
 
-function test_extends(t)
+function test.extends(t)
 
     local cases = {
 

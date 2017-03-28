@@ -36,7 +36,7 @@ local prop_impl = {
     end,
 }
 
-function test_new(t)
+function test.new(t)
 
     t:err( function() paxos.proposer.new( nil ) end, 'nil' )
     t:err( function() paxos.proposer.new( {} ) end, 'empty table' )
@@ -49,7 +49,7 @@ function test_new(t)
     t:eqlist( { 0, prop_args.ident }, x.rnd, 'initial rnd' )
 
 end
-function test_new_with_ver(t)
+function test.new_with_ver(t)
 
     local args = tableutil.dup( prop_args )
     args.ver = 1
@@ -62,7 +62,7 @@ function test_new_with_ver(t)
     t:eq( errors.VerNotExist, err )
 end
 
-function test_new_with_roundmaker(t)
+function test.new_with_roundmaker(t)
     local impl = tableutil.dup( prop_impl )
     impl.new_rnd = function (self) return 123 end
     local prop, err = paxos.proposer.new( { cluster_id="1", ident="2" }, impl )
@@ -70,7 +70,7 @@ function test_new_with_roundmaker(t)
     t:eq( 0, round.cmp( prop.rnd, { 123, "2" } ) )
 end
 
-function test_new_no_view(t)
+function test.new_no_view(t)
 
     local sto = {}
     local args = {
@@ -108,7 +108,7 @@ function test_new_no_view(t)
 
 end
 
-function test_sendmes(t)
+function test.sendmes(t)
     local prop = paxos.proposer.new( prop_args, prop_impl )
     mes_receiver = {}
 
@@ -117,7 +117,7 @@ function test_sendmes(t)
     t:eq( 'resp', resp, 'got resp from send_req' )
 end
 
-function test_send_mes_all(t)
+function test.send_mes_all(t)
     local x = paxos.proposer.new( prop_args, prop_impl )
     mes_receiver = {}
 
@@ -132,7 +132,7 @@ function test_send_mes_all(t)
     }, rs )
 end
 
-function test_phase1(t)
+function test.phase1(t)
     local x = paxos.proposer.new( prop_args, prop_impl )
     mes_receiver = {}
 
@@ -155,7 +155,7 @@ function test_phase1(t)
     end
 end
 
-function test_phase2(t)
+function test.phase2(t)
     local x = paxos.proposer.new( prop_args, prop_impl )
     mes_receiver = {}
 
@@ -179,7 +179,7 @@ function test_phase2(t)
     end
 end
 
-function test_phase3(t)
+function test.phase3(t)
     local x = paxos.proposer.new( prop_args, prop_impl )
     mes_receiver = {}
 
@@ -213,7 +213,7 @@ function test_phase3(t)
     end
 end
 
-function test_decide_twice(t)
+function test.decide_twice(t)
     local x = paxos.proposer.new( prop_args, prop_impl )
     mes_receiver = {}
 
@@ -222,7 +222,7 @@ function test_decide_twice(t)
     t:eq( errors.InvalidPhase, err )
 end
 
-function test_choose_p1(t)
+function test.choose_p1(t)
 
     local x = paxos.proposer.new( prop_args, prop_impl )
 
@@ -283,7 +283,7 @@ function test_choose_p1(t)
     t:eqdict( {c=0, b=1}, stat.stale_vers )
 end
 
-function test_choose_p2(t)
+function test.choose_p2(t)
 
     local x = paxos.proposer.new( prop_args, prop_impl )
 
@@ -301,7 +301,7 @@ function test_choose_p2(t)
 
 end
 
-function test_is_quorum(t)
+function test.is_quorum(t)
     local x = paxos.proposer.new( prop_args, prop_impl )
 
     x.view = {
@@ -331,7 +331,7 @@ function test_is_quorum(t)
     t:eq( false, x:is_quorum( { a=nil, b=nil, c=1, d=1, e=1 } ) )
 end
 
-function test_decide(t)
+function test.decide(t)
 
     local resps
     local args
@@ -526,7 +526,7 @@ function test_decide(t)
 
 end
 
-function test_write(t)
+function test.write(t)
 
     local resps
     local args
@@ -730,7 +730,7 @@ function test_write(t)
     end
 
 end
-function test_remote_read(t)
+function test.remote_read(t)
 
     local resps
     local args
@@ -953,7 +953,7 @@ local function default_acc(t, sto)
     return acc
 end
 
-function test_new_acc(t)
+function test.new_acc(t)
     local view = { { a=1, b=1 }, { b=1, c=1 } }
     local args = {
         cluster_id = 'cl',
@@ -985,7 +985,7 @@ function test_new_acc(t)
     t:eq( -1, x.record.committed.val.foo.__lease )
 end
 
-function test_new_acc_with_ver(t)
+function test.new_acc_with_ver(t)
     local view = { { a=1, b=1 }, { b=1, c=1 }, foo={ __expire=os.time()-1 } }
     local args = {
         cluster_id = 'cl',
@@ -1016,7 +1016,7 @@ function test_new_acc_with_ver(t)
     t:eq( errors.VerNotExist, err )
 end
 
-function test_new_acc_args(t)
+function test.new_acc_args(t)
     local view = { { a=1, b=1 }, { b=1, c=1 } }
     local args = {
         cluster_id = 'cl',
@@ -1047,7 +1047,7 @@ function test_new_acc_args(t)
 
 end
 
-function test_acc_view_err(t)
+function test.acc_view_err(t)
 
     local sto = {}
 
@@ -1090,7 +1090,7 @@ function test_acc_view_err(t)
     end
 end
 
-function test_acc_process(t)
+function test.acc_process(t)
     local x = default_acc(t)
 
     local r, err, errmes = x:process( nil )
@@ -1103,7 +1103,7 @@ function test_acc_process(t)
     t:eq( errors.InvalidCommand, err )
 end
 
-function test_acc_not_my_mes(t)
+function test.acc_not_my_mes(t)
 
     local x = default_acc(t)
 
@@ -1132,7 +1132,7 @@ function test_acc_not_my_mes(t)
 
 end
 
-function test_acc_lock(t)
+function test.acc_lock(t)
     local acc_args = {
         cluster_id='cl',
         ident='a',
@@ -1167,7 +1167,7 @@ function test_acc_lock(t)
     t:eqdict(errors.LockTimeout, err)
 
 end
-function test_acc_phase1(t)
+function test.acc_phase1(t)
     local committed = { val=nil, ver=0 }
     local req = {
         cmd = 'phase1',
@@ -1266,7 +1266,7 @@ function test_acc_phase1(t)
         t:eqdict( case.stored, acc_reflect.r, mes )
     end
 end
-function test_acc_phase2(t)
+function test.acc_phase2(t)
     local req = {
         cmd = 'phase2',
         cluster_id = 'cl',
@@ -1362,7 +1362,7 @@ function test_acc_phase2(t)
         t:eqdict( case.stored, acc_reflect.r, mes )
     end
 end
-function test_acc_phase3(t)
+function test.acc_phase3(t)
     local req = {
         cmd = 'phase3',
         cluster_id = 'cl',

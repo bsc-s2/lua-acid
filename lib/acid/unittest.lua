@@ -148,7 +148,7 @@ end
 
 function _M.test_one( suite, name, func )
 
-    dd( "* testing ", name, ' ...' )
+    dd( "   * testing ", name, ' ...' )
 
     local tfuncs = {}
     setmetatable( tfuncs, _mt )
@@ -166,18 +166,17 @@ function _M.test_one( suite, name, func )
     suite.n = suite.n + 1
 end
 
-function _M.testall( suite )
+function _M.testall(test, suite)
 
     local names = {}
 
-    local tests = find_tests( _G )
-    for k, v in pairs(tests) do
-        table.insert( names, { k, v } )
+    for k, v in pairs(test) do
+        table.insert(names, {k, v})
     end
 
-    table.sort( names, function(x, y) return x[ 1 ]<y[ 1 ] end  )
+    table.sort(names, function(x, y) return x[ 1 ]<y[ 1 ] end)
 
-    for _, t in ipairs( names ) do
+    for _, t in ipairs(names) do
         local funcname, func = t[ 1 ], t[ 2 ]
         _M.test_one( suite, funcname, func )
     end
@@ -196,17 +195,10 @@ function _M.testdir( dir )
 
             dd( "---- ", fn, ' ----' )
 
-            local tests0 = find_tests( _G )
+            test = {}
             require( fn:sub( 1, -5 ) )
-            local tests1 = find_tests( _G )
 
-            _M.testall( suite )
-
-            for k, v in pairs(tests1) do
-                if tests0[ k ] == nil then
-                    _G[ k ] = nil
-                end
-            end
+            _M.testall(test, suite)
         end
     end
     dd( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )

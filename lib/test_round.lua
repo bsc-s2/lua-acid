@@ -1,6 +1,6 @@
 local r = require( "acid.paxos.round" )
 
-function test_new(t)
+function test.new(t)
     t:err( function () r.new( { 0 } ) end )
     t:err( function () r.new( { 1 } ) end )
     t:err( function () r.new( { a=1 } ) end )
@@ -11,12 +11,12 @@ function test_new(t)
     t:eq( '', a[ 2 ] )
 end
 
-function test_zero(t)
+function test.zero(t)
     local a = r.zero()
     t:eqlist( { 0, '' }, a, 'zero' )
 end
 
-function test_max(t)
+function test.max(t)
 
     t:eqlist( r.zero(), r.max( {} ), 'max of empty' )
 
@@ -31,7 +31,7 @@ function test_max(t)
 
 end
 
-function test_incr(t)
+function test.incr(t)
     local a = r.zero()
     a[ 2 ] = 'xxx'
 
@@ -41,7 +41,7 @@ function test_incr(t)
     t:eqlist( { 1, 'xxx' }, b )
 end
 
-function test_cmp(t)
+function test.cmp(t)
     t:eq( 0, r.cmp( nil, nil ) )
     t:eq( 1, r.cmp( r.zero(), nil ) )
     t:eq( -1, r.cmp( nil, r.zero() ) )

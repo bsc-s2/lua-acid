@@ -5,7 +5,7 @@ local tableutil = require( "acid.tableutil" )
 
 local errors = base.errors
 
-function test_new(t)
+function test.new(t)
     local cases = {
         {
             mid=nil,
@@ -96,7 +96,7 @@ local function make_implementation( opt )
     return impl
 end
 
-function test_set(t)
+function test.set(t)
 
     local def_sto = {
         committed = {
@@ -185,7 +185,7 @@ function test_set(t)
     end
 
 end
-function test_get(t)
+function test.get(t)
 
     local def_sto = {
         committed = {
@@ -299,7 +299,7 @@ function test_get(t)
     end
 
 end
-function test_sendmes(t)
+function test.sendmes(t)
 
     local def_sto = {
         committed = {
