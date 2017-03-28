@@ -5,7 +5,6 @@ local json = require( "cjson" )
 local table = table
 local string = string
 
--- TODO test plain
 function _M.split( str, pat, plain )
 
     local t = {}  -- NOTE: use {n = 0} in Lua-5.0
