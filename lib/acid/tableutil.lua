@@ -302,7 +302,7 @@ function _M.in_table(value, tbl)
     return false
 end
 
-function _M.remove(tbl, value)
+function _M.remove_value(tbl, value)
 
     for k, v in pairs(tbl) do
         if v == value then
@@ -319,19 +319,17 @@ function _M.remove(tbl, value)
     return nil
 end
 
--- TODO  test or remove this
-function _M.remove_value(value, tbl)
-    local removed = false
 
-    for i = #tbl, 1, -1 do
-        if tbl[i] == value then
-            table.remove(tbl, i)
-            removed = true
-        end
+function _M.remove_all(tbl, value)
+
+    local removed = 0
+    while _M.remove_value(tbl, value) ~= nil do
+        removed = removed + 1
     end
 
     return removed
 end
+
 
 function _M.get_len(tbl)
     local len = 0

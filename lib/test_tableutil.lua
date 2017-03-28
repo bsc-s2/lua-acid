@@ -552,18 +552,44 @@ function test_remove(t)
 
         {{1, 2, t1, x=t1}, t1,   {1, 2, x=t1}, t1},
     }
-    
+
     for i, case in ipairs(cases) do
 
         local tbl, val, expected_tbl, expected_rst = case[1], case[2], case[3], case[4]
 
-        local rst = tableutil.remove(tbl, val)
+        local rst = tableutil.remove_value(tbl, val)
 
         t:eqdict(expected_tbl, tbl, i .. 'th tbl')
         t:eq(expected_rst, rst, i .. 'th rst')
     end
 end
 
+
+function test_remove(t)
+    local t1 = {}
+    local cases = {
+        {{},                   nil, {},                0},
+        {{1,2,3},              2,   {1, 3},            1},
+        {{1,2,3,x=4},          2,   {1, 3, x=4},       1},
+        {{1,2,3,x=2},          2,   {1, 3},            2},
+        {{1,2,3},              3,   {1, 2},            1},
+        {{1,2,3,x=4},          3,   {1, 2, x=4},       1},
+        {{1,2,3,4,x=4},        4,   {1, 2, 3},         2},
+        {{1,t1,3,x=t1,y=t1},   t1,  {1, 3},            3},
+
+        {{1,2,t1,x=t1},        t1,  {1, 2},            2},
+    }
+
+    for i, case in ipairs(cases) do
+
+        local tbl, val, expected_tbl, expected_rst = case[1], case[2], case[3], case[4]
+
+        local rst = tableutil.remove_all(tbl, val)
+
+        t:eqdict(expected_tbl, tbl, i .. 'th tbl')
+        t:eq(expected_rst, rst, i .. 'th rst')
+    end
+end
 
 
 function test_extends(t)
