@@ -3,8 +3,6 @@ local paxos = require( "acid.paxos" )
 local round = require( "acid.paxos.round" )
 local tableutil = require( "acid.tableutil" )
 
-local logging = require( "acid.logging" )
-
 local errors = base.errors
 
 local prop_sto = {
@@ -26,11 +24,11 @@ local prop_args = {
     ident='1',
 }
 local prop_impl = {
-    load= function( self, pp )
+    load = function(self, pp)
         return tableutil.dup(prop_sto, true)
     end,
-    time= function( self ) return os.time() end,
-    send_req= function( self, pp, id, mes )
+    time = function( self ) return os.time() end,
+    send_req = function( self, pp, id, mes )
         mes_receiver[ id ] = mes
         return 'resp'
     end,

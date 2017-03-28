@@ -57,7 +57,7 @@ local function make_implementation( opt )
     local stores = tableutil.dup( opt.stores, true ) or {}
     local def_sto = tableutil.dup( opt.def_sto, true ) or {}
 
-    function _sendmes( self, p, id, mes )
+    local function _sendmes( self, p, id, mes )
 
         local r = resps[ id ] or {}
 
@@ -106,7 +106,8 @@ function test.set(t)
             }
         }
     }
-    cases = {
+
+    local cases = {
         {
             mes = 'set ok',
             key="akey", val="aval", ver=nil,
@@ -163,7 +164,7 @@ function test.set(t)
 
     for i, case in ipairs( cases ) do
 
-        mes = i .. ": " .. (case.mes or '')
+        local mes = i .. ": " .. (case.mes or '')
         resps = case.resps
 
         local impl = make_implementation({

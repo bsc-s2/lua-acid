@@ -1,7 +1,6 @@
 local tableutil = require("acid.tableutil")
 local strutil = require("acid.strutil")
 
-local tb_eq = tableutil.eq
 local to_str = strutil.to_str
 
 function test.nkeys(t)
@@ -18,10 +17,10 @@ function test.nkeys(t)
     for i, case in ipairs(cases) do
         local n, tbl, mes = case[1], case[2], case[3]
         local rst = tableutil.nkeys(tbl)
-        t:eq(n, rst, 'nkeys:' .. mes)
+        t:eq(n, rst, 'nkeys:' .. mes .. tostring(i) .. '-th case')
 
         rst = tableutil.get_len(tbl)
-        t:eq(n, rst, 'get_len:' .. mes)
+        t:eq(n, rst, 'get_len:' .. mes .. tostring(i) .. '-th case')
     end
 end
 
@@ -45,9 +44,9 @@ function test.duplist(t)
     t:eqdict( {1}, du( { 1, [3]=3 } ) )
     t:eqdict( {}, du( { a=1, [3]=3 } ) )
 
-    local a = { { 1, 2, 3, a=4 } }
+    a = { { 1, 2, 3, a=4 } }
     a[2] = a[1]
-    local b = du(a)
+    b = du(a)
     t:eqdict({ { 1, 2, 3, a=4 }, { 1, 2, 3, a=4 } }, b)
     t:eq( b[1], b[2] )
 end
@@ -64,7 +63,7 @@ function test.sub(t)
     t:eq( b.c, a.c, "reference" )
 
     -- explicitly specify to sub() as a table
-    local b = tableutil.sub( a, {"a", "b", "c"}, 'table' )
+    b = tableutil.sub( a, {"a", "b", "c"}, 'table' )
     t:neq( b, a )
     t:eq( b.c, a.c, "reference" )
 
@@ -444,9 +443,9 @@ function test.str(t)
 
 end
 
-function test.iter(t)
+function test.depth_iter(t)
 
-    for ks, v in tableutil.deep_iter({}) do
+    for _, _ in tableutil.deep_iter({}) do
         t:err( "should not get any keys" )
     end
 
