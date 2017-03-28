@@ -73,14 +73,14 @@ function _M.to_str(...)
     return table.concat(argsv)
 end
 
--- TODO test
-function _M._placeholder(val, pholder)
+
+function _M.placeholder(val, pholder)
     pholder = pholder or '-'
 
     if val == '' or val == nil then
         return pholder
     else
-        return val
+        return tostring(val)
     end
 end
 

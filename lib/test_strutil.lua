@@ -25,9 +25,18 @@ function test_split(t)
 
     -- plain text pattern
     t:eqdict({'', '', 'abc' },       sp( '..abc', '.', true ), '//abc' )
-
-
 end
+
+
+function test_placeholder(t)
+    local ph = strutil.placeholder
+
+    t:eq('-', ph(nil))
+    t:eq('-', ph(''))
+    t:eq('x', ph('x'))
+    t:eq('1', ph(1))
+end
+
 
 function test_join(t)
     local j = strutil.join
