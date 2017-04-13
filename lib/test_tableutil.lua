@@ -648,3 +648,18 @@ function test.extends(t)
         t:eqdict(exp, rst, msg)
     end
 end
+
+
+function test.is_empty(t)
+    local cases = {
+        {true, {}},
+        {false, {1}},
+        {false, {key='val'}},
+    }
+
+    for _, c in ipairs(cases) do
+        t:eq(c[1], tableutil.is_empty(c[2]))
+    end
+
+    t:eq(false, tableutil.is_empty())
+end

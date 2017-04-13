@@ -371,4 +371,15 @@ function _M.extends( tbl, tvals )
 
     return tbl
 end
+
+
+function _M.is_empty(tbl)
+    if type(tbl) == 'table' and next(tbl) == nil then
+        return true
+    end
+
+    return false
+end
+
+
 return _M
