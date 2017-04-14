@@ -1,3 +1,5 @@
+local strutil = require('acid.strutil')
+
 local _M = { _VERSION = '0.1' }
 
 math.randomseed(os.time() * 1000)
@@ -5,6 +7,8 @@ math.randomseed(os.time() * 1000)
 function _M.nkeys(tbl)
     return #_M.keys(tbl)
 end
+
+
 function _M.keys(tbl)
     local ks = {}
     for k, _ in pairs(tbl) do
@@ -12,6 +16,7 @@ function _M.keys(tbl)
     end
     return ks
 end
+
 
 function _M.duplist(tbl, deep)
     local t = _M.dup( tbl, deep )
@@ -27,6 +32,8 @@ function _M.duplist(tbl, deep)
     end
     return rst
 end
+
+
 function _M.dup(tbl, deep, ref_table)
 
     if type(tbl) ~= 'table' then
@@ -52,6 +59,7 @@ function _M.dup(tbl, deep, ref_table)
     end
     return setmetatable(t, getmetatable(tbl))
 end
+
 
 local function _contains(a, b, ref_table)
 
@@ -80,12 +88,17 @@ local function _contains(a, b, ref_table)
     end
     return true
 end
+
+
 function _M.contains(a, b)
     return _contains( a, b, {} )
 end
+
+
 function _M.eq(a, b)
     return _M.contains(a, b) and _M.contains(b, a)
 end
+
 
 function _M.sub(tbl, ks, list)
     ks = ks or {}
@@ -99,14 +112,16 @@ function _M.sub(tbl, ks, list)
     end
     return t
 end
+
+
 function _M.intersection(tables, val)
 
     local t = {}
     local n = 0
 
-    for i, tbl in ipairs(tables) do
+    for _, tbl in ipairs(tables) do
         n = n + 1
-        for k, v in pairs(tbl) do
+        for k, _ in pairs(tbl) do
             t[ k ] = ( t[ k ] or 0 ) + 1
         end
     end
@@ -119,16 +134,20 @@ function _M.intersection(tables, val)
     end
     return rst
 end
+
+
 function _M.union(tables, val)
     local t = {}
 
-    for i, tbl in ipairs(tables) do
+    for _, tbl in ipairs(tables) do
         for k, v in pairs(tbl) do
             t[ k ] = val or v
         end
     end
     return t
 end
+
+
 function _M.merge(tbl, ...)
     for _, src in ipairs({...}) do
         for k, v in pairs(src) do
@@ -138,12 +157,15 @@ function _M.merge(tbl, ...)
     return tbl
 end
 
+
 local function repr_opt(opt)
     opt = opt or {}
     opt.indent = opt.indent or ''
     opt.sep = opt.sep or ''
     return opt
 end
+
+
 local function normkey(k, opt)
 
     if opt.mode == 'str' then
@@ -158,21 +180,29 @@ local function normkey(k, opt)
     end
     return key
 end
+
+
 local function extend(lst, sublines, opt)
     for _, sl in ipairs(sublines) do
         table.insert( lst, opt.indent .. sl )
     end
     lst[ #lst ] = lst[ #lst ] .. ','
 end
+
+
 function _M.str(t, opt)
     opt = repr_opt(opt)
     opt.mode = 'str'
     return _M._repr(t, opt)
 end
+
+
 function _M.repr(t, opt)
     opt = repr_opt(opt)
     return _M._repr(t, opt)
 end
+
+
 function _M._repr(t, opt)
     local lst = _M._repr_lines(t, opt)
     local sep = opt.sep
@@ -181,6 +211,8 @@ function _M._repr(t, opt)
     end
     return table.concat( lst, sep )
 end
+
+
 function _M._repr_lines(t, opt)
 
     local tp = type( t )
@@ -232,6 +264,7 @@ function _M._repr_lines(t, opt)
     return lst
 end
 
+
 function _M.iter(tbl)
 
     local ks = _M.keys(tbl)
@@ -248,6 +281,7 @@ function _M.iter(tbl)
         return ks[i], tbl[ks[i]]
     end
 end
+
 
 function _M.deep_iter(tbl)
 
@@ -275,6 +309,7 @@ function _M.deep_iter(tbl)
         end
     end
 end
+
 
 function _M.has(tbl, value)
 
@@ -358,15 +393,15 @@ function _M.random(tbl, n)
 end
 
 
-function _M.extends( tbl, tvals )
+function _M.extends(tbl, tvals)
 
     if type(tbl) ~= 'table' or tvals == nil then
         return tbl
     end
 
     -- Note: will be discarded after nil elements in tvals
-    for i, v in ipairs( tvals ) do
-        table.insert( tbl, v )
+    for _, v in ipairs(tvals) do
+        table.insert(tbl, v)
     end
 
     return tbl
@@ -379,6 +414,30 @@ function _M.is_empty(tbl)
     end
 
     return false
+end
+
+
+function _M.get(tbl, keys)
+
+    local node = tbl
+    local prefix = ''
+
+    local ks = strutil.split(keys, '[.]')
+
+    for _, k in ipairs(ks) do
+
+        if node == nil then
+            return nil, 'NotFound', 'found nil field: ' .. prefix
+        end
+
+        if type(node) ~= 'table' then
+            return nil, 'NotTable', 'found non-table field: ' .. prefix
+        end
+        node = node[k]
+        prefix = prefix .. '.' .. k
+    end
+
+    return node, nil, nil
 end
 
 
