@@ -689,7 +689,6 @@ function test.get(t)
         local tbl, keys, expected_rst, expected_err = c[1], c[2], c[3], c[4]
 
         local rst, err, errmsg = tableutil.get(tbl, keys)
-        print(to_str('case: ', {tbl, keys, rst, err, errmsg}))
 
         t:eq(expected_rst, rst)
         t:eq(expected_err, err)
