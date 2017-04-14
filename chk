@@ -1,0 +1,9 @@
+#!/bin/sh
+
+fns="${1-"$(git diff --name-only --relative HEAD)"}"
+
+if [ "$fns" = "" ]; then
+    fns="$(find . -name "*.lua")"
+fi
+
+luacheck --no-redefined --std ngx_lua --std luajit --globals test --codes $fns
