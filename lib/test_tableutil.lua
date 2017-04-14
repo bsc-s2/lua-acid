@@ -607,11 +607,11 @@ function test.get_random_elements(t)
         t:eqdict(expected, rst, msg)
     end
 
-    -- random continuous 
+    -- random continuous
 
     local expected = {
         {1, 2, 3},
-        {2, 3, 1}, 
+        {2, 3, 1},
         {3, 1, 2}
     }
 
@@ -662,4 +662,37 @@ function test.is_empty(t)
     end
 
     t:eq(false, tableutil.is_empty())
+end
+
+
+function test.get(t)
+
+    local cases = {
+
+        {nil,       '',          nil, 'NotFound'},
+        {nil,       'a',         nil, 'NotFound'},
+        {{},        'a',         nil, nil},
+        {{},        'a.b',       nil, 'NotFound'},
+        {{a=1},     '',          nil, nil},
+        {{a=1},     'a',         1,   nil},
+        {{a=1},     'a.b',       nil, 'NotTable'},
+        {{a=true},  'a.b',       nil, 'NotTable'},
+        {{a=""},    'a.b',       nil, 'NotTable'},
+        {{a={b=1}}, 'a.b',       1,   nil},
+        {{a={b=1}}, 'a.b.cc',    nil, 'NotTable' },
+        {{a={b=1}}, 'a.b.cc.dd', nil, 'NotTable' },
+        {{a={b=1}}, 'a.x.cc',    nil, 'NotFound' },
+
+    }
+
+    for _, c in ipairs(cases) do
+        local tbl, keys, expected_rst, expected_err = c[1], c[2], c[3], c[4]
+
+        local rst, err, errmsg = tableutil.get(tbl, keys)
+        print(to_str('case: ', {tbl, keys, rst, err, errmsg}))
+
+        t:eq(expected_rst, rst)
+        t:eq(expected_err, err)
+
+    end
 end
