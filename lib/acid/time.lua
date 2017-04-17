@@ -27,8 +27,12 @@ local week2num= {
 }
 
 -- local_time + timezone = utc_time
-local timezone = -3600*8
-local s2ts_len = 19
+local function get_timezone()
+    local local_time = os.time()
+    local utc_time = os.time(os.date("!*t", local_time))
+    return os.difftime(utc_time, local_time)
+end
+local timezone = get_timezone()
 
 _M.timezone = timezone
 
