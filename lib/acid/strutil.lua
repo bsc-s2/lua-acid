@@ -154,6 +154,10 @@ function _M.to_chunks(s, n)
 
     assert(n > 0, 'n must be a number and >= 1')
 
+    if s == '' then
+        return {''}
+    end
+
     local rst = {}
 
     for i = 1, #s, n do

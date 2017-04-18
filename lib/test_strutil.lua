@@ -209,7 +209,7 @@ function test.to_chunks_err(t)
         local inp, expected, desc = unpack(c)
 
         t:err(function() strutil.to_chunks(inp) end,
-              tostring(i) .. 'th: ' .. desc)
+              tostring(ii) .. 'th: ' .. (desc or ''))
     end
 end
 
@@ -219,22 +219,24 @@ function test.to_chunks(t)
     local cases    = {
         {'',       1, {''},          'n = 0'},
         {'a',      1, {'a'},         'n = 1'},
-        {'ab',     1, {'a','b'},     'n = 1:2'},
-        {'abc',    1, {'a','b','c'}, 'n = 1:3'},
-        {'abc',    3, {'abc'},       'n = 3:1'},
-        {'abcd',   3, {'abc','d'},   'n = 3:2'},
+        {'ab',     1, {'a','b'},     'n = 1:1'},
+        {'abc',    1, {'a','b','c'}, 'n = 1:1:1'},
+        {'',       3, {''},          'n = 3'},
+        {'a',      3, {'a'},         'n = 3'},
+        {'ab',     3, {'ab'},        'n = 3'},
+        {'abc',    3, {'abc'},       'n = 3'},
+        {'abcd',   3, {'abc','d'},   'n = 3:1'},
         {'abcde',  3, {'abc','de'},  'n = 3:2'},
-        {'abcdef', 3, {'abc','def'}, 'n = 3:2'},
+        {'abcdef', 3, {'abc','def'}, 'n = 3:3'},
+        {'a c ef', 3, {'a c',' ef'}, 'n = 3:3, with space'},
 
     }
 
     for ii, c in ipairs(cases) do
         local s, n, expected, desc = unpack(c)
 
-        print(strutil.to_str(c))
-
         local rst = strutil.to_chunks(s, n)
-        t:eqdict(expected, rst, tostring(i) .. 'th: ' .. desc)
+        t:eqdict(expected, rst, tostring(ii) .. 'th: ' .. desc)
     end
 end
 
