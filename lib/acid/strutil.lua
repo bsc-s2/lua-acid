@@ -5,6 +5,9 @@ local json = require( "cjson" )
 local table = table
 local string = string
 
+local string_sub = string.sub
+local table_insert = table.insert
+
 function _M.split( str, pat, plain )
 
     local t = {}  -- NOTE: use {n = 0} in Lua-5.0
@@ -31,9 +34,11 @@ function _M.split( str, pat, plain )
     return t
 end
 
+
 function _M.join(sep, ...)
     return table.concat({...}, sep)
 end
+
 
 function _M.strip( s, ptn )
 
@@ -45,9 +50,11 @@ function _M.strip( s, ptn )
     return r
 end
 
+
 function _M.startswith( s, pref )
     return s:sub( 1, pref:len() ) == pref
 end
+
 
 function _M.endswith( s, suf )
     if suf == '' then
@@ -55,6 +62,7 @@ function _M.endswith( s, suf )
     end
     return s:sub( -suf:len(), -1 ) == suf
 end
+
 
 function _M.to_str(...)
 
@@ -89,13 +97,16 @@ function _M.ljust(str, n, ch)
     return str .. string.rep(ch or ' ', n - string.len(str))
 end
 
+
 function _M.rjust(str, n, ch)
     return string.rep(ch or ' ', n - string.len(str)) .. str
 end
 
+
 function _M.replace(s, src, dst)
     return table.concat(_M.split(s, src), dst)
 end
+
 
 local function _parse_fnmatch_char(a1)
     if a1 == "*" then
@@ -108,6 +119,7 @@ local function _parse_fnmatch_char(a1)
         return a1
     end
 end
+
 
 function _M.fnmatch(s, ptn)
     local p = ptn
@@ -123,16 +135,33 @@ function _M.fnmatch(s, ptn)
     return s:match(p) == s
 end
 
+
 function _M.fromhex(str)
     return (str:gsub('..', function (cc)
         return string.char(tonumber(cc, 16))
     end))
 end
 
+
 function _M.tohex(str)
     return (str:gsub('.', function (c)
         return string.format('%02X', string.byte(c))
     end))
 end
+
+
+function _M.to_chunks(s, n)
+
+    assert(n > 0, 'n must be a number and >= 1')
+
+    local rst = {}
+
+    for i = 1, #s, n do
+        table_insert(rst, string_sub(s, i, i + n - 1))
+    end
+
+    return rst
+end
+
 
 return _M
