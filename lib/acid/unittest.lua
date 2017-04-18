@@ -1,20 +1,118 @@
 local _M = { _VERSION='0.1' }
 
-local function tostr(x)
-    return '[' .. tostring( x ) .. ']'
+_M.debug = false
+
+local function _keys(tbl)
+    local ks = {}
+    for k, _ in pairs(tbl) do
+        table.insert( ks, k )
+    end
+    return ks
 end
 
+
+local function extend(lst, sublines)
+    for _, sl in ipairs(sublines) do
+        table.insert( lst, sl )
+    end
+    lst[ #lst ] = lst[ #lst ] .. ','
+end
+
+
+local function _repr_lines(t, ref_table)
+
+    if t ~= nil then
+        if ref_table[t] ~= nil then
+            return {'...'}
+        end
+
+        ref_table[t] = true
+    end
+
+    local tp = type( t )
+
+    if tp == 'string' then
+        -- escape special chars
+        local s = string.format('%q', t)
+        s = s:sub( 2, -2 )
+        return { s }
+
+    elseif tp ~= 'table' then
+        return { tostring(t) }
+    end
+
+    -- table
+
+    local keys = _keys(t)
+    if #keys == 0 then
+        return { '{}' }
+    end
+
+    table.sort( keys, function( a, b ) return tostring(a)<tostring(b) end )
+
+    local lst = {'{'}
+
+    local i = 1
+    while t[i] ~= nil do
+        local sublines = _repr_lines(t[i], ref_table)
+        extend(lst, sublines)
+        i = i + 1
+    end
+
+    for _, k in ipairs(keys) do
+
+        if type(k) ~= 'number' or k > i then
+
+            local sublines = _repr_lines(t[k], ref_table)
+            sublines[ 1 ] = tostring(k) ..'='.. sublines[ 1 ]
+            extend(lst, sublines)
+        end
+    end
+
+    -- remove the last ','
+    lst[ #lst ] = lst[ #lst ]:sub( 1, -2 )
+
+    table.insert( lst, '}' )
+    return lst
+end
+
+
+local function to_str(o)
+    return table.concat(_repr_lines(o, {}))
+end
+
+
+_M.to_str = to_str
+
+
 local function dd(...)
+    if not _M.debug then
+        return
+    end
     local args = {...}
     local s = ''
     for _, mes in ipairs(args) do
-        s = s .. tostring(mes)
+        s = s .. _M.to_str(mes)
     end
-    _M.output( s )
+    _M.output(s)
 end
 
+
+local function info(...)
+    local args = {...}
+    local s = ''
+    for _, mes in ipairs(args) do
+        s = s .. _M.to_str(mes)
+    end
+    _M.output(s)
+end
+
+
+_M.dd = dd
+
+
 function _M.output(s)
-    print( s )
+    print(s)
 end
 
 local function is_test_file( fn )
@@ -32,7 +130,7 @@ end
 local function keys(tbl)
     local n = 0
     local ks = {}
-    for k, v in pairs( tbl ) do
+    for k, _ in pairs( tbl ) do
         table.insert( ks, k )
         n = n + 1
     end
@@ -63,11 +161,11 @@ local testfuncs = {
     end,
 
     eq= function( self, a, b, mes )
-        self:ass( a==b, 'to be ' .. tostr(a) .. ' but is ' .. tostr(b), mes )
+        self:ass( a==b, 'to be ' .. to_str(a) .. ' but is ' .. to_str(b), mes )
     end,
 
     neq= function( self, a, b, mes )
-        self:ass( a~=b, 'not to be' .. tostr(a) .. ' but the same: ' .. tostr(b), mes )
+        self:ass( a~=b, 'not to be' .. to_str(a) .. ' but the same: ' .. to_str(b), mes )
     end,
 
     err= function ( self, func, mes )
@@ -85,11 +183,11 @@ local testfuncs = {
         self:neq( nil, b, "right list is not nil " .. (mes or '') )
 
         for i, e in ipairs(a) do
-            self:ass( e==b[i], i .. 'th elt to be ' .. tostr(e) .. ' but is ' .. tostr(b[i]), mes )
+            self:ass( e==b[i], i .. 'th elt to be ' .. to_str(e) .. ' but is ' .. to_str(b[i]), mes )
         end
         -- check if b has more elements
         for i, e in ipairs(b) do
-            self:ass( nil~=a[i], i .. 'th elt to be nil but is ' .. tostr(e), mes )
+            self:ass( nil~=a[i], i .. 'th elt to be nil but is ' .. to_str(e), mes )
         end
     end,
 
@@ -102,8 +200,8 @@ local testfuncs = {
 
         self:neq( nil, a, "left table is not nil " .. mes )
         self:neq( nil, b, "right table is not nil " .. mes )
-        local akeys, an = keys( a )
-        local bkeys, bn = keys( b )
+        local akeys = keys( a )
+        local bkeys = keys( b )
 
         for _, k in ipairs( akeys ) do
             self:ass( b[k] ~= nil, '["' .. k .. '"] in right but not. '.. mes )
@@ -117,7 +215,7 @@ local testfuncs = {
                 self:eqdict( av, bv, k .. '<' .. mes )
             else
                 self:ass( a[k] == b[k],
-                '["' .. k .. '"] to be ' .. tostr(a[k]) .. ' but is ' .. tostr(b[k]), mes )
+                '["' .. k .. '"] to be ' .. to_str(a[k]) .. ' but is ' .. to_str(b[k]), mes )
             end
         end
 
@@ -128,7 +226,7 @@ local testfuncs = {
         self:neq( nil, b, "right table is not nil" )
 
         for k, e in pairs(a) do
-            self:ass( e==b[k], '["' .. k .. '"] to be ' .. tostr(e) .. ' but is ' .. tostr(b[k]), mes )
+            self:ass( e==b[k], '["' .. k .. '"] to be ' .. to_str(e) .. ' but is ' .. to_str(b[k]), mes )
         end
     end,
 
@@ -140,7 +238,7 @@ local _mt = { __index= testfuncs }
 
 function _M.test_one( suite, name, func )
 
-    dd( "   * testing ", name, ' ...' )
+    info( "   * testing ", name, ' ...' )
 
     local tfuncs = {}
     setmetatable( tfuncs, _mt )
@@ -151,19 +249,21 @@ function _M.test_one( suite, name, func )
     local ok, rst = coroutine.resume( co, tfuncs )
 
     if not ok then
-        dd( rst )
-        dd( debug.traceback(co) )
+        info( rst )
+        info( debug.traceback(co) )
         os.exit(1)
     end
     suite.n = suite.n + 1
 end
 
-function _M.testall(test, suite)
+function _M.test_all(test, suite)
 
     local names = {}
 
     for k, v in pairs(test) do
-        table.insert(names, {k, v})
+        if k ~= 'dd' then
+            table.insert(names, {k, v})
+        end
     end
 
     table.sort(names, function(x, y) return x[ 1 ]<y[ 1 ] end)
@@ -185,19 +285,22 @@ function _M.testdir( dir )
 
         if is_test_file( fn ) then
 
-            dd( "---- ", fn, ' ----' )
+            info( "---- ", fn, ' ----' )
 
-            test = {}
+            test = {dd=dd}
             require( fn:sub( 1, -5 ) )
 
-            _M.testall(test, suite)
+            _M.test_all(test, suite)
         end
     end
-    dd( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
+    info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
     return true
 end
 
 function _M.t()
+
+    _M.debug = (os.getenv('LUA_UNITTEST_DEBUG') == '1')
+
     if arg == nil then
         -- lua -l unittest
         _M.testdir( '.' )
