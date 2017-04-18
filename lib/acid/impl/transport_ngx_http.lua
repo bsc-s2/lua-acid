@@ -1,7 +1,7 @@
 local _M = {}
 local _meta = { __index=_M }
 
-local json = require( "cjson" )
+local json = require( "acid.json" )
 local tableutil = require( "acid.tableutil" )
 local strutil = require( "acid.strutil" )
 local paxos = require( "acid.paxos" )
@@ -54,7 +54,7 @@ function _M:send_req(pobj, id, req)
     req.cmd = nil
     req.ver = nil
 
-    local body = json.encode( req )
+    local body = json.enc( req )
     local members = tableutil.union( pobj.view )
     local ipports = self:get_addrs({cluster_id=req.cluster_id, ident=id}, members[id])
     local ipport = ipports[1]
@@ -80,8 +80,8 @@ function _M:send_req(pobj, id, req)
         return nil, err, errmes
     end
 
-    local rst, jbody = pcall(json.decode, rstbody)
-    if not rst then
+    local jbody, errmsg = json.dec(rstbody)
+    if errmsg ~= nil then
         return nil, errors.InvalidMessage, "body is not valid json"
     end
 
@@ -106,10 +106,10 @@ function _M:api_recv()
 
     ngx.req.read_body()
     local body = ngx.req.get_body_data()
-    local req = {}
+    local req, errmsg = {}, nil
     if body ~= "" and body ~= nil then
-        req = json.decode( body )
-        if req == nil then
+        req, errmsg = json.dec( body )
+        if errmsg ~= nil then
             self:track( "api_recv-err:BodyIsNotJson" )
             return nil, errors.InvalidMessage, "body is not valid json"
         end
@@ -129,7 +129,7 @@ function _M:api_resp(rst)
         code = _status.OK
     end
 
-    rst = json.encode( rst )
+    rst = json.enc( rst )
     ngx.status = code
     ngx.print( rst )
     ngx.eof()

@@ -1,4 +1,4 @@
-local json = require('cjson')
+local json = require('acid.json')
 local resty_lock = require("resty.lock")
 local tableutil = require("acid.tableutil")
 local strutil = require("acid.strutil")
@@ -65,7 +65,7 @@ _M.accessor = {
             ngx.log(ngx.DEBUG, "get [", key, "] value from shdict cache: ", to_str(val))
             if val ~= nil then
 
-                val = json.decode( val )
+                val = json.dec( val )
 
                 return val
             end
@@ -82,7 +82,7 @@ _M.accessor = {
             end
 
             if val ~= nil then
-                val = json.encode(val)
+                val = json.enc(val)
             end
 
             dict:set( key, val, opts.exptime or 60 )
