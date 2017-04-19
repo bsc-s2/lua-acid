@@ -3,11 +3,14 @@ local _M = { _VERSION='0.1' }
 _M.debug = false
 
 local function _keys(tbl)
+    local n = 0
     local ks = {}
-    for k, _ in pairs(tbl) do
+    for k, _ in pairs( tbl ) do
         table.insert( ks, k )
+        n = n + 1
     end
-    return ks
+    table.sort( ks, function(a, b) return tostring(a)<tostring(b) end )
+    return ks, n
 end
 
 
@@ -127,16 +130,6 @@ local function scandir(directory)
     return t
 end
 
-local function keys(tbl)
-    local n = 0
-    local ks = {}
-    for k, _ in pairs( tbl ) do
-        table.insert( ks, k )
-        n = n + 1
-    end
-    table.sort( ks, function(a, b) return tostring(a)<tostring(b) end )
-    return ks, n
-end
 
 local testfuncs = {
 
@@ -200,8 +193,8 @@ local testfuncs = {
 
         self:neq( nil, a, "left table is not nil " .. mes )
         self:neq( nil, b, "right table is not nil " .. mes )
-        local akeys = keys( a )
-        local bkeys = keys( b )
+        local akeys = _keys( a )
+        local bkeys = _keys( b )
 
         for _, k in ipairs( akeys ) do
             self:ass( b[k] ~= nil, '["' .. k .. '"] in right but not. '.. mes )
