@@ -51,8 +51,6 @@ local function _repr_lines(t, ref_table)
         return { '{}' }
     end
 
-    table.sort( keys, function( a, b ) return tostring(a)<tostring(b) end )
-
     local lst = {'{'}
 
     local i = 1
