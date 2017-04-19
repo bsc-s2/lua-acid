@@ -1,6 +1,9 @@
 local strutil = require("acid.strutil")
 
 
+local dd = test.dd
+
+
 function test.split(t)
 
     local sp = strutil.split
@@ -234,6 +237,8 @@ function test.to_chunks(t)
 
     for ii, c in ipairs(cases) do
         local s, n, expected, desc = unpack(c)
+
+        dd('case: ', c)
 
         local rst = strutil.to_chunks(s, n)
         t:eqdict(expected, rst, tostring(ii) .. 'th: ' .. desc)

@@ -2,21 +2,39 @@
 
 luacov="/opt/local/share/luarocks//lib/luarocks/rocks/luacov/0.6-1/bin/luacov"
 
-case $1 in
-    cov)
-        cov_flag="-l luacov"
-        ;;
-    *)
-        cov_flag=
-        ;;
-esac
+debug=0
+
+while ``; do
+    found=0
+    case $1 in
+        -v|--verbose)
+            debug=1
+            found=1
+            shift
+            ;;
+        cov)
+            cov_flag="-l luacov"
+            found=1
+            shift
+            ;;
+        *)
+            cov_flag=
+            ;;
+    esac
+
+    if [ "$found" = "0" ]; then
+        break
+    fi
+done
 
 export LUA_CPATH="$LUA_CPATH;$(pwd)/clib/?.so;"
 
 (
 cd lib || exit 1
 
-lua $cov_flag -l acid.unittest || exit 1
+LUA_UNITTEST_DEBUG=$debug \
+    lua $cov_flag -l acid.unittest \
+    || exit 1
 
 if [ ".$cov_flag" != "." ]; then
     $luacov && tail -n20 luacov.report.out
