@@ -24,15 +24,18 @@ end
 
 local function _repr_lines(t, ref_table)
 
-    if t ~= nil then
-        if ref_table[t] ~= nil then
-            return {'...'}
-        end
+    local tp = type(t)
 
-        ref_table[t] = true
+    if t ~= nil then
+        if tp == 'table' or t == 'cdata' then
+            if ref_table[t] ~= nil then
+                return {'...'}
+            end
+
+            ref_table[t] = true
+        end
     end
 
-    local tp = type( t )
 
     if tp == 'string' then
         -- escape special chars
