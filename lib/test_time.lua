@@ -1,89 +1,233 @@
-local time = require("acid.time")
+local time = require("time")
 
-function test.iso()
-    local p = time.parse.iso
-    local f = time.format.iso
+function test.iso(t)
+    local p = time.parse_iso
+    local f = time.format_iso
 
-    local t = '2015-04-06T21:26:32.000Z'
-    local e = 1428355592
+    local date = '2015-04-06T21:26:32.000Z'
+    local ts = 1428355592
 
-    assert(e == p(t), 'timezone 0: ' .. e - p(t))
-    assert(t == f(p(t)), 'timezone 0: ' .. t .. ' ' .. f(p(t)))
+    t:eq( ts, p(date), 'timezone 0: ' .. (ts - p(date)) )
+    t:eq( date, f(p(date)), 'timezone 0: ' .. date .. ' ' .. f(p(date)) )
 end
 
-function test()
+function test.parse(t)
+    local cases = {
+        -- func, input, out, err, msg
+        {
+            func=time.parse_isobase,
+            input='20170414T105302Z',
+            out=1492167182
+        },
+        {
+            func=time.parse_iso,
+            input='2015-06-21T04:33:42.000Z',
+            out=1434861222
+        },
+        {
+            func=time.parse_utc,
+            input='Sun, 21 Jun 2015 04:33:42 UTC',
+            out=1434861222
+        },
+        {
+            func=time.parse_std,
+            input='2015-06-21 12:33:42',
+            out=1434861222
+        },
+        {
+            func=time.parse_ngxaccesslog,
+            input='21/Jun/2015:12:33:42',
+            out=1434861222
+        },
+        {
+            func=time.parse_ngxerrorlog,
+            input='2015/06/21 12:33:42',
+            out=1434861222
+        },
 
-    local _assert = function( func, input, aout, aerr, amsg )
-        local out, err, msg = func( input )
-        assert( out == aout )
-        assert( err == aerr )
-        if amsg ~= nil then
-            assert( msg == amsg )
-        end
-    end
+        {
+            func=time.parse_utc,
+            input='Tun, 21 Jun 2015 04:33:42 UTC',
+            out=nil,
+            err='FormatError',
+            msg='Tun, 21 Jun 2015 04:33:42 UTC date format error'
+        },
+        {
+            func=time.parse_utc,
+            input='un, 21 Jun 2015 04:33:42 UTC',
+            out=nil,
+            err='FormatError',
+            msg='un, 21 Jun 2015 04:33:42 UTC date format error'
+        },
+        {
+            func=time.parse_utc,
+            input=' 21 Jun 2015 04:33:42 UTC',
+            out=nil,
+            err='FormatError',
+            msg=' 21 Jun 2015 04:33:42 UTC date format error'
+        },
+        {
+            func=time.parse_utc,
+            input='Sun, 21 Jux 2015 04:33:42 UTC',
+            out=nil,
+            err='FormatError',
+            msg='Sun, 21 Jux 2015 04:33:42 UTC date format error'
+        },
+        {
+            func=time.parse_utc,
+            input='Sun, 21 Jun 2015 04:33:42',
+            out=nil,
+            err='FormatError',
+            msg='Sun, 21 Jun 2015 04:33:42 date format error'
+        },
 
-    local case = {
-        -- func, input, aout, aerr, amsg
-        { time.parse.isobase, '20170414T105302Z', 1492167182},
-        { time.parse.iso, '2015-06-21T04:33:42.000Z', 1434861222 },
-        { time.parse.utc, 'Sun, 21 Jun 2015 04:33:42 UTC', 1434861222 },
-        { time.parse.std, '2015-06-21 12:33:42', 1434861222 },
-        { time.parse.ngxaccesslog, '21/Jun/2015:12:33:42', 1434861222 },
-        { time.parse.ngxerrorlog, '2015/06/21 12:33:42', 1434861222 },
+        {
+            func=time.parse_std,
+            input='2015-06-21 12:u:42',
+            out=nil,
+            err='FormatError',
+            msg='2015-06-21 12:u:42 date format error'
+        },
+        {
+            func=time.parse_std,
+            input='2015-06-21 12:33:',
+            out=nil,
+            err='FormatError',
+            msg='2015-06-21 12:33: date format error'
+        },
+        {
+            func=time.parse_std,
+            input=nil,
+            out=nil,
+            err='FormatError',
+            msg='type: nil date format error'
+        },
+        {
+            func=time.parse_std,
+            input={},
+            out=nil,
+            err='FormatError',
+            msg='type: table date format error'
+        },
+        {
+            func=time.parse_std,
+            input=true,
+            out=nil,
+            err='FormatError',
+            msg='type: boolean date format error'
+        },
+        {
+            func=time.parse_std,
+            input=10,
+            out=nil,
+            err='FormatError',
+            msg='type: number date format error'
+        },
 
-        { time.parse.isobase, '0170414T105302Z', nil, 'FormatError'},
-        { time.parse.isobase, nil, nil, 'FormatError', 'type: nil date format error'},
-        { time.parse.isobase, {}, nil, 'FormatError', 'type: table date format error'},
-        { time.parse.isobase, false, nil, 'FormatError'},
-        { time.parse.isobase, 10, nil, 'FormatError', 'type: number date format error'},
-
-        { time.parse.utc, 'Tun, 21 Jun 2015 04:33:42 UTC', nil, 'FormatError',
-                            'Tun, 21 Jun 2015 04:33:42 UTC date format error' },
-        { time.parse.utc, 'un, 21 Jun 2015 04:33:42 UTC', nil, 'FormatError' },
-        { time.parse.utc, ' 21 Jun 2015 04:33:42 UTC', nil, 'FormatError' },
-        { time.parse.utc, 'Sun, 21 Jux 2015 04:33:42 UTC', nil, 'FormatError' },
-        { time.parse.utc, 'Sun, 21 Jun 2015 04:33:42', nil, 'FormatError' },
-
-        { time.parse.std, '2015-06-21 12:u:42', nil, 'FormatError' },
-        { time.parse.std, '2015-06-21 12:33:', nil, 'FormatError' },
-        { time.parse.std, nil, nil, 'FormatError', 'type: nil date format error' },
-        { time.parse.std, {}, nil, 'FormatError', 'type: table date format error' },
-        { time.parse.std, true, nil, 'FormatError' },
-        { time.parse.std, 10, nil, 'FormatError', 'type: number date format error' },
-
-        { time.format.iso, 1434861222, '2015-06-21T04:33:42.000Z' },
-        { time.format.utc, 1434861222, 'Sun, 21 Jun 2015 04:33:42 UTC' },
-        { time.format.std, 1434861222, '2015-06-21 12:33:42' },
-        { time.format.ngxaccesslog, 1434861222, '21/Jun/2015:12:33:42' },
-        { time.format.ngxerrorlog, 1434861222, '2015/06/21 12:33:42' },
-
-        { time.format.iso, nil, nil, 'ValueError', 'timestamp cannot tonumber' },
-        { time.format.iso, {}, nil, 'ValueError', 'timestamp cannot tonumber' },
-        { time.format.iso, ':', nil, 'ValueError', 'timestamp cannot tonumber' },
-        { time.format.iso, true, nil, 'ValueError' },
-
-        { time.format.std, nil, nil, 'ValueError', 'timestamp cannot tonumber' },
-        { time.format.std, {}, nil, 'ValueError' },
-        { time.format.std, ':', nil, 'ValueError', 'timestamp cannot tonumber' },
-        { time.format.std, 'XxX', nil, 'ValueError' },
     }
 
-    for _, cs in ipairs( case ) do
-        _assert( cs[1], cs[2], cs[3], cs[4], cs[5] )
-    end
+    for i, case in ipairs( cases ) do
+        local out, err, msg = case.func(case.input)
 
+        t:eq( out, case.out )
+
+        if(err ~= nil) then
+            t:eq( err, case.err )
+            t:eq( msg, case.msg )
+        end
+    end
 end
 
-function test.timezone()
-    local zone = -3600 * 8
+function test.format(t)
+    local cases={
+        {
+            func=time.format_iso,
+            input=1434861222,
+            out='2015-06-21T04:33:42.000Z'
+        },
+        {
+            func=time.format_utc,
+            input=1434861222,
+            out='Sun, 21 Jun 2015 04:33:42 UTC'
+        },
+        {
+            func=time.format_std,
+            input=1434861222,
+            out='2015-06-21 12:33:42'
+        },
+        {
+            func=time.format_ngxaccesslog,
+            input=1434861222,
+            out='21/Jun/2015:12:33:42'
+        },
+        {
+            func=time.format_ngxerrorlog,
+            input=1434861222,
+            out='2015/06/21 12:33:42'
+        },
+
+        {
+            func=time.format_std,
+            input=nil,
+            out=nil,
+            err='ValueError',
+            msg='timestamp cannot tonumber'
+        },
+        {
+            func=time.format_std,
+            input={},
+            out=nil,
+            err='ValueError',
+            msg='timestamp cannot tonumber'
+        },
+        {
+            func=time.format_std,
+            input=':',
+            out=nil,
+            err='ValueError',
+            msg='timestamp cannot tonumber'
+        },
+        {
+            func=time.format_std,
+            input='XxX',
+            out=nil,
+            err='ValueError',
+            msg='timestamp cannot tonumber'
+        },
+    }
+
+    for i, case in ipairs( cases ) do
+        local out, err, msg = case.func(case.input)
+
+        t:eq( out, case.out )
+
+        if(err ~= nil) then
+            t:eq( err, case.err )
+            t:eq( msg, case.msg )
+        end
+    end
+end
+
+function test.timezone(t)
+    local local_time = os.time()
+    local utc_time = os.time(os.date("!*t", local_time))
+
     local timezone = time.timezone
 
-    assert(zone == timezone, 'timezone is wrong, timezone:'..timezone)
+    t:eq( local_time+timezone, utc_time, 'timezone is wrong, timezone:'..timezone )
 end
 
-function test.ts_to_sec()
-    local ts = '1492398063010001'
-    local sec = 1492398063
+function test.ts_to_sec(t)
+    local tosec = time.ts_to_sec
 
-    assert(sec == time.ts_to_sec(ts), 'ts_to_sec is wrong,ts:'..ts..'sec:'..sec)
+    local sec = 1492398063
+    local msg = 'ts_to_sec is wrong,sec:'..sec..'ts:'
+
+    t:eq( tosec('1492398063'), sec, msg..'1492398063' )
+    t:eq( tosec('1492398063001'), sec, msg..'1492398063001' )
+    t:eq( tosec('1492398063001010'), sec, msg..'1492398063001010' )
+    t:eq( tosec('1492398063001010100'), sec, msg..'1492398063001010100' )
+
+    local ts, err, err_msg = tosec('149')
+    t:eq( err, 'ValueError', err_msg )
 end
