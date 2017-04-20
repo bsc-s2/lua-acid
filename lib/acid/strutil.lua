@@ -5,6 +5,7 @@ local json = require( "cjson" )
 local table = table
 local string = string
 
+local math_floor = math.floor
 local string_sub = string.sub
 local table_insert = table.insert
 
@@ -160,8 +161,18 @@ function _M.to_chunks(s, n)
 
     local rst = {}
 
-    for i = 1, #s, n do
-        table_insert(rst, string_sub(s, i, i + n - 1))
+    local i = 1
+    local j
+    while true do
+        j = i + n - 1
+        local ii = math_floor(i)
+        local jj = math_floor(j)
+        table_insert(rst, string_sub(s, ii, jj))
+
+        i = j + 1
+        if math_floor(i) > #s then
+            break
+        end
     end
 
     return rst

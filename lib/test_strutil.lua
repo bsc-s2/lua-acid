@@ -205,13 +205,12 @@ function test.to_chunks_err(t)
     local cases = {
         {'a', 0},
         {'a', -1},
-        {'a', 0.3},
     }
 
     for ii, c in ipairs(cases) do
-        local inp, expected, desc = unpack(c)
+        local s, n = unpack(c)
 
-        t:err(function() strutil.to_chunks(inp) end,
+        t:err(function() strutil.to_chunks(s, n) end,
               tostring(ii) .. 'th: ' .. (desc or ''))
     end
 end
@@ -220,27 +219,31 @@ end
 function test.to_chunks(t)
 
     local cases    = {
-        {'',       1, {''},          'n = 0'},
-        {'a',      1, {'a'},         'n = 1'},
-        {'ab',     1, {'a','b'},     'n = 1:1'},
-        {'abc',    1, {'a','b','c'}, 'n = 1:1:1'},
-        {'',       3, {''},          'n = 3'},
-        {'a',      3, {'a'},         'n = 3'},
-        {'ab',     3, {'ab'},        'n = 3'},
-        {'abc',    3, {'abc'},       'n = 3'},
-        {'abcd',   3, {'abc','d'},   'n = 3:1'},
-        {'abcde',  3, {'abc','de'},  'n = 3:2'},
-        {'abcdef', 3, {'abc','def'}, 'n = 3:3'},
-        {'a c ef', 3, {'a c',' ef'}, 'n = 3:3, with space'},
+        {'',           1,         {''},                                      'n = 0'},
+        {'a',          1,         {'a'},                                     'n = 1'},
+        {'ab',         1,         {'a','b'},                                 'n = 1:1'},
+        {'abc',        1,         {'a','b','c'},                             'n = 1:1:1'},
+        {'',           3,         {''},                                      'n = 3'},
+        {'a',          3,         {'a'},                                     'n = 3'},
+        {'ab',         3,         {'ab'},                                    'n = 3'},
+        {'abc',        3,         {'abc'},                                   'n = 3'},
+        {'abcd',       3,         {'abc','d'},                               'n = 3:1'},
+        {'abcde',      3,         {'abc','de'},                              'n = 3:2'},
+        {'abcdef',     3,         {'abc','def'},                             'n = 3:3'},
+        {'a c ef',     3,         {'a c',' ef'},                             'n = 3:3, with space'},
+        {'abcdefghij', 1.333334,  {'a','b','cd','e','f','gh','i','j'},       'n = 1.333334'},
+        {'abcdef',     1.5,       {'a','bc','d','ef'},                       'n = 1.5'},
+        {'abcd',       0.333334,  {'','','a','','','b','','','c','','','d'}, 'n = 0.333334'},
 
     }
 
     for ii, c in ipairs(cases) do
         local s, n, expected, desc = unpack(c)
-
         dd('case: ', c)
 
         local rst = strutil.to_chunks(s, n)
+        dd('rst: ', rst)
+
         t:eqdict(expected, rst, tostring(ii) .. 'th: ' .. desc)
     end
 end
