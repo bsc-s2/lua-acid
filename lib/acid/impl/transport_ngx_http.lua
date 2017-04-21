@@ -5,7 +5,7 @@ local json = require( "cjson" )
 local tableutil = require( "acid.tableutil" )
 local strutil = require( "acid.strutil" )
 local paxos = require( "acid.paxos" )
-local http = require( "acid.impl.http" )
+local httpclient = require( "acid.httpclient" )
 
 local errors = paxos.errors
 
@@ -66,7 +66,7 @@ function _M:send_req(pobj, id, req)
         body = body,
     }
 
-    local h = http:new( ip, port, timeout )
+    local h = httpclient:new( ip, port, timeout )
     local err, errmes = h:request( uri, args )
     if err then
         self:track(
