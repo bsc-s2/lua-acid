@@ -2,6 +2,7 @@ local json = require('acid.json')
 local resty_lock = require("resty.lock")
 local tableutil = require("acid.tableutil")
 local strutil = require("acid.strutil")
+local ngx_abort = require("acid.ngx_abort")
 
 local to_str = strutil.to_str
 local ngx = ngx
@@ -46,7 +47,7 @@ _M.accessor = {
                 return
             end
 
-            val = { expires = os.time() + (opts.exptime or 60),
+            val = { expires = ngx.time() + (opts.exptime or 60),
                     data = val }
 
             dict[key] = val
@@ -81,15 +82,16 @@ _M.accessor = {
                 return
             end
 
-            if val ~= nil then
-                val = json.enc(val)
-            end
-
-            dict:set( key, val, opts.exptime or 60 )
+            dict:set( key, json.enc(val), opts.exptime or 60 )
         end,
     },
-
 }
+
+local function abort_cb(lock)
+    if lock ~= nil then
+        lock:unlock()
+    end
+end
 
 function _M.cacheable( dict, key, func, opts )
 
@@ -121,20 +123,25 @@ function _M.cacheable( dict, key, func, opts )
     end
 
     local lock, err_msg = resty_lock:new( _M.shared_dict_lock,
-                                          { exptime = 30, timeout = 30 } )
+            { exptime=30, timeout=30 } )
     if err_msg ~= nil then
         return nil, 'SystemError',
                 err_msg .. ' while new lock:' .. _M.shared_dict_lock
     end
 
+    local cb = ngx_abort.add_callback(abort_cb, lock)
+
     elapsed, err_msg = lock:lock( tostring(dict) .. key )
     if err_msg ~= nil then
+        ngx_abort.remove_callback(cb)
         return nil, 'LockTimeout', err_msg .. ' while lock:' .. key
     end
 
-    val, err_code, err_msg = _M.cacheable_nolock( dict, key, func, opts )
+    val, err_code, err_msg =
+        _M.cacheable_nolock( dict, key, func, opts )
 
     lock:unlock()
+    ngx_abort.remove_callback(cb)
 
     return val, err_code, err_msg
 end
@@ -155,7 +162,9 @@ function _M.cacheable_nolock( dict, key, func, opts )
         return nil, err_code, err_msg
     end
 
-    opts.accessor.set( dict, key, val, opts )
+    if val ~= nil then
+        opts.accessor.set( dict, key, val, opts )
+    end
 
     return val, nil, nil
 end
