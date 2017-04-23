@@ -33,7 +33,7 @@ export LUA_CPATH="$LUA_CPATH;$(pwd)/clib/?.so;"
 cd lib || exit 1
 
 LUA_UNITTEST_DEBUG=$debug \
-    lua $cov_flag -l acid.unittest \
+    luajit $cov_flag -l acid.unittest \
     || exit 1
 
 if [ ".$cov_flag" != "." ]; then
