@@ -538,7 +538,7 @@ function test.has(t)
 end
 
 
-function test.remove(t)
+function test.remove_value(t)
     local t1 = {}
     local cases = {
         {{},                nil, {},                nil},
@@ -564,7 +564,7 @@ function test.remove(t)
 end
 
 
-function test.remove(t)
+function test.remove_all(t)
     local t1 = {}
     local cases = {
         {{},                   nil, {},                0},
