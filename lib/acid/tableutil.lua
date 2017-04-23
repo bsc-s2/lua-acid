@@ -1,6 +1,11 @@
+local repr = require( "acid.repr" )
 local strutil = require('acid.strutil')
 
+
 local _M = { _VERSION = '0.1' }
+
+_M.repr = repr.repr
+_M.str = repr.str
 
 math.randomseed(os.time() * 1000)
 
