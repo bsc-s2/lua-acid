@@ -134,6 +134,12 @@ end
 
 local testfuncs = {
 
+    unpack = function(self, tbl)
+        -- by default, in luajit unpack ignores all elements after a nil.
+        -- table.maxn() is required.
+        return unpack(tbl, 1, table.maxn(tbl))
+    end,
+
     ass= function (self, expr, expection, mes)
         mes = mes or ''
 
@@ -291,6 +297,24 @@ function _M.testdir( dir )
     return true
 end
 
+
+function _M.test_file(fn)
+
+    -- package.path = package.path .. ';'..dir..'/?.lua'
+
+    local suite = { n=0, n_assert=0 }
+
+    info( "---- ", fn, ' ----' )
+
+    test = {dd=dd}
+    require( fn:sub( 1, -5 ) )
+
+    _M.test_all(test, suite)
+
+    info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
+    return true
+end
+
 function _M.t()
 
     _M.debug = (os.getenv('LUA_UNITTEST_DEBUG') == '1')
@@ -300,6 +324,7 @@ function _M.t()
         _M.testdir( '.' )
         os.exit()
     else
+        _M.test_file(arg[1])
         -- require( "unittest" )
     end
 end
