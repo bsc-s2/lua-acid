@@ -1,6 +1,5 @@
 local strutil = require("acid.strutil")
 
-
 local dd = test.dd
 
 
@@ -59,6 +58,7 @@ function test.join(t)
     t:eq('', j('a/b'))
 
     t:eq('a',           j(nil, 'a'))
+    t:eq('a',           j(nil, 'a', nil, 'b'))
     t:eq('ab',          j(nil, 'a', 'b'))
     t:eq('acbb',        j(nil, 'a', 'c', 'bb'))
     t:eq('a100c100bb',  j(100, 'a', 'c', 'bb'))
@@ -89,7 +89,6 @@ function test.join(t)
     t:eq(nil, pcall_j(table, 'a', 'c', 'bb'))
     t:eq(nil, pcall_j(function() end, 'a', 'c', 'bb'))
     t:eq(nil, pcall_j('/', nil, 'c', 'bb'))
-    t:eq(nil, pcall_j('/', 'a', nil, 'bb'))
     t:eq(nil, pcall_j('/', {}, nil, 'bb'))
     t:eq(nil, pcall_j('/', {}, 'c', 'bb'))
     t:eq(nil, pcall_j('/', {'a'}, 'c', 'bb'))
@@ -239,12 +238,13 @@ function test.to_chunks(t)
 
     for ii, c in ipairs(cases) do
         local s, n, expected, desc = unpack(c)
-        dd('case: ', c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
 
         local rst = strutil.to_chunks(s, n)
         dd('rst: ', rst)
 
-        t:eqdict(expected, rst, tostring(ii) .. 'th: ' .. desc)
+        t:eqdict(expected, rst)
     end
 end
 

@@ -1,13 +1,12 @@
-local _M = { _VERSION = "0.1" }
-
-local json = require( "cjson" )
-
-local table = table
-local string = string
+local repr = require( "acid.repr" )
 
 local math_floor = math.floor
 local string_sub = string.sub
 local table_insert = table.insert
+
+local repr_str = repr.str
+
+local _M = { _VERSION = "0.1" }
 
 function _M.split( str, pat, plain )
 
@@ -70,13 +69,9 @@ function _M.to_str(...)
     local argsv = {...}
     local v
 
-    for i=1, select('#', ...) do
+    for i = 1, select('#', ...) do
         v = argsv[i]
-        if type(v) == 'table' then
-            argsv[i] = json.encode(v)
-        else
-            argsv[i] = tostring(v)
-        end
+        argsv[i] = repr_str(v)
     end
 
     return table.concat(argsv)
