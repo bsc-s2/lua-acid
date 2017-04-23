@@ -1,26 +1,29 @@
 local tableutil = require("acid.tableutil")
-local strutil = require("acid.strutil")
 
-local to_str = strutil.to_str
+local dd = test.dd
+
 
 function test.nkeys(t)
     local cases = {
-        {0, {}, 'nkeys of empty'},
-        {1, {0}, 'nkeys of 1'},
-        {2, {0, nil, 1}, 'nkeys of 0, nil and 1'},
-        {2, {0, 1}, 'nkeys of 2'},
-        {2, {0, 1, nil}, 'nkeys of 0, 1 and nil'},
-        {1, {a=0, nil}, 'nkeys of a=1'},
-        {2, {a=0, b=2, nil}, 'nkeys of a=1'},
+        {0, {              }, 'nkeys of empty'},
+        {1, {0             }, 'nkeys of 1'},
+        {2, {0, nil, 1     }, 'nkeys of 0, nil and 1'},
+        {2, {0, 1          }, 'nkeys of 2'},
+        {2, {0, 1, nil     }, 'nkeys of 0, 1 and nil'},
+        {1, {a=0, nil      }, 'nkeys of a=1'},
+        {2, {a=0, b=2, nil }, 'nkeys of a=1'},
     }
 
-    for i, case in ipairs(cases) do
-        local n, tbl, mes = case[1], case[2], case[3]
+    for ii, c in ipairs(cases) do
+        local n, tbl = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
         local rst = tableutil.nkeys(tbl)
-        t:eq(n, rst, 'nkeys:' .. mes .. tostring(i) .. '-th case')
+        t:eq(n, rst, msg)
 
         rst = tableutil.get_len(tbl)
-        t:eq(n, rst, 'get_len:' .. mes .. tostring(i) .. '-th case')
+        t:eq(n, rst, msg)
     end
 end
 
@@ -76,10 +79,13 @@ function test.sub(t)
         {{1, 2, 3}, {3, 4, 2}, {3, 2}},
     }
 
-    for i, case in ipairs(cases) do
-        local tbl, ks, expected = unpack(case)
+    for ii, c in ipairs(cases) do
+        local tbl, ks, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
         local rst = tableutil.sub(tbl, ks, 'list')
-        t:eqdict(expected, rst, to_str(i .. 'th case: ', case))
+        t:eqdict(expected, rst)
     end
 end
 
@@ -300,149 +306,6 @@ function test.mergedict(t)
     t:eq( 10, c.x )
 end
 
-function test.repr(t)
-    local r = tableutil.repr
-    local s1 = { sep=' ' }
-    local s2 = { sep='  ' }
-
-    t:eq( '1', r( 1 ) )
-    t:eq( '"1"', r( '1' ) )
-    t:eq( 'nil', r( nil ) )
-    t:eq( '{}', r( {} ) )
-    t:eq( '{}', r( {}, s1 ) )
-    t:eq( '{ 1 }', r( { 1 }, s1 ) )
-    t:eq( '{ 1, 2 }', r( { 1, 2 }, s1 ) )
-    t:eq( '{ a=1 }', r( { a=1 }, s1 ) )
-    t:eq( '{ 0, a=1, b=2 }', r( { 0, a=1, b=2 }, s1 ) )
-    t:eq( '{  0,  a=1,  b=2  }', r( { 0, a=1, b=2 }, s2 ) )
-
-    local literal=[[{
-    1,
-    2,
-    3,
-    {
-        1,
-        2,
-        3,
-        4
-    },
-    [100]=33333,
-    a=1,
-    c=100000,
-    d=1,
-    ["fjklY*("]={
-        b=3,
-        x=1
-    },
-    x={
-        1,
-        {
-            1,
-            2
-        },
-        y={
-            a=1,
-            b=2
-        }
-    }
-}]]
-    local a = {
-        1, 2, 3,
-        { 1, 2, 3, 4 },
-        a=1,
-        c=100000,
-        d=1,
-        x={
-            1,
-            { 1, 2 },
-            y={
-                a=1,
-                b=2
-            }
-        },
-        ['fjklY*(']={
-            x=1,
-            b=3,
-        },
-        [100]=33333
-    }
-    t:eq( literal, r(a, { indent='    ' }) )
-
-
-end
-
-function test.str(t)
-    local r = tableutil.str
-    local s1 = { sep=' ' }
-    local s2 = { sep='  ' }
-
-    t:eq( '1', r( 1 ) )
-    t:eq( '1', r( '1' ) )
-    t:eq( 'nil', r( nil ) )
-    t:eq( '{}', r( {} ) )
-    t:eq( '{}', r( {}, s1 ) )
-    t:eq( '{ 1 }', r( { 1 }, s1 ) )
-    t:eq( '{ 1, 2 }', r( { 1, 2 }, s1 ) )
-    t:eq( '{ a=1 }', r( { a=1 }, s1 ) )
-    t:eq( '{ 0, a=1, b=2 }', r( { 0, a=1, b=2 }, s1 ) )
-    t:eq( '{  0,  a=1,  b=2  }', r( { 0, a=1, b=2 }, s2 ) )
-    t:eq( '{0,a=1,b=2}', r( { 0, a=1, b=2 } ) )
-
-    local literal=[[{
-    1,
-    2,
-    3,
-    {
-        1,
-        2,
-        3,
-        4
-    },
-    100=33333,
-    a=1,
-    c=100000,
-    d=1,
-    fjklY*(={
-        b=3,
-        x=1
-    },
-    x={
-        1,
-        {
-            1,
-            2
-        },
-        y={
-            a=1,
-            b=2
-        }
-    }
-}]]
-    local a = {
-        1, 2, 3,
-        { 1, 2, 3, 4 },
-        a=1,
-        c=100000,
-        d=1,
-        x={
-            1,
-            { 1, 2 },
-            y={
-                a=1,
-                b=2
-            }
-        },
-        ['fjklY*(']={
-            x=1,
-            b=3,
-        },
-        [100]=33333
-    }
-    t:eq( literal, r(a, { indent='    ' }) )
-
-
-end
-
 function test.depth_iter(t)
 
     for _, _ in tableutil.deep_iter({}) do
@@ -531,9 +394,12 @@ function test.has(t)
         {1, {}, false},
     }
 
-    for i, case in ipairs(cases) do
-        local val, tbl, expected = case[1], case[2], case[3]
-        t:eq(expected, tableutil.has(tbl, val), i .. 'th case: ' .. to_str(val, ' ', tbl))
+    for ii, c in ipairs(cases) do
+        local val, tbl, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        t:eq(expected, tableutil.has(tbl, val))
     end
 end
 
@@ -600,9 +466,11 @@ function test.get_random_elements(t)
         {{1},       nil,        {1}},
     }
 
-    for _, c in ipairs(cases) do
-        local msg = to_str(c)
-        local tbl, n, expected = c[1], c[2], c[3]
+    for ii, c in ipairs(cases) do
+        local tbl, n, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
         local rst = tableutil.random(tbl, n)
         t:eqdict(expected, rst, msg)
     end
@@ -634,31 +502,42 @@ function test.extends(t)
         {{1},       {{2,3},4,5}, {1,{2,3},4,5}},
         {{"xx",2},  {3,"yy"},    {"xx",2,3,"yy"}},
         {{1,2},     {3,nil,4},   {1,2,3}},
-        {{1,nil,2}, {3,4},       {1,nil,2,3,4}},
+
+        -- with luajit, after inserting 3, then tbl is {1, 3, 2}
+        {{1,nil,2}, {3,4},       {1,3,2,4}},
+
+        -- -- with lua5.2:
+        -- {{1,nil,2}, {3,4},       {1,nil,2,3,4}},
 
     }
 
-    for _, c in ipairs( cases ) do
+    for ii, c in ipairs( cases ) do
 
-        local msg = to_str(c)
+        local inp, inp2, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
 
-        local exp   = c[3]
-        local rst = tableutil.extends(c[1], c[2])
-
-        t:eqdict(exp, rst, msg)
+        local rst = tableutil.extends(inp, inp2)
+        dd('rst: ', rst)
+        t:eqdict(expected, rst, msg)
     end
 end
 
 
 function test.is_empty(t)
     local cases = {
-        {true, {}},
-        {false, {1}},
-        {false, {key='val'}},
+        {{}          , true},
+        {{1}         , false},
+        {{key='val'} , false},
     }
 
-    for _, c in ipairs(cases) do
-        t:eq(c[1], tableutil.is_empty(c[2]))
+    for ii, c in ipairs(cases) do
+        local tbl, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = tableutil.is_empty(tbl)
+        t:eq(expected, rst)
     end
 
     t:eq(false, tableutil.is_empty())
@@ -685,10 +564,12 @@ function test.get(t)
 
     }
 
-    for _, c in ipairs(cases) do
-        local tbl, keys, expected_rst, expected_err = c[1], c[2], c[3], c[4]
+    for ii, c in ipairs(cases) do
+        local tbl, keys, expected_rst, expected_err = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
 
-        local rst, err, errmsg = tableutil.get(tbl, keys)
+        local rst, err = tableutil.get(tbl, keys)
 
         t:eq(expected_rst, rst)
         t:eq(expected_err, err)
