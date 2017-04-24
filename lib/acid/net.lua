@@ -1,7 +1,11 @@
 local strutil = require("acid.strutil")
 
-local strutil_strip = strutil.strip
+local string_match = string.match
+local table_insert = table.insert
+
 local strutil_split = strutil.split
+local strutil_startswith = strutil.startswith
+local strutil_strip = strutil.strip
 
 local PUB = 'PUB'
 local INN = 'INN'
@@ -41,7 +45,58 @@ end
 
 
 function _M.is_ip4_loopback(ip)
-    return _M.is_ip4(ip) and strutil.startswith(ip, '127.')
+    return _M.is_ip4(ip) and strutil_startswith(ip, '127.')
+end
+
+
+function _M.ip_class(ip)
+
+    if _M.is_ip4_loopback(ip) then
+        return INN
+    end
+
+    for _, ptn in ipairs(_intra_patterns) do
+
+        if string_match(ip, ptn)then
+            return INN
+        end
+    end
+
+    return PUB
+end
+
+
+function _M.is_pub(ip)
+    return _M.ip_class(ip) == PUB
+end
+
+
+function _M.is_inn(ip)
+    return _M.ip_class(ip) == INN
+end
+
+
+function _M.choose_pub(ips)
+    local rst = {}
+    for _, ip in ipairs(ips) do
+        if _M.ip_class(ip) == PUB then
+            table_insert(rst, ip)
+        end
+    end
+
+    return rst
+end
+
+
+function _M.choose_inn(ips)
+    local rst = {}
+    for _, ip in ipairs(ips) do
+        if _M.ip_class(ip) == INN then
+            table_insert(rst, ip)
+        end
+    end
+
+    return rst
 end
 
 

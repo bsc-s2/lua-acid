@@ -95,6 +95,62 @@ function test.is_ip4_loopback(t)
 end
 
 
+function test.ip_class_and_xxx(t)
+
+    local cases = {
+        {'1.2.3.4',     'PUB'},
+        {'255.255.0.0', 'PUB'},
+        {'171.0.0.0',   'PUB'},
+        {'173.0.0.0',   'PUB'},
+        {'172.15.0.0',  'PUB'},
+        {'172.32.0.0',  'PUB'},
+        {'9.0.0.0',     'PUB'},
+        {'11.0.0.0',    'PUB'},
+        {'192.167.0.0', 'PUB'},
+        {'192.169.0.0', 'PUB'},
+        {'191.168.0.0', 'PUB'},
+        {'193.168.0.0', 'PUB'},
+
+        {'127.0.0.1',   'INN'},
+        {'127.0.0.255', 'INN'},
+        {'172.16.0.0',  'INN'},
+        {'172.17.0.0',  'INN'},
+        {'172.21.0.0',  'INN'},
+        {'172.30.0.0',  'INN'},
+        {'172.31.0.0',  'INN'},
+        {'10.0.0.0',    'INN'},
+        {'192.168.0.0', 'INN'},
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local inp, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = net.ip_class(inp)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, msg)
+
+        if expected == 'PUB' then
+            t:eq(true, net.is_pub(inp))
+            t:eq(false, net.is_inn(inp))
+
+            t:eqlist({inp}, net.choose_pub({inp, '192.168.0.0'}))
+            t:eqlist({inp}, net.choose_pub({'192.168.0.0', inp}))
+        else
+            t:eq(false, net.is_pub(inp))
+            t:eq(true, net.is_inn(inp))
+
+            t:eqlist({inp}, net.choose_inn({inp, '1.1.1.1'}))
+            t:eqlist({inp}, net.choose_inn({'1.1.1.1', inp}))
+        end
+    end
+end
+
+
+
 function test.parse_ip_regexs(t)
 
     local cases = {
