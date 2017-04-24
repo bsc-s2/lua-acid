@@ -3,6 +3,98 @@ local net = require('acid.net')
 local dd = test.dd
 
 
+function test.is_ip4(t)
+
+    local cases = {
+
+        {true,          false},
+        {false,         false},
+        {1,             false},
+        {0,             false},
+        {'',            false},
+        {'1',           false},
+        {{},            false},
+        {'1.',          false},
+        {'1.1',         false},
+        {'1.1.',        false},
+        {'1.1.1',       false},
+        {'1.1.1.',      false},
+        {'.1.1.1',      false},
+        {'x.1.1.1',     false},
+        {'1.x.1.1',     false},
+        {'1.1.x.1',     false},
+        {'1.1.1.x',     false},
+        {'1.1.1.1.',    false},
+        {'.1.1.1.1',    false},
+        {'1:1.1.1',     false},
+        {'1:1:1.1',     false},
+        {'256.1.1.1',   false},
+        {'1.256.1.1',   false},
+        {'1.1.256.1',   false},
+        {'1.1.1.256',   false},
+        {'1.1.1.1.',    false},
+        {'1.1.1.1.1',   false},
+        {'1.1.1.1.1.',  false},
+        {'1.1.1.1.1.1', false},
+
+        {'0.0.0.0',         true},
+        {'0.0.0.1',         true},
+        {'0.0.1.0',         true},
+        {'0.1.0.0',         true},
+        {'1.0.0.0',         true},
+        {'127.0.0.1',       true},
+        {'255.255.255.255', true},
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local inp, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = net.is_ip4(inp)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, msg)
+    end
+end
+
+
+    -- def test_is_ip4_loopback_false(self):
+
+    --     cases_ip4 = (
+    --         '0.0.0.0',
+    --         '1.1.1.1',
+    --         '126.0.1.0',
+    --         '15.1.0.0',
+    --         '255.0.0.255',
+
+    --         '126.0.0.1',
+    --         '128.0.0.1',
+
+    --         '255.255.255.255',
+    --     )
+
+    --     for ip in cases_ip4:
+    --         self.assertEqual(False, net.is_ip4_loopback(ip), ip)
+
+    -- def test_is_ip4_loopback_true(self):
+
+    --     cases_ip4 = (
+    --         '127.0.0.0',
+    --         '127.1.1.1',
+    --         '127.0.1.0',
+    --         '127.1.0.0',
+    --         '127.0.0.255',
+
+    --         '127.0.0.1',
+
+    --         '127.255.255.255',
+    --     )
+
+    --     for ip in cases_ip4:
+    --         self.assertEqual(True, net.is_ip4_loopback(ip), ip)
+
 function test.parse_ip_regexs(t)
 
     local cases = {

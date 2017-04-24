@@ -3,7 +3,41 @@ local strutil = require("acid.strutil")
 local strutil_strip = strutil.strip
 local strutil_split = strutil.split
 
+local PUB = 'PUB'
+local INN = 'INN'
+
+local _intra_patterns = {
+    '^172[.]1[6-9][.]',
+    '^172[.]2[0-9][.]',
+    '^172[.]3[0-1][.]',
+    '^10[.]',
+    '^192[.]168[.]',
+}
+
 local _M = { _VERSION = "0.1" }
+
+_M.PUB = PUB
+_M.INN = INN
+
+
+function _M.is_ip4(ip)
+
+    if type(ip) ~= 'string' then
+        return false
+    end
+
+    local elts = strutil_split(ip, '.', true)
+
+    local n
+    for i, elt in ipairs(elts) do
+        n = tonumber(elt)
+        if n == nil or n < 0 or n > 255  then
+            return false
+        end
+    end
+
+    return #elts == 4
+end
 
 
 function _M.parse_ip_regexs(ip_regexs_str)
