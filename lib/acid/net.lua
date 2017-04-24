@@ -69,7 +69,7 @@ function _M.choose_by_regex(ips, ip_regexs)
 
             all_negative = all_negative and not to_choose
 
-            if string.match(ip, '^' .. reg) then
+            if string.match(ip, reg) then
                 matched = true
                 if to_choose then
                     table.insert(rst, ip)
