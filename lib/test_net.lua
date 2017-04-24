@@ -150,6 +150,37 @@ function test.ip_class_and_xxx(t)
 end
 
 
+function test.ips_prefer(t)
+
+    local cases = {
+        {{}, net.PUB, {}},
+        {{}, net.INN, {}},
+
+        {{'1.2.3.4'}, net.PUB, {'1.2.3.4'}},
+        {{'1.2.3.4'}, net.INN, {'1.2.3.4'}},
+
+        {{'172.16.0.1'}, net.PUB, {'172.16.0.1'}},
+        {{'172.16.0.1'}, net.INN, {'172.16.0.1'}},
+
+        {{'172.16.0.1', '1.2.3.4'}, net.PUB, {'1.2.3.4', '172.16.0.1'}},
+        {{'172.16.0.1', '1.2.3.4'}, net.INN, {'172.16.0.1', '1.2.3.4'}},
+
+        {{'1.2.3.4', '172.16.0.1'}, net.PUB, {'1.2.3.4', '172.16.0.1'}},
+        {{'1.2.3.4', '172.16.0.1'}, net.INN, {'172.16.0.1', '1.2.3.4'}},
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local inp_ips, inp_clz, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = net.ips_prefer(inp_ips, inp_clz)
+        dd('rst: ', rst)
+
+        t:eqlist(expected, rst, msg)
+    end
+end
 
 function test.parse_ip_regexs(t)
 

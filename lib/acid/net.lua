@@ -1,4 +1,5 @@
-local strutil = require("acid.strutil")
+local strutil = require('acid.strutil')
+local tableutil = require('acid.tableutil')
 
 local string_match = string.match
 local table_insert = table.insert
@@ -6,6 +7,7 @@ local table_insert = table.insert
 local strutil_split = strutil.split
 local strutil_startswith = strutil.startswith
 local strutil_strip = strutil.strip
+local tableutil_extends = tableutil.extends
 
 local PUB = 'PUB'
 local INN = 'INN'
@@ -97,6 +99,23 @@ function _M.choose_inn(ips)
     end
 
     return rst
+end
+
+
+function _M.ips_prefer(ips, clz)
+
+    local pub_ips = _M.choose_pub(ips)
+    local inn_ips = _M.choose_inn(ips)
+
+    if clz == nil then
+        clz = PUB
+    end
+
+    if clz == PUB then
+        return tableutil_extends(pub_ips, inn_ips)
+    else
+        return tableutil_extends(inn_ips, pub_ips)
+    end
 end
 
 
