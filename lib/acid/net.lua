@@ -40,6 +40,11 @@ function _M.is_ip4(ip)
 end
 
 
+function _M.is_ip4_loopback(ip)
+    return _M.is_ip4(ip) and strutil.startswith(ip, '127.')
+end
+
+
 function _M.parse_ip_regexs(ip_regexs_str)
 
     ip_regexs_str = strutil_strip(ip_regexs_str)

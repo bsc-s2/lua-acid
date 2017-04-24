@@ -60,40 +60,40 @@ function test.is_ip4(t)
 end
 
 
-    -- def test_is_ip4_loopback_false(self):
+function test.is_ip4_loopback(t)
 
-    --     cases_ip4 = (
-    --         '0.0.0.0',
-    --         '1.1.1.1',
-    --         '126.0.1.0',
-    --         '15.1.0.0',
-    --         '255.0.0.255',
+    local cases = {
 
-    --         '126.0.0.1',
-    --         '128.0.0.1',
+        {'0.0.0.0',         false},
+        {'1.1.1.1',         false},
+        {'126.0.1.0',       false},
+        {'15.1.0.0',        false},
+        {'255.0.0.255',     false},
+        {'126.0.0.1',       false},
+        {'128.0.0.1',       false},
+        {'255.255.255.255', false},
+        {'127.0.0.0',       true},
+        {'127.1.1.1',       true},
+        {'127.0.1.0',       true},
+        {'127.1.0.0',       true},
+        {'127.0.0.255',     true},
+        {'127.0.0.1',       true},
+        {'127.255.255.255', true},
+    }
 
-    --         '255.255.255.255',
-    --     )
+    for ii, c in ipairs(cases) do
 
-    --     for ip in cases_ip4:
-    --         self.assertEqual(False, net.is_ip4_loopback(ip), ip)
+        local inp, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
 
-    -- def test_is_ip4_loopback_true(self):
+        local rst = net.is_ip4_loopback(inp)
+        dd('rst: ', rst)
 
-    --     cases_ip4 = (
-    --         '127.0.0.0',
-    --         '127.1.1.1',
-    --         '127.0.1.0',
-    --         '127.1.0.0',
-    --         '127.0.0.255',
+        t:eq(expected, rst, msg)
+    end
+end
 
-    --         '127.0.0.1',
-
-    --         '127.255.255.255',
-    --     )
-
-    --     for ip in cases_ip4:
-    --         self.assertEqual(True, net.is_ip4_loopback(ip), ip)
 
 function test.parse_ip_regexs(t)
 
