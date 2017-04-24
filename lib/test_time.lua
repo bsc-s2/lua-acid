@@ -1,4 +1,4 @@
-local time = require("time")
+local time = require("acid.time")
 
 function test.iso(t)
     local p = time.parse_iso
@@ -129,11 +129,11 @@ function test.parse(t)
     for i, case in ipairs( cases ) do
         local out, err, msg = case.func(case.input)
 
-        t:eq( out, case.out )
+        t:eq( case.out, out )
 
         if(err ~= nil) then
-            t:eq( err, case.err )
-            t:eq( msg, case.msg )
+            t:eq( case.err, err )
+            t:eq( case.msg, msg )
         end
     end
 end
@@ -170,28 +170,28 @@ function test.format(t)
             func=time.format_std,
             input=nil,
             out=nil,
-            err='ValueError',
+            err='ArgumentError',
             msg='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
             input={},
             out=nil,
-            err='ValueError',
+            err='ArgumentError',
             msg='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
             input=':',
             out=nil,
-            err='ValueError',
+            err='ArgumentError',
             msg='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
             input='XxX',
             out=nil,
-            err='ValueError',
+            err='ArgumentError',
             msg='timestamp cannot tonumber'
         },
     }
@@ -199,11 +199,11 @@ function test.format(t)
     for i, case in ipairs( cases ) do
         local out, err, msg = case.func(case.input)
 
-        t:eq( out, case.out )
+        t:eq( case.out, out )
 
         if(err ~= nil) then
-            t:eq( err, case.err )
-            t:eq( msg, case.msg )
+            t:eq( case.err, err )
+            t:eq( case.msg, msg )
         end
     end
 end
@@ -214,20 +214,20 @@ function test.timezone(t)
 
     local timezone = time.timezone
 
-    t:eq( local_time+timezone, utc_time, 'timezone is wrong, timezone:'..timezone )
+    t:eq( utc_time, local_time+timezone, 'timezone is wrong, timezone:'..timezone )
 end
 
-function test.ts_to_sec(t)
-    local tosec = time.ts_to_sec
+function test.to_sec(t)
+    local tosec = time.to_sec
 
     local sec = 1492398063
     local msg = 'ts_to_sec is wrong,sec:'..sec..'ts:'
 
-    t:eq( tosec('1492398063'), sec, msg..'1492398063' )
-    t:eq( tosec('1492398063001'), sec, msg..'1492398063001' )
-    t:eq( tosec('1492398063001010'), sec, msg..'1492398063001010' )
-    t:eq( tosec('1492398063001010100'), sec, msg..'1492398063001010100' )
+    t:eq( sec, tosec('1492398063'), msg..'1492398063' )
+    t:eq( sec, tosec('1492398063001'), msg..'1492398063001' )
+    t:eq( sec, tosec('1492398063001010'), msg..'1492398063001010' )
+    t:eq( sec, tosec('1492398063001010100'), msg..'1492398063001010100' )
 
     local ts, err, err_msg = tosec('149')
-    t:eq( err, 'ValueError', err_msg )
+    t:eq( err, 'ArgumentError', err_msg )
 end
