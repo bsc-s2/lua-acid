@@ -35,7 +35,7 @@ function _M.is_ip4(ip)
     local elts = strutil_split(ip, '.', true)
 
     local n
-    for i, elt in ipairs(elts) do
+    for _, elt in ipairs(elts) do
         n = tonumber(elt)
         if n == nil or n < 0 or n > 255  then
             return false
