@@ -42,40 +42,45 @@ _M.timezone = timezone
 
 local function _parse(dt, fmtkey, withzone)
 
-    local ptn = str2time[ fmtkey ]
+    local ptn = str2time[fmtkey]
 
-    local yy, mm, dd, h, m, s
+    local yy
+    local mm
+    local dd
+    local h
+    local m
+    local s
 
-    if type( dt ) ~= 'string' then
-        return nil, 'FormatError', 'type: ' .. type( dt ) .. ' date format error'
+    if type(dt) ~= 'string' then
+        return nil, 'FormatError', 'type: ' .. type(dt) .. ' date format error'
     end
 
     if fmtkey == 'utc' then
         local wk
-        wk, dd, mm, yy, h, m, s = string.match( dt, ptn )
-        if mm == nil or month2num[ mm ] == nil then
-            return nil, 'FormatError', dt..' date format error'
+        wk, dd, mm, yy, h, m, s = string.match(dt, ptn)
+        if mm == nil or month2num[mm] == nil then
+            return nil, 'FormatError', dt .. ' date format error'
         else
-            mm = month2num[ mm ]
+            mm = month2num[mm]
         end
 
-        if wk == nil or week2num[ wk ] == nil then
-            return nil, 'FormatError', dt..' date format error'
+        if wk == nil or week2num[wk] == nil then
+            return nil, 'FormatError', dt .. ' date format error'
         end
 
     elseif fmtkey == 'ngxaccesslog' then
-        dd, mm, yy, h, m, s = string.match( dt, ptn )
-        if mm == nil or month2num[ mm ] == nil then
-            return nil, 'FormatError', dt..' date dormat error'
+        dd, mm, yy, h, m, s = string.match(dt, ptn)
+        if mm == nil or month2num[mm] == nil then
+            return nil, 'FormatError', dt .. ' date dormat error'
         else
-            mm = month2num[ mm ]
+            mm = month2num[mm]
         end
     else
-        yy, mm, dd, h, m, s = string.match( dt, ptn )
+        yy, mm, dd, h, m, s = string.match(dt, ptn)
     end
 
     if yy == nil then
-        return nil, 'FormatError', dt..' date format error'
+        return nil, 'FormatError', dt .. ' date format error'
     end
 
     -- os.time convert local time to timestamp
@@ -90,9 +95,9 @@ end
 
 local function _format(ts, fmtkey, withzone)
 
-    local fmt = time2str[ fmtkey ]
+    local fmt = time2str[fmtkey]
 
-    local ts = tonumber( ts )
+    local ts = tonumber(ts)
     if ts == nil then
         return nil, 'ArgumentError', 'timestamp cannot tonumber'
     end
@@ -100,68 +105,112 @@ local function _format(ts, fmtkey, withzone)
     if withzone then
         ts = ts + timezone
     end
-    return os.date( fmt, ts ), nil, nil
+    return os.date(fmt, ts), nil, nil
+end
+
+
+local function default_true(withzone)
+    if withzone == nil then
+        withzone = true
+    end
+
+    return withzone
+end
+
+
+local function default_false(withzone)
+    if withzone == nil then
+        withzne = false
+    end
+
+    return withzone
 end
 
 
 function _M.parse_isobase(dt, withzone)
-    return _parse( dt, 'isobase', withzone ~= false )
+    withzone = default_true(withzone)
+
+    return _parse( dt, 'isobase', withzone )
 end
 
 
 function _M.parse_iso(dt, withzone)
-    return _parse( dt, 'iso', withzone ~= false )
+    withzone = default_true(withzone)
+
+    return _parse( dt, 'iso', withzone )
 end
 
 
 function _M.parse_utc(dt, withzone)
-    return _parse( dt, 'utc', withzone ~= false )
+    withzone = default_true(withzone)
+
+    return _parse( dt, 'utc', withzone )
 end
 
 
 function _M.parse_std(dt, withzone)
-    return _parse( dt, 'std', withzone == true )
+    withzone = default_false(withzone)
+
+    return _parse( dt, 'std', withzone )
 end
 
 
 function _M.parse_ngxaccesslog(dt, withzone)
-    return _parse( dt, 'ngxaccesslog', withzone == true )
+    withzone = default_false(withzone)
+
+    return _parse( dt, 'ngxaccesslog', withzone )
 end
 
 
 function _M.parse_ngxerrorlog(dt, withzone)
-    return _parse( dt, 'ngxerrorlog', withzone == true )
+    withzone = default_false(withzone)
+
+    return _parse( dt, 'ngxerrorlog', withzone )
 end
 
 
 function _M.format_iso(ts, withzone)
-    return _format( ts, 'iso', withzone ~= false )
+    withzone = default_true(withzone)
+
+    return _format( ts, 'iso', withzone )
 end
 
 
 function _M.format_utc(ts, withzone)
-    return _format( ts, 'utc', withzone ~= false )
+    withzone = default_true(withzone)
+
+    return _format( ts, 'utc', withzone )
 end
 
 
 function _M.format_std(ts, withzone)
-    return _format( ts, 'std', withzone == true )
+    withzone = default_false(withzone)
+
+    return _format( ts, 'std', withzone )
 end
 
 
 function _M.format_ngxaccesslog(ts, withzone)
-    return _format( ts, 'ngxaccesslog', withzone == true )
+    withzone = default_false(withzone)
+
+    return _format( ts, 'ngxaccesslog', withzone )
 end
 
 
 function _M.format_ngxerrorlog(ts, withzone)
-    return _format( ts, 'ngxerrorlog', withzone == true )
+    withzone = default_false(withzone)
+
+    return _format( ts, 'ngxerrorlog', withzone )
 end
 
 
 function _M.to_sec(ts)
 
     --Convert millisecond, microsecond or nanosecond to second
+
+    if type(ts) == 'number' then
+        ts = tostring(ts)
+    end
 
     if #ts == 10 then
         ts = ts
