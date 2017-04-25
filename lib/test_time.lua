@@ -214,20 +214,26 @@ function test.timezone(t)
 
     local timezone = time.timezone
 
-    t:eq( utc_time, local_time+timezone, 'timezone is wrong, timezone:'..timezone )
+    t:eq( utc_time, local_time+timezone, 'timezone is wrong, timezone:' .. timezone )
 end
 
 function test.to_sec(t)
     local tosec = time.to_sec
 
     local sec = 1492398063
-    local msg = 'ts_to_sec is wrong,sec:'..sec..'ts:'
+    local msg = 'ts_to_sec is wrong,sec:' .. sec .. 'ts:'
 
-    t:eq( sec, tosec('1492398063'), msg..'1492398063' )
-    t:eq( sec, tosec('1492398063001'), msg..'1492398063001' )
-    t:eq( sec, tosec('1492398063001010'), msg..'1492398063001010' )
-    t:eq( sec, tosec('1492398063001010100'), msg..'1492398063001010100' )
+    t:eq( sec, tosec('1492398063'), msg .. '1492398063' )
+    t:eq( sec, tosec('1492398063001'), msg .. '1492398063001' )
+    t:eq( sec, tosec('1492398063001010'), msg .. '1492398063001010' )
+    t:eq( sec, tosec('1492398063001010100'), msg .. '1492398063001010100' )
+
+    t:eq( sec, tosec(1492398063), msg .. 1492398063 )
+    t:eq( sec, tosec(1492398063001), msg .. 1492398063001 )
 
     local ts, err, err_msg = tosec('149')
+    t:eq( err, 'ArgumentError', err_msg )
+
+    ts, err, err_msg = tosec(1492398063001010)
     t:eq( err, 'ArgumentError', err_msg )
 end
