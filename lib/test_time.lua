@@ -218,22 +218,100 @@ function test.timezone(t)
 end
 
 function test.to_sec(t)
-    local tosec = time.to_sec
+    local cases = {
+        {
+            input = '1492398063',
+            out = 1492398063,
+            err = nil
+        },
+        {
+            input = '1492398063123',
+            out = 1492398063,
+            err = nil
+        },
+        {
+            input = '1492398063123456',
+            out = 1492398063,
+            err = nil
+        },
+        {
+            input = '1492398063123456789',
+            out = 1492398063,
+            err = nil
+        },
+        {
+            input = '1492398063aaa',
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = '-123456789',
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = '123',
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = '12345678901234567890',
+            out = nil,
+            err = 'ArgumentError'
+        },
 
-    local sec = 1492398063
-    local msg = 'ts_to_sec is wrong,sec:' .. sec .. 'ts:'
+        {
+            input = 1492398063,
+            out = 1492398063,
+            err = nil
+        },
+        {
+            input = 1492398063123,
+            out = 1492398063,
+            err = nil
+        },
+        {
+            input = -123456789,
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = 1234,
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = 1.1234e+15,
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = 1492398063123456,
+            out = nil,
+            err = 'ArgumentError'
+        },
 
-    t:eq( sec, tosec('1492398063'), msg .. '1492398063' )
-    t:eq( sec, tosec('1492398063001'), msg .. '1492398063001' )
-    t:eq( sec, tosec('1492398063001010'), msg .. '1492398063001010' )
-    t:eq( sec, tosec('1492398063001010100'), msg .. '1492398063001010100' )
+        {
+            input = {},
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = true,
+            out = nil,
+            err = 'ArgumentError'
+        },
+        {
+            input = nil,
+            out = nil,
+            err = 'ArgumentError'
+        },
+    }
 
-    t:eq( sec, tosec(1492398063), msg .. 1492398063 )
-    t:eq( sec, tosec(1492398063001), msg .. 1492398063001 )
+    for i, case in pairs(cases) do
+        local ts, err, err_msg = time.to_sec(case.input)
 
-    local ts, err, err_msg = tosec('149')
-    t:eq( err, 'ArgumentError', err_msg )
-
-    ts, err, err_msg = tosec(1492398063001010)
-    t:eq( err, 'ArgumentError', err_msg )
+        t:eq( case.out, ts)
+        t:eq( case.err, err, err_msg )
+    end
 end
