@@ -208,8 +208,19 @@ function _M.to_sec(ts)
 
     --Convert millisecond, microsecond or nanosecond to second
 
-    if type(ts) == 'number' then
+    --if 'number' is greater than 1 * 10^15, 'number' will be scientific notation
+    --timestamp can only be a string of numbers or not a scientific notation of numbers
+
+    if type(ts) ~= 'string' then
         ts = tostring(ts)
+    end
+
+    if tonumber(ts) == nil
+        or tonumber(ts) < 0
+        or string.find(ts, 'e') ~= nil then
+
+        return nil, 'ArgumentError',
+            'timestamp cannot tonumber or ts < 0, or ts is scientific notation'
     end
 
     if #ts == 10 then
