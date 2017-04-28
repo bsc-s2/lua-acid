@@ -261,6 +261,36 @@ function test.to_sec(t)
         },
 
         {
+            input = 1000000000,
+            out = 1000000000,
+            err = nil,
+        },
+        {
+            input = 9999999997,
+            out = 9999999997,
+            err = nil
+        },
+        {
+            input = 9999999999,
+            out = 9999999999,
+            err = nil,
+        },
+        {
+            input = 1000000000000,
+            out = 1000000000,
+            err = nil,
+        },
+        {
+            input = 9999999999998,
+            out = 9999999999,
+            err = nil,
+        },
+        {
+            input = 9999999999999,
+            out = 9999999999,
+            err = nil,
+        },
+        {
             input = 1492398063,
             out = 1492398063,
             err = nil
