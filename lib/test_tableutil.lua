@@ -576,3 +576,29 @@ function test.get(t)
 
     end
 end
+
+
+function test.updatedict(t)
+    t:eqdict( {}, tableutil.update( nil, {} ) )
+    t:eqdict( { a=1 }, tableutil.update( nil, {}, { a=1 } ) )
+    t:eqdict( { a=1, b=2 }, tableutil.update( nil, { a=1 }, { b=2 } ) )
+    t:eqdict( { a=1 }, tableutil.update( 'foo', {}, { a=1 } ) )
+    t:eqdict( { a=1, b=2 }, tableutil.update( {}, { a=1 }, { b=2 } ) )
+    t:eqdict( { a=1, b=2, c=3 }, tableutil.update( { a=1 }, { b=2 }, { c=3 } ) )
+    t:eqdict( { a=1, b=2, c=3 }, tableutil.update( { a=1 }, { b=2, c=3 } ) )
+    t:eqdict( { a=2 }, tableutil.update( { a=1 }, { a=2 } ) )
+    t:eqdict( { a={} }, tableutil.update( { a=1 }, { a={} } ) )
+    t:eqdict( { a={ b=2 } }, tableutil.update( { a=1 }, { a={ b=2 } } ) )
+    t:eqdict( { a=1 }, tableutil.update( { a={} }, { a=1 } ) )
+    t:eqdict( { a={ b={ c=1 } } }, tableutil.update( {}, { a={ b={ c=1 } } } ) )
+    t:eqdict( { a={ b={ c=1 } } }, tableutil.update( { a=1 }, { a={ b={ c=1 } } } ) )
+    t:eqdict( { a={ b={ c=2 } } }, tableutil.update( { a={ b={ c=1 } } }, { a={ b={ c=2 } } } ) )
+    t:eqdict( { a={ b={ c=1, d=2 } } }, tableutil.update( { a={ b={ c=1 } } }, { a={ b={ d=2 } } } ) )
+    t:eqdict( { a={ b={ c=1 } } }, tableutil.update( { a={ b={ c=1 } } }, { a={ b={} } } ) )
+
+    local a = { a=1 }
+    local b = { b=2 }
+    local c = tableutil.update( a, b )
+    a.x = 10
+    t:eq( 10, c.x )
+end
