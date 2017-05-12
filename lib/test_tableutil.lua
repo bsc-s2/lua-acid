@@ -576,3 +576,42 @@ function test.get(t)
 
     end
 end
+
+
+function test.updatedict(t)
+    local cases = {
+        {{}, {}, nil, {}},
+        {{a=1}, {}, nil, {a=1}},
+        {{a=1}, {a=2}, nil, {a=2}},
+        {{a=1}, {a=1, b=2}, nil, {a=1, b=2}},
+        {{}, {a={b={c=1}}}, nil, {a={b={c=1}}}},
+        {{a='foo'}, {a={b={c=1}}}, nil, {a={b={c=1}}}},
+        {{a={}}, {a={b={c=1}}}, nil, {a={b={c=1}}}},
+        {{1}, {a={b={c=1}}}, nil, {1, a={b={c=1}}}},
+        {{b=1}, {a={b={c=1}}}, nil, {b=1, a={b={c=1}}}},
+        {{a=1}, {a=2}, {force=false}, {a=1}},
+        {{a={b=1}}, {a={b=2}}, {force=false}, {a={b=1}}},
+        {{a={b=1}}, {a=2}, {force=false}, {a={b=1}}},
+        {{a={b={c=1}}}, {a=2}, {recursive=false}, {a=2}},
+        {{a={b={c=1}}}, {a={}}, {recursive=false}, {a={}}},
+        {{a=1}, {a={}}, {recursive=false}, {a={}}},
+    }
+    for ii, c in ipairs(cases) do
+        local tbl, src, opts, expected_rst = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = tableutil.update(tbl, src, opts)
+
+        t:eqdict(expected_rst, rst)
+    end
+
+    local a = {}
+    a.a1 = a
+    a.a2 = a
+
+    local b = tableutil.update({}, a)
+    t:eq(b.a1, b.a1.a1, 'test loop reference')
+    t:eq(b.a1, b.a2, 'two loop references should be equal')
+    t:neq(a, b.a1)
+end

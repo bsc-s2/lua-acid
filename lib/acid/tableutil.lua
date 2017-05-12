@@ -339,4 +339,46 @@ function _M.get(tbl, keys)
 end
 
 
+local function get_updated_v(tbl, k, v, opts, ref_table)
+    if tbl[k] ~= nil and opts.force == false then
+        return tbl[k]
+    end
+
+    if opts.recursive == false then
+        return v
+    end
+
+    if type(v) ~= 'table' then
+        return v
+    end
+
+    if ref_table[v] ~= nil then
+        return ref_table[v]
+    end
+
+    if type(tbl[k]) ~= 'table' then
+        tbl[k] = {}
+    end
+
+    ref_table[v] = tbl[k]
+
+    return _M.update(tbl[k], v, opts, ref_table)
+end
+
+
+function _M.update(tbl, src, opts, ref_table)
+    opts = opts or {}
+
+    if ref_table == nil then
+        ref_table = {}
+    end
+
+    for k, v in pairs(src) do
+        tbl[k] = get_updated_v(tbl, k, v, opts, ref_table)
+    end
+
+    return tbl
+end
+
+
 return _M
