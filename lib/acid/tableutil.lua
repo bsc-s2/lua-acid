@@ -339,4 +339,23 @@ function _M.get(tbl, keys)
 end
 
 
+function _M.update(tbl, ...)
+    if type(tbl) ~= 'table' then
+        tbl = {}
+    end
+
+    for _, src in ipairs({...}) do
+        for k, v in pairs(src) do
+            if type(v) == 'table' then
+                tbl[k] = _M.update(tbl[k], v)
+            else
+                tbl[k] = v
+            end
+        end
+    end
+
+    return tbl
+end
+
+
 return _M
