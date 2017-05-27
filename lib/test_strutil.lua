@@ -40,6 +40,128 @@ function test.split(t)
     t:eqdict({'', '', 'abc' }, strutil.split( '..abc', '.', true ), '//abc' )
 end
 
+function test.split_maxsplit(t)
+
+    local cases = {
+        {'',      '/', nil, {''}          },
+        {'',      '/', -1,  {''}          },
+        {'',      '/', 0,   {''}          },
+        {'',      '/', 1,   {''}          },
+        {'',      '/', 2,   {''}          },
+        {'a/b/c', '/', nil, {'a','b','c'} },
+        {'a/b/c', '/', -1,  {'a','b','c'} },
+        {'a/b/c', '/', 0,   {'a/b/c'}     },
+        {'a/b/c', '/', 1,   {'a','b/c'}   },
+        {'a/b/c', '/', 2,   {'a','b','c'} },
+        {'a/b/c', '/', 3,   {'a','b','c'} },
+        {'abc',   '',  nil, {'a','b','c'} },
+        {'abc',   '',  -1,  {'a','b','c'} },
+        {'abc',   '',  0,   {'abc'}       },
+        {'abc',   '',  1,   {'a','bc'}    },
+        {'abc',   '',  2,   {'a','b','c'} },
+        {'abc',   '',  3,   {'a','b','c'} },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local str, ptn, maxsplit, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = strutil.split(str, ptn, {plain=true, maxsplit=maxsplit})
+        dd('rst: ', rst)
+
+        t:eqlist(expected, rst, msg)
+    end
+end
+
+
+function test.right_n_split(t)
+
+    local cases = {
+        {'',           '/', 1,  -1,  {0, {}               } },
+        {'',           '/', 1,  0,   {0, {}               } },
+        {'',           '/', 1,  1,   {0, {}               } },
+        {'a/b/c',      '/', 1,  0,   {5, {}               } },
+        {'a/b/c',      '/', 1,  1,   {3, {'c'}            } },
+        {'a/b/c',      '/', 1,  2,   {1, {'c','b'}        } },
+        {'a/b/c',      '/', 1,  3,   {1, {'c','b'}        } },
+        {'aa/bb/cc/',  '/', 1,  0,   {9, {}               } },
+        {'aa/bb/cc/',  '/', 1,  1,   {8, {''}             } },
+        {'aa/bb/cc/',  '/', 1,  2,   {5, {'','cc'}        } },
+        {'aa/bb/cc/',  '/', 1,  3,   {2, {'','cc','bb'}   } },
+        {'aa/bb/cc/',  '/', 1,  4,   {2, {'','cc','bb'}   } },
+        {'/aa/bb/cc',  '/', 1,  0,   {9, {}               } },
+        {'/aa/bb/cc',  '/', 1,  1,   {6, {'cc'}           } },
+        {'/aa/bb/cc',  '/', 1,  2,   {3, {'cc','bb'}      } },
+        {'/aa/bb/cc',  '/', 1,  3,   {0, {'cc','bb','aa'} } },
+        {'/aa/bb/cc',  '/', 1,  4,   {0, {'cc','bb','aa'} } },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local str, ptn, frm, n, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local r1, r2 = strutil.right_n_split(str, ptn, frm, true, n)
+        dd('rst: ', r1, ' ', r2)
+
+        t:eqdict(expected, {r1, r2}, msg)
+    end
+end
+
+
+function test.rsplit(t)
+
+    local cases = {
+        {'',           '/',     true,  nil, {''}                },
+        {'',           '/',     true,  -1,  {''}                },
+        {'',           '/',     true,  0,   {''}                },
+        {'',           '/',     true,  1,   {''}                },
+        {'',           '/',     true,  2,   {''}                },
+        {'a/b/c',      '/',     true,  nil, {'a','b','c'}       },
+        {'a/b/c',      '/',     true,  -1,  {'a','b','c'}       },
+        {'a/b/c',      '/',     true,  0,   {'a/b/c'}           },
+        {'a/b/c',      '/',     true,  1,   {'a/b','c'}         },
+        {'a/b/c',      '/',     true,  2,   {'a','b','c'}       },
+        {'a/b/c',      '/',     true,  3,   {'a','b','c'}       },
+        {'abc',        '',      true,  nil, {'a','b','c'}       },
+        {'abc',        '',      true,  -1,  {'a','b','c'}       },
+        {'abc',        '',      true,  0,   {'abc'}             },
+        {'abc',        '',      true,  1,   {'ab','c'}          },
+        {'abc',        '',      true,  2,   {'a','b','c'}       },
+        {'abc',        '',      true,  3,   {'a','b','c'}       },
+        {'aa/bb/cc/',  '/',     true,  -1,  {'aa','bb','cc',''} },
+        {'aa/bb/cc/',  '/',     true,  0,   {'aa/bb/cc/'}       },
+        {'aa/bb/cc/',  '/',     true,  1,   {'aa/bb/cc',''}     },
+        {'aa/bb/cc/',  '/',     true,  2,   {'aa/bb','cc',''}   },
+        {'aa/bb/cc/',  '/',     true,  3,   {'aa','bb','cc',''} },
+        {'aa/bb/cc/',  '/',     true,  4,   {'aa','bb','cc',''} },
+        {'/aa/bb/cc',  '/',     true,  -1,  {'','aa','bb','cc'} },
+        {'/aa/bb/cc',  '/',     true,  0,   {'/aa/bb/cc'}       },
+        {'/aa/bb/cc',  '/',     true,  1,   {'/aa/bb','cc'}     },
+        {'/aa/bb/cc',  '/',     true,  2,   {'/aa','bb','cc'}   },
+        {'/aa/bb/cc',  '/',     true,  3,   {'','aa','bb','cc'} },
+        {'aa--bb//cc', '[-/]+', false, -1,  {'aa','bb','cc'}    },
+        {'aa--bb//cc', '[-/]+', false, 0,   {'aa--bb//cc'}      },
+        {'aa--bb//cc', '[-/]+', false, 1,   {'aa--bb','cc'}     },
+        {'aa--bb//cc', '[-/]+', false, 2,   {'aa','bb','cc'}    },
+        {'aa--bb//cc', '[-/]+', false, 3,   {'aa','bb','cc'}    },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local str, ptn, plain, maxsplit, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = strutil.rsplit(str, ptn, {plain=plain, maxsplit=maxsplit})
+        dd('rst: ', rst)
+
+        t:eqlist(expected, rst, msg)
+    end
+end
 
 function test.placeholder(t)
     local ph = strutil.placeholder

@@ -1,6 +1,7 @@
 local repr = require( "acid.repr" )
 
 local math_floor = math.floor
+local string_find = string.find
 local string_sub = string.sub
 local table_insert = table.insert
 
@@ -8,14 +9,41 @@ local repr_str = repr.str
 
 local _M = { _VERSION = "0.1" }
 
-function _M.split( str, pat, plain )
+function _M.split( str, pat, opts )
 
+    if opts == nil then
+        opts = {}
+    end
+
+    if type(opts) == 'boolean' then
+        opts = {plain = opts}
+    elseif type(opts) == 'number' then
+        opts = {plain = true, maxsplit = opts}
+    end
+
+    local plain = opts.plain
+    local maxsplit = opts.maxsplit or -1
+    local nsplit = 0
     local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+
+    if maxsplit == 0 then
+        return {str}
+    end
 
     if pat == '' then
         for i = 1, #str do
-            table.insert(t, str:sub(i, i))
+            table_insert(t, str:sub(i, i))
+
+            nsplit = nsplit + 1
+            if nsplit == maxsplit then
+                break
+            end
         end
+
+        if nsplit < #str then
+            table_insert(t, string_sub(str, nsplit + 1))
+        end
+
         t[1] = t[1] or ''
         return t
     end
@@ -23,14 +51,111 @@ function _M.split( str, pat, plain )
     local last_end, s, e = 1, 1, 0
 
     while s do
-        s, e = string.find( str, pat, last_end, plain )
+        s, e = string_find( str, pat, last_end, plain )
         if s then
-            table.insert( t, str:sub( last_end, s-1 ) )
+            table_insert( t, str:sub( last_end, s-1 ) )
             last_end = e + 1
+
+            nsplit = nsplit + 1
+            if nsplit == maxsplit then
+                break
+            end
         end
     end
 
-    table.insert( t, str:sub( last_end ) )
+    table_insert( t, str:sub( last_end ) )
+    return t
+end
+
+
+local function right_n_split(str, pat, frm, plain, n)
+
+    -- Returns two return value:
+    -- -    the offset of the end of the first elt,
+    -- -    and following n elts in a table in reversed order.
+    --
+    -- There is at most n elts in the table.
+    --
+    -- right_n_split('a/b/c/d', '/', 1, true, 2)
+    -- -- 3, {'d', 'c'}
+
+    local s, e
+    s, e = string_find(str, pat, frm, plain)
+
+    if s == nil then
+        return #str, {}
+    end
+
+    local end_of_first, t = right_n_split(str, pat, e + 1, plain, n)
+
+    if #t < n then
+        table_insert(t, string_sub(str, e + 1, end_of_first))
+        return s - 1, t
+    else
+        return end_of_first, t
+    end
+end
+
+
+_M.right_n_split = right_n_split
+
+
+function _M.rsplit(str, pat, opts)
+
+    if opts == nil then
+        opts = {}
+    end
+
+    if type(opts) == 'boolean' then
+        opts = {plain = opts}
+    elseif type(opts) == 'number' then
+        opts = {plain = true, maxsplit = opts}
+    end
+
+
+    local plain = opts.plain
+    local maxsplit = opts.maxsplit or -1
+
+    if maxsplit == 0 then
+        return {str}
+    end
+
+    local t = {}
+
+    if pat == '' then
+
+        local first_len = #str - maxsplit
+
+        if maxsplit == -1 then
+            first_len = 1
+        else
+            if first_len < 1 then
+                first_len = 1
+            end
+        end
+
+        t[1] = string_sub(str, 1, first_len)
+
+        for i = first_len + 1, #str do
+            table_insert(t, str:sub(i, i))
+        end
+
+        t[1] = t[1] or ''
+        return t
+    end
+
+    if maxsplit == -1 then
+        maxsplit = #str
+    end
+
+    local end_of_first, last_n = right_n_split(str, pat, 1, plain, maxsplit)
+
+    t[1] = string_sub(str, 1, end_of_first)
+
+    for i = #last_n, 1, -1 do
+        table_insert(t, last_n[i])
+    end
+
     return t
 end
 
