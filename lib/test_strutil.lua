@@ -5,28 +5,39 @@ local dd = test.dd
 
 function test.split(t)
 
-    local sp = strutil.split
+    local cases = {
+        {'',             '/',  {'' },                    'empty string'               },
+        {'/',            '/',  {'', '' },                'single pattern'             },
+        {'//',           '/',  {'', '', '' },            'dual pattern'               },
+        {'a//',          '/',  {'a', '', '' },           '"a" and dual pattern'       },
+        {'/a/',          '/',  {'', 'a', '' },           '/a/'                        },
+        {'//a',          '/',  {'', '', 'a' },           '//a'                        },
+        {'abcdefg//',    '/',  {'abcdefg', '', '' },     '"abcdefg" and dual pattern' },
+        {'/abcdefg/',    '/',  {'', 'abcdefg', '' },     '/abcdefg/'                  },
+        {'//abcdefg',    '/',  {'', '', 'abcdefg' },     '//abcdefg'                  },
+        {'abc/xyz/uvw',  '/',  {'abc', 'xyz', 'uvw' },   'full'                       },
+        {'/abc/',        '/',  {'', 'abc', '' },         '/abc/'                      },
+        {'//abc',        '/',  {'', '', 'abc' },         '//abc'                      },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local str, ptn, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = strutil.split(str, ptn)
+        dd('rst: ', rst)
+
+        t:eqdict(expected, rst, msg)
+    end
+
     local str ='/v1/get/video.vic.sina.com.cn%2fmt788%2f9e%2f1a%2f81403.jpg/%7b%22xACL%22%3a%20%7b%22GRPS000000ANONYMOUSE%22%3a%20%5b%22read%22%5d, %20%22SINA00000000000SALES%22%3a%20%5b%22read%22, %20%22write%22, %20%22read_acp%22, %20%22write_acp%22%5d%7d, %20%22Info%22%3a%20null, %20%22Type%22%3a%20%22image%5c%2fjpeg%22, %20%22ver%22%3a%201042410872, %20%22Get-Location%22%3a%20%5b%7b%22CheckNumber%22%3a%201042410872, %20%22GroupID%22%3a%20341476, %20%22Partitions%22%3a%20%5b%7b%22IPs%22%3a%20%5b%2258.63.236.89%22, %20%2210.71.5.89%22%5d, %20%22PartitionID%22%3a%20%22185c3e5700014004975f90b11c13fc5e%22, %20%22IDC%22%3a%20%22.dx.GZ%22%7d, %20%7b%22IPs%22%3a%20%5b%2258.63.236.184%22, %20%2210.71.5.184%22%5d, %20%22PartitionID%22%3a%20%225a56155500014009aaa590b11c148e88%22, %20%22IDC%22%3a%20%22.dx.GZ%22%7d, %20%7b%22IPs%22%3a%20%5b%2260.28.228.36%22, %20%22172.16.228.36%22%5d, %20%22PartitionID%22%3a%20%22a41d4006000140029595d4ae52b17fe1%22, %20%22IDC%22%3a%20%22.wt.TJ%22%7d, %20%7b%22IPs%22%3a%20%5b%22111.161.78.59%22, %20%22172.16.48.59%22%5d, %20%22PartitionID%22%3a%20%22d7fee54d00014006b58090b11c145321%22, %20%22IDC%22%3a%20%22.wt.TJ%22%7d%5d%7d%5d, %20%22Info-Int%22%3a%200, %20%22ts%22%3a%201356544141, %20%22ACL%22%3a%20%7b%22SINA00000000000SALES%22%3a%20%5b%22read%22, %20%22write%22, %20%22read_acp%22, %20%22write_acp%22%5d%7d, %20%22ETag2%22%3a%20%2235b4ec0bfd826ea609054ccca4976e4fc77f3a8b%22, %20%22ETag%22%3a%20%22e14526f8858e2e0f898e72f141f108e4%22, %20%22Key%22%3a%20%22mt788%5c%2f9e%5c%2f1a%5c%2f81403.jpg%22, %20%22Owner%22%3a%20%22SINA00000000000SALES%22, %20%22Origo%22%3a%20%220000000000000000000090b11c09b4d9%22, %20%22GroupClassID%22%3a%206, %20%22File-Meta%22%3a%20%7b%22Content-Type%22%3a%20%22image%5c%2fjpeg%22%7d, %20%22Size%22%3a%2095964%7d?n=1&r=1&w=1&expire=60&ver_key=ts'
-
-    t:eqdict({'' },                  sp( '', '/' ), 'empty string' )
-    t:eqdict({'', '' },              sp( '/', '/' ), 'single pattern' )
-    t:eqdict({'', '', '' },          sp( '//', '/' ), 'dual pattern' )
-    t:eqdict({'a', '', '' },         sp( 'a//', '/' ), '"a" and dual pattern' )
-    t:eqdict({'', 'a', '' },         sp( '/a/', '/' ), '/a/' )
-    t:eqdict({'', '', 'a' },         sp( '//a', '/' ), '//a' )
-
-    t:eqdict({'abcdefg', '', '' },   sp( 'abcdefg//', '/' ), '"abcdefg" and dual pattern' )
-    t:eqdict({'', 'abcdefg', '' },   sp( '/abcdefg/', '/' ), '/abcdefg/' )
-    t:eqdict({'', '', 'abcdefg' },   sp( '//abcdefg', '/' ), '//abcdefg' )
-
-    t:eqdict({'abc', 'xyz', 'uvw' }, sp( 'abc/xyz/uvw', '/' ), 'full' )
-    t:eqdict({'', 'abc', '' },       sp( '/abc/', '/' ), '/abc/' )
-    t:eqdict({'', '', 'abc' },       sp( '//abc', '/' ), '//abc' )
-
-    t:eq( str, table.concat( sp( str, '/' ), '/' ) )
+    t:eq( str, table.concat( strutil.split( str, '/' ), '/' ) )
 
     -- plain text pattern
-    t:eqdict({'', '', 'abc' },       sp( '..abc', '.', true ), '//abc' )
+
+    t:eqdict({'', '', 'abc' }, strutil.split( '..abc', '.', true ), '//abc' )
 end
 
 
