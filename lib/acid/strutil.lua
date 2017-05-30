@@ -9,7 +9,8 @@ local repr_str = repr.str
 
 local _M = { _VERSION = "0.1" }
 
-function _M.split( str, pat, opts )
+
+local function normalize_split_opts(opts)
 
     if opts == nil then
         opts = {}
@@ -20,6 +21,13 @@ function _M.split( str, pat, opts )
     elseif type(opts) == 'number' then
         opts = {plain = true, maxsplit = opts}
     end
+
+    return opts
+end
+
+function _M.split( str, pat, opts )
+
+    opts = normalize_split_opts(opts)
 
     local plain = opts.plain
     local maxsplit = opts.maxsplit or -1
@@ -102,16 +110,7 @@ _M.right_n_split = right_n_split
 
 function _M.rsplit(str, pat, opts)
 
-    if opts == nil then
-        opts = {}
-    end
-
-    if type(opts) == 'boolean' then
-        opts = {plain = opts}
-    elseif type(opts) == 'number' then
-        opts = {plain = true, maxsplit = opts}
-    end
-
+    opts = normalize_split_opts(opts)
 
     local plain = opts.plain
     local maxsplit = opts.maxsplit or -1
@@ -140,7 +139,6 @@ function _M.rsplit(str, pat, opts)
             table_insert(t, string_sub(str, i, i))
         end
 
-        t[1] = t[1] or ''
         return t
     end
 

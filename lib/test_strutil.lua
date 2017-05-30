@@ -38,6 +38,7 @@ function test.split(t)
     -- plain text pattern
 
     t:eqdict({'', '', 'abc' }, strutil.split( '..abc', '.', true ), '//abc' )
+    t:eqdict({'', '', 'abc' }, strutil.split( '..abc', '.', {plain=true} ), '//abc' )
 end
 
 function test.split_maxsplit(t)
@@ -69,6 +70,13 @@ function test.split_maxsplit(t)
         dd(msg, c)
 
         local rst = strutil.split(str, ptn, {plain=true, maxsplit=maxsplit})
+        dd('rst: ', rst)
+
+        t:eqlist(expected, rst, msg)
+
+        -- test shortcut form
+
+        local rst = strutil.split(str, ptn, maxsplit)
         dd('rst: ', rst)
 
         t:eqlist(expected, rst, msg)
@@ -160,6 +168,15 @@ function test.rsplit(t)
         dd('rst: ', rst)
 
         t:eqlist(expected, rst, msg)
+
+        -- test shortcut form
+
+        if plain == true then
+            local rst = strutil.rsplit(str, ptn, maxsplit)
+            dd('rst: ', rst)
+
+            t:eqlist(expected, rst, msg)
+        end
     end
 end
 
