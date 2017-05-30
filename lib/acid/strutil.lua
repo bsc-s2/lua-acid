@@ -32,7 +32,7 @@ function _M.split( str, pat, opts )
 
     if pat == '' then
         for i = 1, #str do
-            table_insert(t, str:sub(i, i))
+            table_insert(t, string_sub(str, i, i))
 
             nsplit = nsplit + 1
             if nsplit == maxsplit then
@@ -53,7 +53,7 @@ function _M.split( str, pat, opts )
     while s do
         s, e = string_find( str, pat, last_end, plain )
         if s then
-            table_insert( t, str:sub( last_end, s-1 ) )
+            table_insert(t, string_sub(str, last_end, s-1))
             last_end = e + 1
 
             nsplit = nsplit + 1
@@ -63,7 +63,7 @@ function _M.split( str, pat, opts )
         end
     end
 
-    table_insert( t, str:sub( last_end ) )
+    table_insert(t, string_sub(str, last_end))
     return t
 end
 
@@ -137,7 +137,7 @@ function _M.rsplit(str, pat, opts)
         t[1] = string_sub(str, 1, first_len)
 
         for i = first_len + 1, #str do
-            table_insert(t, str:sub(i, i))
+            table_insert(t, string_sub(str, i, i))
         end
 
         t[1] = t[1] or ''
@@ -177,7 +177,7 @@ end
 
 
 function _M.startswith( s, pref )
-    return s:sub( 1, pref:len() ) == pref
+    return string_sub(s, 1, #pref) == pref
 end
 
 
@@ -185,7 +185,7 @@ function _M.endswith( s, suf )
     if suf == '' then
         return true
     end
-    return s:sub( -suf:len(), -1 ) == suf
+    return string_sub(s, -#suf, -1) == suf
 end
 
 
