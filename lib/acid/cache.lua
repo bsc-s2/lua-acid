@@ -123,7 +123,7 @@ function _M.cacheable( dict, key, func, opts )
     end
 
     local lock, err_msg = resty_lock:new( _M.shared_dict_lock,
-            { exptime=30, timeout=30 } )
+            { exptime=opts.lock_exptime or 30, timeout=opts.lock_timeout or 30 } )
     if err_msg ~= nil then
         return nil, 'SystemError',
                 err_msg .. ' while new lock:' .. _M.shared_dict_lock
@@ -132,6 +132,11 @@ function _M.cacheable( dict, key, func, opts )
     local cb = ngx_abort.add_callback(abort_cb, lock)
 
     elapsed, err_msg = lock:lock( tostring(dict) .. key )
+
+    if (elapsed or 0.2) > 0.2 then
+        ngx.log(ngx.INFO, 'esapsed: ', elapsed, ' seconds, when try lock:', key)
+    end
+
     if err_msg ~= nil then
         ngx_abort.remove_callback(cb)
         return nil, 'LockTimeout', err_msg .. ' while lock:' .. key
