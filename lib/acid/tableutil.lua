@@ -309,9 +309,9 @@ end
 function _M.is_empty(tbl)
     if type(tbl) == 'table' and next(tbl) == nil then
         return true
+    else
+        return false
     end
-
-    return false
 end
 
 
