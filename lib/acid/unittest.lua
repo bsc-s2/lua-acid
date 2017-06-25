@@ -116,7 +116,11 @@ _M.dd = dd
 
 
 function _M.output(s)
-    print(s)
+    if ngx then
+        ngx.say(s)
+    else
+        print(s)
+    end
 end
 
 local function is_test_file( fn )
@@ -156,7 +160,14 @@ local testfuncs = {
         pos = pos .. '   in ' .. info.short_src .. '\n'
         pos = pos .. '   ' .. self._name .. '():' .. info.currentline .. '\n'
 
-        assert( expr, pos .. '   expect ' .. expection .. ' (' .. mes .. ')' )
+        if ngx then
+            if not expr then
+                ngx.say(pos .. '   expect ' .. expection .. ' (' .. mes .. ')' )
+                error('expect ' .. expection .. ' (' .. mes .. ')')
+            end
+        else
+            assert( expr, pos .. '   expect ' .. expection .. ' (' .. mes .. ')' )
+        end
         self._suite.n_assert = self._suite.n_assert + 1
     end,
 
@@ -251,12 +262,12 @@ function _M.test_one( suite, name, func )
     if not ok then
         info( rst )
         info( debug.traceback(co) )
-        os.exit(1)
+        error('fail')
     end
     suite.n = suite.n + 1
 end
 
-function _M.test_all(test, suite)
+function _M.run_test_module(test, suite)
 
     local names = {}
 
@@ -278,42 +289,71 @@ function _M.testdir( dir )
 
     package.path = package.path .. ';'..dir..'/?.lua'
 
-    local suite = { n=0, n_assert=0 }
     local fns = scandir( dir )
+    local module_names = {}
 
     for _, fn in ipairs(fns) do
 
         if is_test_file( fn ) then
-
-            info( "---- ", fn, ' ----' )
-
-            test = {dd=dd}
-            require( fn:sub( 1, -5 ) )
-
-            _M.test_all(test, suite)
+            local module_name = fn:sub(1, -5)
+            table.insert(module_names, module_name)
         end
     end
+
+    _M._test_modules(module_names)
+end
+
+
+function _M.test_modules(module_names)
+    local ok, rst = pcall(_M._test_modules, module_names)
+    if not ok then
+        return
+    end
+end
+
+
+function _M._test_modules(module_names)
+
+    local suite = { n=0, n_assert=0 }
+
+    for _, module_name in ipairs(module_names) do
+
+        info( "---- ", module_name, ' ----' )
+
+        _M._test_module(module_name, suite)
+    end
+
     info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
-    return true
 end
 
 
 function _M.test_file(fn)
 
-    -- package.path = package.path .. ';'..dir..'/?.lua'
-
+    local module_name = fn:sub(1, -5)
     local suite = { n=0, n_assert=0 }
 
     info( "---- ", fn, ' ----' )
 
-    test = {dd=dd}
-    require( fn:sub( 1, -5 ) )
-
-    _M.test_all(test, suite)
+    _M._test_module(module_name, suite)
 
     info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
-    return true
 end
+
+
+function _M._test_module(module_name, suite)
+
+    -- a global var, to let test-case function to access dd()
+    _G.test = {dd=dd}
+
+    -- load test file
+    require( module_name )
+
+    _M.run_test_module(_G.test, suite)
+
+    -- unload test file
+    package.loaded[module_name] = nil
+end
+
 
 function _M.t()
 
@@ -328,6 +368,14 @@ function _M.t()
         -- require( "unittest" )
     end
 end
-_M.t()
+
+
+if ngx then
+    -- nginx lua: run by _M._test_modules()
+else
+    -- command line
+    _M.t()
+end
+
 
 return _M
