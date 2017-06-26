@@ -1,3 +1,34 @@
+--[[
+
+Usage:
+
+$ cat test_empty.lua
+> function test.foo(t)
+>     t:eq( 0, 0, '0 is 0' )
+> end
+$ lua -l unittest test_empty.lua
+
+-   Global variable `test`:
+
+    is predefined container table for every `test_*.lua`.
+    All functions defined in `test` will be run by `unittest.lua`.
+
+-   Argument `t`:
+
+    is a table that provides assertion function, like:
+
+    -   t:unpack(table_value)                              unpack a table.
+    -   t:ass(bool_value, expection_desc, case_message)    general assert. You do not need this.
+    -   t:eq(a, b, case_message)                           assert a==b
+    -   t:neq(a, b, case_message)                          assert a~=b
+    -   t:err(func, case_message)                          assert func() raise an error
+    -   t:eqlist(a, b, case_message)                       assert int-index elements of a and b are the same. no recursive.
+    -   t:eqdict(a, b, case_message)                       assert a and b are the same as dictionary. no recursive.
+    -   t:contain(a, b, case_message)                      assert b contains a.
+--]]
+
+local ngx = ngx
+
 local _M = { _VERSION='0.1' }
 
 _M.debug = false
@@ -86,9 +117,6 @@ local function to_str(o)
 end
 
 
-_M.to_str = to_str
-
-
 local function dd(...)
     if not _M.debug then
         return
@@ -112,22 +140,12 @@ local function info(...)
 end
 
 
-_M.dd = dd
-
-
-function _M.output(s)
-    if ngx then
-        ngx.say(s)
-    else
-        print(s)
-    end
-end
-
-local function is_test_file( fn )
+local function _is_fn_a_test( fn )
     return fn:sub( 1, 5 ) == 'test_' and fn:sub( -4, -1 ) == '.lua'
 end
 
-local function scandir(directory)
+
+local function _scandir(directory)
     local t = {}
     for filename in io.popen('ls "'..directory..'"'):lines() do
         table.insert( t, filename )
@@ -240,19 +258,16 @@ local testfuncs = {
             self:ass( e==b[k], '["' .. k .. '"] to be ' .. to_str(e) .. ' but is ' .. to_str(b[k]), mes )
         end
     end,
-
 }
+local t_metatable = { __index= testfuncs }
 
 
-local _mt = { __index= testfuncs }
-
-
-function _M.test_one( suite, name, func )
+local function _run_one_test_func( suite, name, func )
 
     info( "   * testing ", name, ' ...' )
 
     local tfuncs = {}
-    setmetatable( tfuncs, _mt )
+    setmetatable( tfuncs, t_metatable )
     tfuncs._name = name
     tfuncs._suite = suite
 
@@ -267,7 +282,8 @@ function _M.test_one( suite, name, func )
     suite.n = suite.n + 1
 end
 
-function _M.run_test_module(test, suite)
+
+local function _run_one_test_module(suite, test)
 
     local names = {}
 
@@ -281,66 +297,12 @@ function _M.run_test_module(test, suite)
 
     for _, t in ipairs(names) do
         local funcname, func = t[ 1 ], t[ 2 ]
-        _M.test_one( suite, funcname, func )
-    end
-end
-
-function _M.testdir( dir )
-
-    package.path = package.path .. ';'..dir..'/?.lua'
-
-    local fns = scandir( dir )
-    local module_names = {}
-
-    for _, fn in ipairs(fns) do
-
-        if is_test_file( fn ) then
-            local module_name = fn:sub(1, -5)
-            table.insert(module_names, module_name)
-        end
-    end
-
-    _M._test_modules(module_names)
-end
-
-
-function _M.test_modules(module_names)
-    local ok, rst = pcall(_M._test_modules, module_names)
-    if not ok then
-        return
+        _run_one_test_func( suite, funcname, func )
     end
 end
 
 
-function _M._test_modules(module_names)
-
-    local suite = { n=0, n_assert=0 }
-
-    for _, module_name in ipairs(module_names) do
-
-        info( "---- ", module_name, ' ----' )
-
-        _M._test_module(module_name, suite)
-    end
-
-    info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
-end
-
-
-function _M.test_file(fn)
-
-    local module_name = fn:sub(1, -5)
-    local suite = { n=0, n_assert=0 }
-
-    info( "---- ", fn, ' ----' )
-
-    _M._test_module(module_name, suite)
-
-    info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
-end
-
-
-function _M._test_module(module_name, suite)
+local function _test_module(suite, module_name)
 
     -- a global var, to let test-case function to access dd()
     _G.test = {dd=dd}
@@ -348,33 +310,102 @@ function _M._test_module(module_name, suite)
     -- load test file
     require( module_name )
 
-    _M.run_test_module(_G.test, suite)
+    _run_one_test_module(suite, _G.test)
 
     -- unload test file
     package.loaded[module_name] = nil
 end
 
 
-function _M.t()
+local function _test_modules(module_names)
+
+    local suite = { n=0, n_assert=0 }
+
+    for _, module_name in ipairs(module_names) do
+
+        info( "---- ", module_name, ' ----' )
+
+        _test_module(suite, module_name)
+    end
+
+    info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
+end
+
+
+_M.to_str = to_str
+_M.dd = dd
+
+
+function _M.output(s)
+    if ngx then
+        ngx.say(s)
+    else
+        print(s)
+    end
+end
+
+
+function _M.ngx_test_modules(module_names)
+    -- In nginx, do not raise error to interrupt lua execution.
+    -- We check test output to see if it succeeded("** all tests passed")
+    -- or failed.
+
+    pcall(_test_modules, module_names)
+end
+
+
+function _M.cli_test_dir( dir )
+
+    package.path = package.path .. ';'..dir..'/?.lua'
+
+    local fns = _scandir( dir )
+    local module_names = {}
+
+    for _, fn in ipairs(fns) do
+
+        if _is_fn_a_test( fn ) then
+            local module_name = fn:sub(1, -5)
+            table.insert(module_names, module_name)
+        end
+    end
+
+    _test_modules(module_names)
+end
+
+
+function _M.cli_test_file(fn)
+
+    local module_name = fn:sub(1, -5)
+    local suite = { n=0, n_assert=0 }
+
+    info( "---- ", fn, ' ----' )
+
+    _test_module(suite, module_name)
+
+    info( suite.n, ' tests all passed. nr of assert: ', suite.n_assert )
+end
+
+
+function _M.cli_main()
 
     _M.debug = (os.getenv('LUA_UNITTEST_DEBUG') == '1')
 
     if arg == nil then
         -- lua -l unittest
-        _M.testdir( '.' )
+        _M.cli_test_dir( '.' )
         os.exit()
     else
-        _M.test_file(arg[1])
+        _M.cli_test_file(arg[1])
         -- require( "unittest" )
     end
 end
 
 
 if ngx then
-    -- nginx lua: run by _M._test_modules()
+    -- nginx lua: run by _M.test_modules()
 else
     -- command line
-    _M.t()
+    _M.cli_main()
 end
 
 

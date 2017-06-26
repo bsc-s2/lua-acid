@@ -27,7 +27,7 @@ __DATA__
     location /t {
         content_by_lua '
             local unittest = require("acid.unittest")
-            unittest.test_modules({
+            unittest.ngx_test_modules({
                 "test_empty",
                 "test_logging",
                 "test_net",
