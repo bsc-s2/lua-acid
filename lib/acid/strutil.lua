@@ -9,6 +9,12 @@ local repr_str = repr.str
 
 local _M = { _VERSION = "0.1" }
 
+local fnmatch_wildcard_translate = {
+    ['*'] = '.*',
+    ['?'] = '.',
+    ['.'] = '[.]',
+}
+
 
 local function normalize_split_opts(opts)
 
@@ -230,31 +236,22 @@ function _M.replace(s, src, dst)
 end
 
 
-local function _parse_fnmatch_char(a1)
-    if a1 == "*" then
-        return ".*"
-    elseif a1 == "?" then
-        return "."
-    elseif a1 == "." then
-        return "[.]"
-    else
-        return a1
-    end
-end
-
-
 function _M.fnmatch(s, ptn)
-    local p = ptn
-    local p = p:gsub('([\\]*)(.)', function(a0, a1)
-        local l = #a0
+
+    ptn = ptn:gsub('([\\]*)(.)', function(backslashes, chr)
+
+        local l = #backslashes
+
         if l % 2 == 0 then
-            return string.rep('[\\]', l/2).._parse_fnmatch_char(a1)
+            -- even number of back slash: not an escape
+            return string.rep('[\\]', l/2) .. (fnmatch_wildcard_translate[chr] or chr)
         else
-            return string.rep('[\\]', (l-1)/2)..'['.. a1 ..']'
+            -- odd number of back slash: an escape of following char
+            return string.rep('[\\]', (l-1)/2)..'['.. chr ..']'
         end
     end)
 
-    return s:match(p) == s
+    return s:match(ptn) == s
 end
 
 
