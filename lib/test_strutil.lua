@@ -269,6 +269,33 @@ function test.endswith(t)
     t:eq(false, s( 'ab', 'bc' ) )
 end
 
+
+function test.to_str(t)
+
+    -- simplified test. underlaying repr.str() has been tested in test_repr.lua
+
+    local cases = {
+        {{},                    ''                 },
+        {{1,2},                 '12'               },
+        {{1,2,{}},              '12{}'             },
+        {{1,2,{10,a=1,20}},     '12{10,20,a=1}'    },
+        {{1,2,nil,{10,a=1,20}}, '12nil{10,20,a=1}' },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local inp, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = strutil.to_str(unpack(inp))
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, msg)
+    end
+end
+
+
 function test.rjust(t)
     local f = strutil.rjust
     t:eq( '.......abc', f( 'abc', 10, '.' ) )
