@@ -16,17 +16,58 @@ implementation.
 
 It is meant to be a underlaying code base for building a distributed system.
 
-# modules
+# Modules
 
 | name                                    | description                                             | status          |
 | :--                                     | :--                                                     | :--             |
 | [acid.strutil](doc/acid/strutil.md)     | string operation functions.                             | well tested     |
 | [acid.tableutil](doc/acid/tableutil.md) | table operation functions.                              | well tested     |
 | [acid.unittest](doc/acid/unittest.md)   | unittest engine that looks for test functions in a dir. | well tested     |
-| [acid.logging](doc/acid/logging.md)     | logging utilities.                                      | not well tested |
 | [acid.cache](doc/acid/cache.md)         | in-process or shared-dict based cache.                  | not well tested |
-| [acid.paxos](doc/acid/paxos.md)         | classic paxos implementation.                           | not well tested |
 | [acid.cluster](doc/acid/cluster.md)     | cluster implementation based on paxos.                  | not well tested |
+| [acid.logging](doc/acid/logging.md)     | logging utilities.                                      | not well tested |
+| [acid.paxos](doc/acid/paxos.md)         | classic paxos implementation.                           | not well tested |
+
+
+# Install
+
+-   Choice 0: Clone and copy:
+
+    ```
+    git clone git@github.com:baishancloud/lua-acid.git
+    cp -R lua-acid/lib/acid <your_lua_lib_path>
+    ```
+
+-   Choice 1: `git-subrepo`
+
+    Use git-subrepo to add it to your source code base:
+
+    1.  Install [git-subrepo](https://github.com/baishancloud/git-subrepo)
+
+    1.  Create config file `.gitsubrepo` in your git project:
+        ```
+        [ remote: https://github.com/ ]
+        lualib/acid     baishancloud/lua-acid   master lib/acid
+        ```
+
+    1.  Fetch and merge `lua-acid` into your working dir:
+        ```
+        git-subrepo
+        ```
+
+# Test
+
+This package needs perl command `prove` to run unittest:
+
+```
+$ sudo cpan Test::Nginx
+
+# optional, setup nginx path:
+$ export PATH=$PATH:/usr/local/Cellar/openresty/1.11.2.3/nginx/sbin
+
+# test all
+$ prove
+```
 
 
 # lua-poxos
