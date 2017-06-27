@@ -165,6 +165,8 @@ end
 
 function _M.strip( s, ptn )
 
+    -- TODO test
+
     if ptn == nil or ptn == "" then
         ptn = "%s"
     end
@@ -223,6 +225,7 @@ end
 
 
 function _M.replace(s, src, dst)
+    -- TODO test
     return table.concat(_M.split(s, src), dst)
 end
 
@@ -256,6 +259,7 @@ end
 
 
 function _M.fromhex(str)
+    -- TODO test
     return (str:gsub('..', function (cc)
         return string.char(tonumber(cc, 16))
     end))
@@ -263,6 +267,7 @@ end
 
 
 function _M.tohex(str)
+    -- TODO test
     return (str:gsub('.', function (c)
         return string.format('%02X', string.byte(c))
     end))
