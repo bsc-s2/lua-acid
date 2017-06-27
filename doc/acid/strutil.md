@@ -9,7 +9,7 @@ This library is considered production ready.
 #   Description
 
 It provides with several often used string operation utilities.
-Most of them follows python-style.
+Most of them follow python-style.
 
 #   Synopsis
 
@@ -31,14 +31,14 @@ strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
 `strutil.rsplit(str, pattern, opts)`
 
 Same as `strutil.split` except when `maxsplit` is specified,
-it starts splitting from right to left.
+it starts with splitting from right to left.
 
 ##  strutil.split
 
 **syntax**:
 `strutil.split(str, pattern, opts)`
 
-Split string `str` with separator `pattern`
+Split string `str` with a separator `pattern`
 
 ```
 strutil.split('a/b/c/d', '/', 2)     -- {'a', 'b', 'c/d'}
@@ -47,14 +47,14 @@ strutil.split('a/b/c/d', '/', 2)     -- {'a', 'b', 'c/d'}
 **arguments**:
 
 -   `str`:
-    is the string to split.
+    is the string to be split.
 
 -   `pattern`:
-    is separator in lua string pattern or a plain text string.
-    Depends on the third argument.
+    is a separator in lua string pattern or a plain text string,
+    depending on the third argument.
 
 -   `opts`:
-    is options to control behavior of split.
+    is an option to control the behavior of this function.
 
     The value of `opts` could be:
 
@@ -68,7 +68,7 @@ strutil.split('a/b/c/d', '/', 2)     -- {'a', 'b', 'c/d'}
 
         It splits `str` with plain text separator `pattern`.
 
-    -   number: plain text and limit max split times.
+    -   number: use plain text pattern and it limits max split times.
         `strutil.split(str, pattern, 3)`.
 
         It splits `str` with plain text `pattern` and splits at most 3 times.
