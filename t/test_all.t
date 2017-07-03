@@ -38,6 +38,7 @@ __DATA__
                 "test_strutil",
                 "test_tableutil",
                 "test_json",
+                "test_cache",
             })
         ';
     }
