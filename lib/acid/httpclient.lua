@@ -562,4 +562,13 @@ function _M.parse_request_range(range, file_size)
 
 end
 
+function _M.get_reused_times(self)
+    local count, err_msg = self.sock:getreusedtimes()
+    if err_msg ~= nil then
+        return nil, 'SocketError', err_msg
+    end
+
+    return count
+end
+
 return _M
