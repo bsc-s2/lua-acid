@@ -37,6 +37,7 @@ __DATA__
                 "test_round",
                 "test_strutil",
                 "test_tableutil",
+                "test_json",
             })
         ';
     }
