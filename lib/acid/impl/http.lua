@@ -1,6 +1,8 @@
 local strutil = require( "acid.strutil" )
 local tableutil = require( "acid.tableutil" )
 
+-- TODO add doc
+
 --example, how to use
 --   local h = s2http:new( ip, port, timeout )
 --   h:request( uri, {method='GET', headers={}, body=''} )
