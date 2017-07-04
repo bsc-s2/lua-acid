@@ -1,7 +1,7 @@
 local _M = {}
 local _meta = { __index=_M }
 
-local json = require( "cjson" )
+local json = require( "acid.json" )
 local resty_mc = require( "resty.memcached" )
 
 local function new_mc()
@@ -44,7 +44,7 @@ function _M:load(pobj)
     mc:close()
 
     if o ~= nil then
-        o = json.decode( o )
+        o = json.dec( o )
     end
     return o
 end
@@ -63,7 +63,7 @@ function _M:store(pobj)
     if pobj.record == nil then
         ok, err = mc:delete(mckey)
     else
-        local o = json.encode( pobj.record )
+        local o = json.enc( pobj.record )
         ok, err = mc:set( mckey, o )
     end
 

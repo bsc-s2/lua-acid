@@ -15,7 +15,6 @@ local fnmatch_wildcard_translate = {
     ['.'] = '[.]',
 }
 
-
 local function normalize_split_opts(opts)
 
     if opts == nil then

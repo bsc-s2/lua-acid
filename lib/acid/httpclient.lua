@@ -1,23 +1,26 @@
 local strutil = require( "acid.strutil" )
-local tableutil = require( "acid.tableutil" )
+local rpc_logging = require('acid.rpc_logging')
+
+local has_logging = true
 
 -- TODO add doc
 
 --example, how to use
---   local h = s2http:new( ip, port, timeout )
---   h:request( uri, {method='GET', headers={}, body=''} )
---   status = h.status
---   headers = h.headers
---   buf = h:read_body( size )
+--   local cli = httpclient:new( ip, port, timeout )
+--   cli:request( uri, {method='GET', headers={}, body=''} )
+--   status = cli.status
+--   headers = cli.headers
+--   buf = cli:read_body( size )
 --or
---   local h = s2http:new( ip, port, timeout )
---   h:send_request( uri, {method='GET', headers={}, body=''} )
---   h:send_body( body )
---   h:finish_request()
---   status = h.status
---   headers = h.headers
---   buf = h:read_body( size )
+--   local cli = httpclient:new( ip, port, timeout )
+--   cli:send_request( uri, {method='GET', headers={}, body=''} )
+--   cli:send_body( body )
+--   cli:finish_request()
+--   status = cli.status
+--   headers = cli.headers
+--   buf = cli:read_body( size )
 
+local to_str = strutil.to_str
 
 local DEF_PORT = 80
 local DEF_METHOD = 'GET'
@@ -29,17 +32,6 @@ local NOT_MODIFIED = 304
 local _M = { _VERSION = '1.0' }
 local mt = { __index = _M }
 
-local function to_str(...)
-
-    local argsv = {...}
-
-    for i=1, select('#', ...) do
-        argsv[i] = tableutil.str(argsv[i])
-    end
-
-    return table.concat( argsv )
-
-end
 local function _trim( s )
     if type( s ) ~= 'string' then
         return s
@@ -59,7 +51,7 @@ local function _read( self, size )
     return self.sock:receive( size )
 end
 
-local function discard_lines_until( self, sequence )
+local function _discard_lines_until( self, sequence )
     local skip, err_msg
     sequence = sequence or ''
 
@@ -96,7 +88,7 @@ local function _load_resp_status( self )
         if status == nil or status < 100 or status > 999 then
             return 'BadStatus', to_str('invalid status value:', status)
         elseif 100 <= status and status < 200 then
-            err_code, err_msg = discard_lines_until( self, '' )
+            err_code, err_msg = _discard_lines_until( self, '' )
             if err_code ~= nil then
                 return err_code, to_str('read header:', err_msg )
             end
@@ -213,7 +205,7 @@ local function _next_chunk( self )
         self.body_end = true
 
         --discard trailer
-        local err_code, err_msg = discard_lines_until( self, '' )
+        local err_code, err_msg = _discard_lines_until( self, '' )
         if err_code ~= nil then
             return err_code, to_str('read trailer:', err_msg )
         end
@@ -265,22 +257,41 @@ local function _read_chunk( self, size )
     return table.concat( bufs ), nil, nil
 end
 
-function _M.new( _, ip, port, timeout )
+function _M.new( _, ip, port, timeouts, opts )
 
-    timeout = timeout or DEF_TIMEOUT
+    opts = opts or {}
+
+    timeouts = timeouts or DEF_TIMEOUT
+
+    local conn_timeout, send_timeout, read_timeout
+
+    -- connect_timeout, send_timeout, read_timeout
+    if type(timeouts) == 'table' then
+        conn_timeout, send_timeout, read_timeout =
+            timeouts[1], timeouts[2], timeouts[3]
+    else
+        conn_timeout, send_timeout, read_timeout =
+            timeouts, timeouts, timeouts
+    end
 
     local sock= ngx.socket.tcp()
-    sock:settimeout( timeout )
+    sock:settimeouts( conn_timeout, send_timeout, read_timeout )
 
     local h = {
         ip = ip,
         port = port or DEF_PORT,
-        timeout = timeout,
+
+        conn_timeout = conn_timeout,
+        send_timeout = send_timeout,
+        read_timeout = read_timeout,
+
         sock = sock,
         has_read = 0,
         cont_len = 0,
         body_end = false,
-        chunked  = false
+        chunked  = false,
+
+        service_key = opts.service_key or 'port-' .. (port or DEF_PORT),
     }
 
     return setmetatable( h, mt )
@@ -318,13 +329,40 @@ function _M.send_request( self, uri, opts )
 
     sbuf = table.concat( sbuf, '\r\n' )
 
+    if has_logging then
+        self.log = rpc_logging.new_entry(self.service_key, {
+            ip = self.ip,
+            port = self.port,
+            uri = self.uri,
+        })
+
+        if headers['Range'] ~= nil then
+            local r, err, errmes = _M.parse_request_range(headers['Range'], nil)
+            if err == nil then
+                self.log.range = {from = r.start, to = r['end']}
+            end
+        end
+
+        rpc_logging.add_log(self.log)
+    end
+
     local ret, err_msg = self.sock:connect( self.ip, self.port )
+
+    rpc_logging.set_time(self.log, 'upstream', 'conn')
+
     if err_msg ~= nil then
+        rpc_logging.set_err(self.log, 'SocketError')
         return 'SocketError', to_str('connect:', err_msg)
     end
 
+    rpc_logging.reset_start(self.log)
+
     ret, err_msg = self.sock:send( sbuf )
+
+    rpc_logging.set_time(self.log, 'upstream', 'send')
+
     if err_msg ~= nil then
+        rpc_logging.set_err(self.log, 'SocketError')
         return 'SocketError', to_str('request:', err_msg)
     end
 
@@ -336,10 +374,20 @@ function _M.send_body( self, body )
     local err_msg
 
     if body ~= nil then
+
+        rpc_logging.reset_start(self.log)
+
         bytes, err_msg = self.sock:send( body )
+        rpc_logging.incr_time(self.log, 'upstream', 'sendbody')
+
         if err_msg ~= nil then
+
+            rpc_logging.set_err(self.log, err_msg)
+
             return nil, 'SocketError',
                 to_str('send body:', err_msg)
+        else
+            rpc_logging.incr_byte(self.log, 'upstream', 'sendbody', #body)
         end
     end
 
@@ -350,12 +398,25 @@ function _M.finish_request( self )
     local err_code
     local err_msg
 
+    rpc_logging.reset_start(self.log)
+
     err_code, err_msg = _load_resp_status( self )
+
+    rpc_logging.incr_time(self.log, 'upstream', 'recv')
+    rpc_logging.set_status(self.log, self.status)
+    rpc_logging.set_err(self.log, err_code)
+
     if err_code ~= nil then
         return err_code, err_msg
     end
 
+    rpc_logging.reset_start(self.log)
+
     err_code, err_msg = _load_resp_headers( self )
+
+    rpc_logging.incr_time(self.log, 'upstream', 'recv')
+    rpc_logging.set_err(self.log, err_code)
+
     if err_code ~= nil then
         return err_code, err_msg
     end
@@ -363,7 +424,38 @@ function _M.finish_request( self )
     return nil, nil
 end
 
-function _M.read_body( self, size )
+function _M.read_body(self, size, blocksize)
+
+    local body = {}
+    if blocksize == nil or type(blocksize) ~= 'number' or blocksize <= 1024 then
+        blocksize = 1024*1024
+    end
+
+    while size > 0 do
+
+        rpc_logging.reset_start(self.log)
+
+        local buf, err, errmes = self:read_one_block( math.min(size, blocksize) )
+
+        rpc_logging.incr_stat(self.log, 'upstream', 'recvbody', #(buf or ''))
+        rpc_logging.set_err(self.log, err)
+
+        if err ~= nil then
+            return nil, err, errmes
+        end
+
+        if buf == '' then
+            break
+        end
+
+        size = size - #buf
+        table.insert( body, buf )
+    end
+
+    return table.concat( body ), nil, nil
+end
+
+function _M.read_one_block( self, size )
 
     if self.body_end then
         return '', nil, nil
@@ -403,6 +495,10 @@ function _M.set_timeout( self, time )
     self.sock:settimeout( time )
 end
 
+function _M.set_timeouts( self, conn_timeout, send_timeout, read_timeout )
+    self.sock:settimeouts( conn_timeout, send_timeout, read_timeout )
+end
+
 function _M.close( self )
     local rst, err_msg = self.sock:close()
     if err_msg ~= nil then
@@ -410,6 +506,71 @@ function _M.close( self )
     end
 
     return nil, nil
+end
+
+function _M.parse_request_range(range, file_size)
+
+    local s
+    local elts
+    local r_start, r_end
+
+    -- if file_size is nil, you must make sure range start and end is not empty
+
+    if range == nil and file_size == nil then
+        return {}, nil, nil
+    end
+
+    if not string.find(range, 'bytes=') or file_size == 0 then
+        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+                                        .. ' file size: ' .. tostring(file_size)
+    end
+
+    s = string.find(range, '=')
+    elts = strutil.split( range:sub(s+1), '-' )
+    if #elts ~= 2 then
+        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+    end
+
+    r_start = tonumber( elts[1] )
+    r_end = tonumber( elts[2] )
+    if r_start == nil and r_end == nil then
+        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+    end
+
+    if file_size == nil then
+        return { ['start'] = r_start, ['end'] = r_end }, nil, nil
+    end
+
+    if r_start == nil then
+        r_start = file_size - r_end
+        r_end = file_size - 1
+    elseif r_end == nil then
+        r_end = file_size - 1
+    end
+
+    if r_start < 0 then
+        r_start = 0
+    end
+
+    if r_end > file_size - 1 then
+        r_end = file_size - 1
+    end
+
+    if r_start > r_end then
+        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+    end
+
+    return { ['start'] = r_start, ['end'] = r_end }, nil, nil
+
+end
+
+function _M.get_reused_times(self)
+    local count, err_msg = self.sock:getreusedtimes()
+    if err_msg ~= nil then
+        return nil, 'SocketError', err_msg
+    end
+
+    return count
 end
 
 return _M

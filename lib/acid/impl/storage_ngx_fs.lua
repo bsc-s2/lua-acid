@@ -1,7 +1,7 @@
 local _M = {}
 local _meta = { __index=_M }
 
-local json = require( "cjson" )
+local json = require( "acid.json" )
 local libluafs = require( "libluafs" )
 local strutil = require( "acid.strutil" )
 local cache = require( "acid.cache" )
@@ -151,7 +151,7 @@ function _M:_load(pobj)
         return nil, "StorageError", "checksum unmatched: "..chksum .. ':' .. actual_chksum
     end
 
-    local o = json.decode( cont )
+    local o = json.dec( cont )
     return o, nil, nil
 end
 function _M:load(pobj, isupdate)
@@ -197,7 +197,7 @@ function _M:store(pobj)
         return nil, err, errmes
     end
 
-    local cont = json.encode( pobj.record )
+    local cont = json.enc( pobj.record )
 
     local ver = "1"
     local chksum = _chksum(cont)
