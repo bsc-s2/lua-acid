@@ -67,7 +67,7 @@ function _M:send_req(pobj, id, req)
     }
 
     local h = httpclient:new( ip, port, timeout )
-    local err, errmes = h:request( uri, args )
+    local _, err, errmes = h:request( uri, args )
     if err then
         self:track(
             "send_req-err:"..tostring(err)..','..tostring(errmes)

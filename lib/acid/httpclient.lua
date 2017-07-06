@@ -56,11 +56,11 @@ local function _discard_lines_until( self, sequence )
     while skip ~= sequence do
         skip, err_msg = _read_line( self )
         if err_msg ~= nil then
-            return 'SocketError', err_msg
+            return nil, 'SocketReadError', err_msg
         end
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 local function _load_resp_status( self )
@@ -69,26 +69,27 @@ local function _load_resp_status( self )
     local err_code
     local err_msg
     local elems
+    local _
 
     while true do
         line, err_msg = _read_line( self )
         if err_msg ~= nil then
-            return 'SocketError', to_str('read status line:', err_msg)
+            return nil, 'SocketReadError', to_str('read status line:', err_msg)
         end
 
         elems = strutil.split( line, ' ' )
         if table.getn(elems) < 3 then
-            return 'BadStatus', to_str('invalid status line:', line)
+            return nil, 'BadStatus', to_str('invalid status line:', line)
         end
 
         status = tonumber( elems[2] )
 
         if status == nil or status < 100 or status > 999 then
-            return 'BadStatus', to_str('invalid status value:', status)
+            return nil, 'BadStatus', to_str('invalid status value:', status)
         elseif 100 <= status and status < 200 then
-            err_code, err_msg = _discard_lines_until( self, '' )
+            _, err_code, err_msg = _discard_lines_until( self, '' )
             if err_code ~= nil then
-                return err_code, to_str('read header:', err_msg )
+                return nil, err_code, to_str('read header:', err_msg )
             end
         else
             self.status = status
@@ -96,7 +97,7 @@ local function _load_resp_status( self )
         end
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 local function _load_resp_headers( self )
@@ -112,7 +113,7 @@ local function _load_resp_headers( self )
 
         line, err_msg = _read_line( self )
         if err_msg ~= nil then
-            return 'SocketError', to_str('read header:', err_msg)
+            return nil, 'SocketReadError', to_str('read header:', err_msg)
         end
 
         if line == '' then
@@ -121,7 +122,7 @@ local function _load_resp_headers( self )
 
         elems = strutil.split( line, ':' )
         if table.getn(elems) < 2 then
-            return 'BadHeader', to_str('invalid header:', line)
+            return nil, 'BadHeader', to_str('invalid header:', line)
         end
 
         hname = string.lower( _trim( elems[1] ) )
@@ -133,26 +134,26 @@ local function _load_resp_headers( self )
 
     if self.status == NO_CONTENT or self.status == NOT_MODIFIED
         or self.method == 'HEAD' then
-        return nil, nil
+        return nil, nil, nil
     end
 
     if self.headers['transfer-encoding'] == 'chunked' then
         self.chunked = true
-        return nil, nil
+        return nil, nil, nil
     end
 
     local cont_len = self.headers['content-length']
     if cont_len ~= nil then
         cont_len = tonumber( cont_len )
         if cont_len == nil then
-            return 'BadHeader', to_str('invalid content-length header:',
+            return nil, 'BadHeader', to_str('invalid content-length header:',
                     self.headers['content-length'])
         end
         self.cont_len = cont_len
-        return nil, nil
+        return nil, nil, nil
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 local function _norm_headers( headers )
@@ -173,7 +174,7 @@ end
 local function _read_chunk_size( self )
     local line, err_msg = _read_line( self )
     if err_msg ~= nil then
-        return nil, 'SocketError', to_str('read chunk size:', err_msg)
+        return nil, 'SocketReadError', to_str('read chunk size:', err_msg)
     end
 
     local idx = line:find(';')
@@ -193,7 +194,7 @@ local function _next_chunk( self )
 
     local size, err_code, err_msg = _read_chunk_size( self )
     if err_code ~= nil then
-        return err_code, err_msg
+        return nil, err_code, err_msg
     end
 
     self.chunk_size = size
@@ -203,16 +204,17 @@ local function _next_chunk( self )
         self.body_end = true
 
         --discard trailer
-        local err_code, err_msg = _discard_lines_until( self, '' )
+        local _, err_code, err_msg = _discard_lines_until( self, '' )
         if err_code ~= nil then
-            return err_code, to_str('read trailer:', err_msg )
+            return nil, err_code, to_str('read trailer:', err_msg )
         end
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 local function _read_chunk( self, size )
+    local _
     local buf
     local err_code
     local err_msg
@@ -220,7 +222,7 @@ local function _read_chunk( self, size )
 
     while size > 0 do
         if self.chunk_size == nil then
-            err_code, err_msg = _next_chunk( self )
+            _, err_code, err_msg = _next_chunk( self )
             if err_code ~= nil then
                 return nil, err_code, err_msg
             end
@@ -233,7 +235,7 @@ local function _read_chunk( self, size )
         buf, err_msg = _read( self, math.min(size,
                 self.chunk_size - self.chunk_pos))
         if err_msg ~= nil then
-            return nil, 'SocketError', to_str('read chunked:', err_msg)
+            return nil, 'SocketReadError', to_str('read chunked:', err_msg)
         end
 
         table.insert( bufs, buf )
@@ -245,7 +247,7 @@ local function _read_chunk( self, size )
         if self.chunk_pos == self.chunk_size then
             buf, err_msg =  _read( self, #'\r\n')
             if err_msg ~= nil then
-                return nil, 'SocketError', to_str('read chunked:', err_msg)
+                return nil, 'SocketReadError', to_str('read chunked:', err_msg)
             end
             self.chunk_size = nil
             self.chunk_pos = nil
@@ -297,9 +299,9 @@ end
 
 function _M.request( self, uri, opts )
 
-    local err_code, err_msg = self:send_request( uri, opts )
+    local _, err_code, err_msg = self:send_request( uri, opts )
     if err_code ~= nil then
-        return err_code, err_msg
+        return nil, err_code, err_msg
     end
 
     return self:finish_request()
@@ -350,7 +352,7 @@ function _M.send_request( self, uri, opts )
 
     if err_msg ~= nil then
         rpc_logging.set_err(self.log, 'SocketError')
-        return 'SocketError', to_str('connect:', err_msg)
+        return nil, 'SocketConnectError', to_str('connect:', err_msg)
     end
 
     rpc_logging.reset_start(self.log)
@@ -361,10 +363,10 @@ function _M.send_request( self, uri, opts )
 
     if err_msg ~= nil then
         rpc_logging.set_err(self.log, 'SocketError')
-        return 'SocketError', to_str('request:', err_msg)
+        return nil, 'SocketSendError', to_str('request:', err_msg)
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 function _M.send_body( self, body )
@@ -382,7 +384,7 @@ function _M.send_body( self, body )
 
             rpc_logging.set_err(self.log, err_msg)
 
-            return nil, 'SocketError',
+            return nil, 'SocketSendError',
                 to_str('send body:', err_msg)
         else
             rpc_logging.incr_byte(self.log, 'upstream', 'sendbody', #body)
@@ -393,33 +395,34 @@ function _M.send_body( self, body )
 end
 
 function _M.finish_request( self )
+    local _
     local err_code
     local err_msg
 
     rpc_logging.reset_start(self.log)
 
-    err_code, err_msg = _load_resp_status( self )
+    _, err_code, err_msg = _load_resp_status( self )
 
     rpc_logging.incr_time(self.log, 'upstream', 'recv')
     rpc_logging.set_status(self.log, self.status)
     rpc_logging.set_err(self.log, err_code)
 
     if err_code ~= nil then
-        return err_code, err_msg
+        return nil, err_code, err_msg
     end
 
     rpc_logging.reset_start(self.log)
 
-    err_code, err_msg = _load_resp_headers( self )
+    _, err_code, err_msg = _load_resp_headers( self )
 
     rpc_logging.incr_time(self.log, 'upstream', 'recv')
     rpc_logging.set_err(self.log, err_code)
 
     if err_code ~= nil then
-        return err_code, err_msg
+        return nil, err_code, err_msg
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 function _M.read_body(self, size, blocksize)
@@ -467,7 +470,7 @@ function _M.read_one_block( self, size )
 
     local buf, err_msg = _read( self, math.min(size, rest_len))
     if err_msg ~= nil then
-        return nil, 'SocketError', to_str('read body:', err_msg)
+        return nil, 'SocketReadError', to_str('read body:', err_msg)
     end
 
     self.has_read = self.has_read + #buf
@@ -483,10 +486,10 @@ end
 function _M.set_keepalive( self, timeout, size )
     local rst, err_msg = self.sock:setkeepalive( timeout, size )
     if err_msg ~= nil then
-        return 'SocketError', to_str('set keepalive:', err_msg)
+        return nil, 'SocketError', to_str('set keepalive:', err_msg)
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 function _M.set_timeout( self, time )
@@ -500,10 +503,10 @@ end
 function _M.close( self )
     local rst, err_msg = self.sock:close()
     if err_msg ~= nil then
-        return 'SocketError', to_str('close:', err_msg)
+        return nil, 'SocketCloseError', to_str('close:', err_msg)
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
 
 function _M.parse_request_range(range, file_size)
