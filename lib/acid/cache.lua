@@ -125,7 +125,7 @@ function _M.cacheable( dict, key, func, opts )
     local lock, err_msg = resty_lock:new( _M.shared_dict_lock,
             { exptime=opts.lock_exptime or 30, timeout=opts.lock_timeout or 30 } )
     if err_msg ~= nil then
-        return nil, 'SystemError',
+        return nil, 'LockError',
                 err_msg .. ' while new lock:' .. _M.shared_dict_lock
     end
 
