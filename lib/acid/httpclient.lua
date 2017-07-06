@@ -20,9 +20,9 @@ local has_logging = true
 
 local to_str = strutil.to_str
 
-local DEF_PORT = 80
-local DEF_METHOD = 'GET'
-local DEF_TIMEOUT = 60000
+local DEFAULT_PORT = 80
+local DEFAULT_METHOD = 'GET'
+local DEFAULT_TIMEOUT = 60000
 
 local NO_CONTENT = 204
 local NOT_MODIFIED = 304
@@ -259,7 +259,7 @@ function _M.new( _, ip, port, timeouts, opts )
 
     opts = opts or {}
 
-    timeouts = timeouts or DEF_TIMEOUT
+    timeouts = timeouts or DEFAULT_TIMEOUT
 
     local conn_timeout, send_timeout, read_timeout
 
@@ -277,7 +277,7 @@ function _M.new( _, ip, port, timeouts, opts )
 
     local h = {
         ip = ip,
-        port = port or DEF_PORT,
+        port = port or DEFAULT_PORT,
 
         conn_timeout = conn_timeout,
         send_timeout = send_timeout,
@@ -289,7 +289,7 @@ function _M.new( _, ip, port, timeouts, opts )
         body_end = false,
         chunked  = false,
 
-        service_key = opts.service_key or 'port-' .. (port or DEF_PORT),
+        service_key = opts.service_key or 'port-' .. (port or DEFAULT_PORT),
     }
 
     return setmetatable( h, mt )
@@ -310,7 +310,7 @@ function _M.send_request( self, uri, opts )
     opts = opts or {}
 
     self.uri = uri
-    self.method = opts.method or DEF_METHOD
+    self.method = opts.method or DEFAULT_METHOD
 
     local body = opts.body or ''
     local headers = opts.headers or {}
