@@ -19,7 +19,7 @@ function test.proc_cache(t)
     }
 
     for _, case in ipairs(cases) do
-        local val, err, errmes = cache.cacheable(unpack(case.args))
+        local val, err, errmes = cache.cacheable(t:unpack(case.args))
         t:eqlist({val, err, errmes}, case.ret, '')
     end
 end
@@ -43,7 +43,7 @@ function test.ngx_shdict_cache(t)
     }
 
     for _, case in ipairs(cases) do
-        local val, err, errmes = cache.cacheable(unpack(case.args))
+        local val, err, errmes = cache.cacheable(t:unpack(case.args))
         t:eqlist({val, err, errmes}, case.ret, '')
     end
 end
