@@ -187,6 +187,9 @@ function test.placeholder(t)
     t:eq('-', ph(''))
     t:eq('x', ph('x'))
     t:eq('1', ph(1))
+    t:eq('1.2', ph(1.2, '-'))
+    t:eq('1.200', ph(1.2, '-', '%.3f'))
+    t:eq('1.234', ph(1.2345, '-', '%.3f'))
 end
 
 

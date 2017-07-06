@@ -208,14 +208,20 @@ function _M.to_str(...)
 end
 
 
-function _M.placeholder(val, pholder)
+function _M.placeholder(val, pholder, float_fmt)
     pholder = pholder or '-'
 
     if val == '' or val == nil then
         return pholder
-    else
-        return tostring(val)
     end
+
+    if float_fmt ~= nil
+         and type(val) == 'number' and val % 1 ~= 0 then
+
+        return string.format(float_fmt, val)
+    end
+
+    return tostring(val)
 end
 
 
