@@ -1,26 +1,12 @@
 local _M = { _VERSION = '1.0' }
+local strutil = require("acid.strutil")
 
 local ngx = ngx
-
-local function ph(val)
-    if val == nil then
-        return '-'
-    elseif type(val) == 'number' then
-        if val % 1 == 0 then
-            return tostring(val)
-        else
-            return string.format('%.3f', val)
-        end
-    else
-        return tostring(val)
-    end
-end
-
 
 local function addfield(tbl, str, fld, sep)
     if fld ~= nil then
         table.insert(tbl, str)
-        table.insert(tbl, ph(fld))
+        table.insert(tbl, strutil.placeholder(fld, fld or '-', '%.3f'))
         if sep then
             table.insert(tbl, sep)
         end
@@ -241,7 +227,7 @@ end
 function _M.entry_str(e)
     local rng = e.range
 
-    local s = { ph(e.service_key), }
+    local s = { strutil.placeholder(e.service_key), }
     addfield(s, ',status:', e.status)
     addfield(s, ',err:', e.err)
     addfield(s, ',url:', '')
@@ -251,7 +237,8 @@ function _M.entry_str(e)
     addfield(s, '', e.uri)
 
     if rng ~= nil then
-        table.insert(s, ',range:[' .. ph(rng.from) .. ',' .. ph(rng.to) .. ')')
+        table.insert(s, ',range:[' .. strutil.placeholder(rng.from, '-', '%.3f')
+             .. ',' .. strutil.placeholder(rng.to, '-', '%.3f') .. ')')
     end
 
     addfield(s, ',sent:', e.sent)
