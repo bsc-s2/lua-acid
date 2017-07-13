@@ -70,7 +70,7 @@ function _M.dup(tbl, deep, ref_table)
 end
 
 
-local function _contains(a, b, ref_table)
+local function _contains(a, b, compared)
 
     if type(a) ~= 'table' or type(b) ~= 'table' then
         return a == b
@@ -80,17 +80,27 @@ local function _contains(a, b, ref_table)
         return true
     end
 
-    if ref_table[a] == nil then
-        ref_table[a] = {}
+    if compared[a] == nil then
+        compared[a] = {}
     end
 
-    if ref_table[a][b] ~= nil then
-        return ref_table[a][b]
+    if compared[a][b] ~= nil then
+        -- If we see a pair of already compared node, it could be one of
+        -- following situations:
+        --
+        -- *    a and b are both in a finished key path. Then all following key
+        --      path must be the same.
+        --
+        -- *    Or they are both ancestors in current key path. In other word,
+        --      a circle is found in both key path. Thus we can finish comparing
+        --      these two key paths.
+        return true
     end
-    ref_table[a][b] = true
 
-    for k, v in pairs( b ) do
-        local yes = _contains(a[k], v, ref_table)
+    compared[a][b] = true
+
+    for k, v in pairs(b) do
+        local yes = _contains(a[k], v, compared)
         if not yes then
             return false
         end
@@ -100,7 +110,7 @@ end
 
 
 function _M.contains(a, b)
-    return _contains( a, b, {} )
+    return _contains(a, b, {})
 end
 
 
