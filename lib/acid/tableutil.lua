@@ -9,11 +9,13 @@ _M.str = repr.str
 
 math.randomseed(os.time() * 1000)
 
+-- TODO add doc
 function _M.nkeys(tbl)
     return #_M.keys(tbl)
 end
 
 
+-- TODO add doc
 function _M.keys(tbl)
     local ks = {}
     for k, _ in pairs(tbl) do
@@ -23,6 +25,7 @@ function _M.keys(tbl)
 end
 
 
+-- TODO add doc
 function _M.duplist(tbl, deep)
     local t = _M.dup( tbl, deep )
     local rst = {}
@@ -39,6 +42,7 @@ function _M.duplist(tbl, deep)
 end
 
 
+-- TODO add doc
 function _M.dup(tbl, deep, ref_table)
 
     if type(tbl) ~= 'table' then
@@ -66,7 +70,7 @@ function _M.dup(tbl, deep, ref_table)
 end
 
 
-local function _contains(a, b, ref_table)
+local function _contains(a, b, compared)
 
     if type(a) ~= 'table' or type(b) ~= 'table' then
         return a == b
@@ -76,17 +80,27 @@ local function _contains(a, b, ref_table)
         return true
     end
 
-    if ref_table[a] == nil then
-        ref_table[a] = {}
+    if compared[a] == nil then
+        compared[a] = {}
     end
 
-    if ref_table[a][b] ~= nil then
-        return ref_table[a][b]
+    if compared[a][b] ~= nil then
+        -- If we see a pair of already compared node, it could be one of
+        -- following situations:
+        --
+        -- *    a and b are both in a finished key path. Then all following key
+        --      path must be the same.
+        --
+        -- *    Or they are both ancestors in current key path. In other word,
+        --      a circle is found in both key path. Thus we can finish comparing
+        --      these two key paths.
+        return true
     end
-    ref_table[a][b] = true
 
-    for k, v in pairs( b ) do
-        local yes = _contains(a[k], v, ref_table)
+    compared[a][b] = true
+
+    for k, v in pairs(b) do
+        local yes = _contains(a[k], v, compared)
         if not yes then
             return false
         end
@@ -96,15 +110,17 @@ end
 
 
 function _M.contains(a, b)
-    return _contains( a, b, {} )
+    return _contains(a, b, {})
 end
 
 
+-- TODO add doc
 function _M.eq(a, b)
     return _M.contains(a, b) and _M.contains(b, a)
 end
 
 
+-- TODO add doc
 function _M.sub(tbl, ks, list)
     ks = ks or {}
     local t = {}
@@ -119,6 +135,7 @@ function _M.sub(tbl, ks, list)
 end
 
 
+-- TODO add doc
 function _M.intersection(tables, val)
 
     local t = {}
@@ -141,6 +158,7 @@ function _M.intersection(tables, val)
 end
 
 
+-- TODO add doc
 function _M.union(tables, val)
     local t = {}
 
@@ -153,6 +171,7 @@ function _M.union(tables, val)
 end
 
 
+-- TODO add doc
 function _M.merge(tbl, ...)
     for _, src in ipairs({...}) do
         for k, v in pairs(src) do
@@ -163,6 +182,7 @@ function _M.merge(tbl, ...)
 end
 
 
+-- TODO add doc
 function _M.iter(tbl)
 
     local ks = _M.keys(tbl)
@@ -181,6 +201,7 @@ function _M.iter(tbl)
 end
 
 
+-- TODO add doc
 function _M.deep_iter(tbl)
 
     local ks = {}
@@ -209,6 +230,7 @@ function _M.deep_iter(tbl)
 end
 
 
+-- TODO add doc
 function _M.has(tbl, value)
 
     if value == nil then
@@ -225,6 +247,7 @@ function _M.has(tbl, value)
 end
 
 
+-- TODO add doc
 function _M.remove_value(tbl, value)
 
     for k, v in pairs(tbl) do
@@ -243,6 +266,7 @@ function _M.remove_value(tbl, value)
 end
 
 
+-- TODO add doc
 function _M.remove_all(tbl, value)
 
     local removed = 0
@@ -254,6 +278,7 @@ function _M.remove_all(tbl, value)
 end
 
 
+-- TODO add doc
 function _M.get_len(tbl)
     local len = 0
     for _, _ in pairs(tbl) do
@@ -264,6 +289,7 @@ function _M.get_len(tbl)
 end
 
 
+-- TODO add doc
 function _M.random(tbl, n)
     local idx
     local rnd
@@ -291,6 +317,7 @@ function _M.random(tbl, n)
 end
 
 
+-- TODO add doc
 function _M.extends(tbl, tvals)
 
     if type(tbl) ~= 'table' or tvals == nil then
@@ -306,6 +333,7 @@ function _M.extends(tbl, tvals)
 end
 
 
+-- TODO add doc
 function _M.is_empty(tbl)
     if type(tbl) == 'table' and next(tbl) == nil then
         return true
@@ -315,6 +343,7 @@ function _M.is_empty(tbl)
 end
 
 
+-- TODO add doc
 function _M.get(tbl, keys)
 
     local node = tbl
@@ -366,6 +395,7 @@ local function get_updated_v(tbl, k, v, opts, ref_table)
 end
 
 
+-- TODO add doc
 function _M.update(tbl, src, opts, ref_table)
     opts = opts or {}
 
