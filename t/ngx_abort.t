@@ -203,7 +203,7 @@ GET /t
                 return
             end
 
-            local rst, err, errmes = ngx_abort.remove_callback(cb)
+            local rst, err, errmes = ngx_abort.remove_callback(rst_cb)
             if err ~= nil then
                 ngx.log(ngx.ERR, "remove callback error")
                 return
@@ -222,7 +222,7 @@ GET /t
 --- no_error_log eval
 [
     "add callback error",
-    "main coroutine done"
+    "main coroutine done",
     "on abort callback called",
     "remove callback error",
 ]
