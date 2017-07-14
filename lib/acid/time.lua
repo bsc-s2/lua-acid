@@ -120,7 +120,7 @@ end
 
 local function default_false(withzone)
     if withzone == nil then
-        withzne = false
+        withzone = false
     end
 
     return withzone
@@ -211,56 +211,32 @@ function _M.to_sec(ts)
     --if 'number' is greater than 1 * 10^15, 'number' will be scientific notation
     --timestamp can only be a string of numbers or not a scientific notation of numbers
 
-    if type(ts) == 'string' then
-        if tonumber(ts) == nil
-            or tonumber(ts) < 0 then
-
-            return nil, 'ArgumentError',
-                'timestamp cannot tonumber or ts cannot less than 0, ts:' .. ts
-        end
-
-        if #ts == 10 then
-            ts = ts
-        elseif #ts == 13 then
-            ts = ts:sub(1, -3 - 1)
-        elseif #ts == 16 then
-            ts = ts:sub(1, -6 - 1)
-        elseif #ts == 19 then
-            ts = ts:sub(1, -9 - 1)
-        else
-            return nil, 'ArgumentError',
-                'invalid time length, not 10, 13, 16 or 19, ts:' .. ts
-        end
-
-        ts = tonumber(ts)
-        if ts == nil then
-            return nil, 'ArgumentError', 'timestamp cannot tonumber, ts:' .. ts
-        end
-
-    elseif type(ts) == 'number' then
-        if ts < 0 then
-            return nil, 'ArgumentError', 'timestamp cannot less than 0, ts:' .. ts
-        end
-
-        if string.find(tostring(ts), 'e') ~= nil then
-            return nil, 'ArgumentError', 'timestamp cannot be scientific notation, ts:' .. ts
-        end
-
-        while ts >= 10000000000 do
-
-            ts = math.floor(ts/1000)
-        end
-
-        if string.len(tostring(ts)) ~= 10 then
-            return nil, 'ArgumentError',
-                'timestamp is number,invalid time length, not 10, 13, ts:' .. ts
-        end
-
-    else
-        return nil, 'ArgumentError', 'timestamp is not string or number, ts:' .. type(ts)
+    if tonumber(ts) == nil or tonumber(ts) < 0 then
+        return nil, 'ArgumentError',
+            'timestamp cannot be converted to number or less than 0, ts:' .. ts
     end
 
-    return ts
+    ts = tostring(ts)
+
+    if string.find(ts, '[e.]') ~= nil then
+        return nil, 'ArgunmentError',
+            'timestamp cannot be scientific notation or decimal, ts:' .. ts
+    end
+
+    if #ts == 10 then
+        ts = ts
+    elseif #ts == 13 then
+        ts = ts:sub(1, -4)
+    elseif #ts == 16 then
+        ts = ts:sub(1, -7)
+    elseif #ts == 19 then
+        ts = ts:sub(1, -10)
+    else
+        return nil, 'ArgumentError',
+            'invalid time length, not 10, 13, 16 or 19, ts:' .. ts
+    end
+
+    return tonumber(ts)
 end
 
 

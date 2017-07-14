@@ -220,121 +220,73 @@ end
 function test.to_sec(t)
     local cases = {
         {
-            input = '1492398063',
-            out = 1492398063,
-            err = nil
+            input='1499850242',
+            out=1499850242
         },
         {
-            input = '1492398063123',
-            out = 1492398063,
-            err = nil
+            input='1499850242000',
+            out=1499850242
         },
         {
-            input = '1492398063123456',
-            out = 1492398063,
-            err = nil
+            input='1499850242000000',
+            out=1499850242
         },
         {
-            input = '1492398063123456789',
-            out = 1492398063,
-            err = nil
+            input='1499850242000000000',
+            out=1499850242
         },
         {
-            input = '1492398063aaa',
-            out = nil,
-            err = 'ArgumentError'
+            input='abc1499850242',
+            out=nil
         },
         {
-            input = '-123456789',
-            out = nil,
-            err = 'ArgumentError'
+            input='1499850242abc',
+            out=nil
         },
         {
-            input = '123',
-            out = nil,
-            err = 'ArgumentError'
+            input='-1499850242',
+            out=nil
         },
         {
-            input = '12345678901234567890',
-            out = nil,
-            err = 'ArgumentError'
-        },
-
-        {
-            input = 1000000000,
-            out = 1000000000,
-            err = nil,
+            input='1e10',
+            out=nil
         },
         {
-            input = 9999999997,
-            out = 9999999997,
-            err = nil
+            input='1499850242.1',
+            out=nil
         },
         {
-            input = 9999999999,
-            out = 9999999999,
-            err = nil,
-        },
-        {
-            input = 1000000000000,
-            out = 1000000000,
-            err = nil,
-        },
-        {
-            input = 9999999999998,
-            out = 9999999999,
-            err = nil,
-        },
-        {
-            input = 9999999999999,
-            out = 9999999999,
-            err = nil,
-        },
-        {
-            input = 1492398063,
-            out = 1492398063,
-            err = nil
-        },
-        {
-            input = 1492398063123,
-            out = 1492398063,
-            err = nil
-        },
-        {
-            input = -123456789,
-            out = nil,
-            err = 'ArgumentError'
-        },
-        {
-            input = 1234,
-            out = nil,
-            err = 'ArgumentError'
-        },
-        {
-            input = 1.1234e+15,
-            out = nil,
-            err = 'ArgumentError'
-        },
-        {
-            input = 1492398063123456,
-            out = nil,
-            err = 'ArgumentError'
+            input='12345',
+            out=nil
         },
 
         {
-            input = {},
-            out = nil,
-            err = 'ArgumentError'
+            input=1499850242,
+            out=1499850242
         },
         {
-            input = true,
-            out = nil,
-            err = 'ArgumentError'
+            input=1499850242001,
+            out=1499850242
         },
         {
-            input = nil,
-            out = nil,
-            err = 'ArgumentError'
+            input=1499850242001002,
+            out=nil
+        },
+        {
+            input=1499850242001002003,
+            out=nil
+        },
+        {
+            input=1e10,
+            out=nil
+        },
+        {
+            input=-1499850242,
+            out=nil
+        },
+        {
+            input=1499850242.123,
+            out=nil
         },
     }
 
@@ -342,6 +294,5 @@ function test.to_sec(t)
         local ts, err, err_msg = time.to_sec(case.input)
 
         t:eq( case.out, ts)
-        t:eq( case.err, err, err_msg )
     end
 end
