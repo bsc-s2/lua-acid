@@ -213,14 +213,14 @@ function _M.to_sec(ts)
 
     if tonumber(ts) == nil or tonumber(ts) < 0 then
         return nil, 'ArgumentError',
-            'timestamp cannot be converted to number or less than 0, ts:' .. ts
+            'timestamp cannot be converted to number or less than 0, ts:' .. tostring(ts)
     end
 
     ts = tostring(ts)
 
     if string.find(ts, '[e.]') ~= nil then
-        return nil, 'ArgunmentError',
-            'timestamp cannot be scientific notation or decimal, ts:' .. ts
+        return nil, 'ArgumentError',
+            'timestamp cannot be scientific notation or decimal, ts:' .. tostring(ts)
     end
 
     if #ts == 10 then
@@ -233,7 +233,7 @@ function _M.to_sec(ts)
         ts = ts:sub(1, -10)
     else
         return nil, 'ArgumentError',
-            'invalid time length, not 10, 13, 16 or 19, ts:' .. ts
+            'invalid time length, not 10, 13, 16 or 19, ts:' .. tostring(ts)
     end
 
     return tonumber(ts)

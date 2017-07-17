@@ -13,127 +13,127 @@ end
 
 function test.parse(t)
     local cases = {
-        -- func, input, out, err, msg
+        -- func, args, res, err, errmes
         {
             func=time.parse_isobase,
-            input='20170414T105302Z',
-            out=1492167182
+            args='20170414T105302Z',
+            res=1492167182
         },
         {
             func=time.parse_iso,
-            input='2015-06-21T04:33:42.000Z',
-            out=1434861222
+            args='2015-06-21T04:33:42.000Z',
+            res=1434861222
         },
         {
             func=time.parse_utc,
-            input='Sun, 21 Jun 2015 04:33:42 UTC',
-            out=1434861222
+            args='Sun, 21 Jun 2015 04:33:42 UTC',
+            res=1434861222
         },
         {
             func=time.parse_std,
-            input='2015-06-21 12:33:42',
-            out=1434861222
+            args='2015-06-21 12:33:42',
+            res=1434861222
         },
         {
             func=time.parse_ngxaccesslog,
-            input='21/Jun/2015:12:33:42',
-            out=1434861222
+            args='21/Jun/2015:12:33:42',
+            res=1434861222
         },
         {
             func=time.parse_ngxerrorlog,
-            input='2015/06/21 12:33:42',
-            out=1434861222
+            args='2015/06/21 12:33:42',
+            res=1434861222
         },
 
         {
             func=time.parse_utc,
-            input='Tun, 21 Jun 2015 04:33:42 UTC',
-            out=nil,
+            args='Tun, 21 Jun 2015 04:33:42 UTC',
+            res=nil,
             err='FormatError',
-            msg='Tun, 21 Jun 2015 04:33:42 UTC date format error'
+            errmes='Tun, 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
-            input='un, 21 Jun 2015 04:33:42 UTC',
-            out=nil,
+            args='un, 21 Jun 2015 04:33:42 UTC',
+            res=nil,
             err='FormatError',
-            msg='un, 21 Jun 2015 04:33:42 UTC date format error'
+            errmes='un, 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
-            input=' 21 Jun 2015 04:33:42 UTC',
-            out=nil,
+            args=' 21 Jun 2015 04:33:42 UTC',
+            res=nil,
             err='FormatError',
-            msg=' 21 Jun 2015 04:33:42 UTC date format error'
+            errmes=' 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
-            input='Sun, 21 Jux 2015 04:33:42 UTC',
-            out=nil,
+            args='Sun, 21 Jux 2015 04:33:42 UTC',
+            res=nil,
             err='FormatError',
-            msg='Sun, 21 Jux 2015 04:33:42 UTC date format error'
+            errmes='Sun, 21 Jux 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
-            input='Sun, 21 Jun 2015 04:33:42',
-            out=nil,
+            args='Sun, 21 Jun 2015 04:33:42',
+            res=nil,
             err='FormatError',
-            msg='Sun, 21 Jun 2015 04:33:42 date format error'
+            errmes='Sun, 21 Jun 2015 04:33:42 date format error'
         },
 
         {
             func=time.parse_std,
-            input='2015-06-21 12:u:42',
-            out=nil,
+            args='2015-06-21 12:u:42',
+            res=nil,
             err='FormatError',
-            msg='2015-06-21 12:u:42 date format error'
+            errmes='2015-06-21 12:u:42 date format error'
         },
         {
             func=time.parse_std,
-            input='2015-06-21 12:33:',
-            out=nil,
+            args='2015-06-21 12:33:',
+            res=nil,
             err='FormatError',
-            msg='2015-06-21 12:33: date format error'
+            errmes='2015-06-21 12:33: date format error'
         },
         {
             func=time.parse_std,
-            input=nil,
-            out=nil,
+            args=nil,
+            res=nil,
             err='FormatError',
-            msg='type: nil date format error'
+            errmes='type: nil date format error'
         },
         {
             func=time.parse_std,
-            input={},
-            out=nil,
+            args={},
+            res=nil,
             err='FormatError',
-            msg='type: table date format error'
+            errmes='type: table date format error'
         },
         {
             func=time.parse_std,
-            input=true,
-            out=nil,
+            args=true,
+            res=nil,
             err='FormatError',
-            msg='type: boolean date format error'
+            errmes='type: boolean date format error'
         },
         {
             func=time.parse_std,
-            input=10,
-            out=nil,
+            args=10,
+            res=nil,
             err='FormatError',
-            msg='type: number date format error'
+            errmes='type: number date format error'
         },
 
     }
 
     for i, case in ipairs( cases ) do
-        local out, err, msg = case.func(case.input)
+        local res, err, errmes = case.func(case.args)
 
-        t:eq( case.out, out )
+        t:eq( case.res, res )
 
         if(err ~= nil) then
             t:eq( case.err, err )
-            t:eq( case.msg, msg )
+            t:eq( case.errmes, errmes )
         end
     end
 end
@@ -142,68 +142,68 @@ function test.format(t)
     local cases={
         {
             func=time.format_iso,
-            input=1434861222,
-            out='2015-06-21T04:33:42.000Z'
+            args=1434861222,
+            res='2015-06-21T04:33:42.000Z'
         },
         {
             func=time.format_utc,
-            input=1434861222,
-            out='Sun, 21 Jun 2015 04:33:42 UTC'
+            args=1434861222,
+            res='Sun, 21 Jun 2015 04:33:42 UTC'
         },
         {
             func=time.format_std,
-            input=1434861222,
-            out='2015-06-21 12:33:42'
+            args=1434861222,
+            res='2015-06-21 12:33:42'
         },
         {
             func=time.format_ngxaccesslog,
-            input=1434861222,
-            out='21/Jun/2015:12:33:42'
+            args=1434861222,
+            res='21/Jun/2015:12:33:42'
         },
         {
             func=time.format_ngxerrorlog,
-            input=1434861222,
-            out='2015/06/21 12:33:42'
+            args=1434861222,
+            res='2015/06/21 12:33:42'
         },
 
         {
             func=time.format_std,
-            input=nil,
-            out=nil,
+            args=nil,
+            res=nil,
             err='ArgumentError',
-            msg='timestamp cannot tonumber'
+            errmes='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
-            input={},
-            out=nil,
+            args={},
+            res=nil,
             err='ArgumentError',
-            msg='timestamp cannot tonumber'
+            errmes='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
-            input=':',
-            out=nil,
+            args=':',
+            res=nil,
             err='ArgumentError',
-            msg='timestamp cannot tonumber'
+            errmes='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
-            input='XxX',
-            out=nil,
+            args='XxX',
+            res=nil,
             err='ArgumentError',
-            msg='timestamp cannot tonumber'
+            errmes='timestamp cannot tonumber'
         },
     }
 
     for i, case in ipairs( cases ) do
-        local out, err, msg = case.func(case.input)
+        local res, err, errmes = case.func(case.args)
 
-        t:eq( case.out, out )
+        t:eq( case.res, res )
 
         if(err ~= nil) then
             t:eq( case.err, err )
-            t:eq( case.msg, msg )
+            t:eq( case.errmes, errmes )
         end
     end
 end
@@ -220,79 +220,119 @@ end
 function test.to_sec(t)
     local cases = {
         {
-            input='1499850242',
-            out=1499850242
+            args='1499850242',
+            res=1499850242
         },
         {
-            input='1499850242000',
-            out=1499850242
+            args='1499850242000',
+            res=1499850242
         },
         {
-            input='1499850242000000',
-            out=1499850242
+            args='1499850242000000',
+            res=1499850242
         },
         {
-            input='1499850242000000000',
-            out=1499850242
+            args='1499850242000000000',
+            res=1499850242
         },
         {
-            input='abc1499850242',
-            out=nil
+            args='abc1499850242',
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be converted to number or less than 0, ts:abc1499850242'
         },
         {
-            input='1499850242abc',
-            out=nil
+            args='1499850242abc',
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be converted to number or less than 0, ts:1499850242abc'
         },
         {
-            input='-1499850242',
-            out=nil
+            args='-1499850242',
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be converted to number or less than 0, ts:-1499850242'
         },
         {
-            input='1e10',
-            out=nil
+            args='1e10',
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be scientific notation or decimal, ts:1e10'
         },
         {
-            input='1499850242.1',
-            out=nil
+            args='1499850242.1',
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be scientific notation or decimal, ts:1499850242.1'
         },
         {
-            input='12345',
-            out=nil
+            args='12345',
+            res=nil,
+            err='ArgumentError',
+            errmes='invalid time length, not 10, 13, 16 or 19, ts:12345'
         },
 
         {
-            input=1499850242,
-            out=1499850242
+            args=1499850242,
+            res=1499850242
         },
         {
-            input=1499850242001,
-            out=1499850242
+            args=1499850242001,
+            res=1499850242
         },
         {
-            input=1499850242001002,
-            out=nil
+            args=1499850242001002,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be scientific notation or decimal, ts:1.499850242001e+15'
         },
         {
-            input=1499850242001002003,
-            out=nil
+            args=1499850242001002003,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be scientific notation or decimal, ts:1.499850242001e+18'
         },
         {
-            input=1e10,
-            out=nil
+            args=1e15,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be scientific notation or decimal, ts:1e+15'
         },
         {
-            input=-1499850242,
-            out=nil
+            args=-1499850242,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be converted to number or less than 0, ts:-1499850242'
         },
         {
-            input=1499850242.123,
-            out=nil
+            args=1499850242.123,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be scientific notation or decimal, ts:1499850242.123'
+        },
+
+        {
+            args=nil,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be converted to number or less than 0, ts:nil'
+        },
+        {
+            args=true,
+            res=nil,
+            err='ArgumentError',
+            errmes='timestamp cannot be converted to number or less than 0, ts:true'
         },
     }
 
     for i, case in pairs(cases) do
-        local ts, err, err_msg = time.to_sec(case.input)
+        local ts, err, errmes = time.to_sec(case.args)
 
-        t:eq( case.out, ts)
+        t:eq( case.res, ts)
+
+        if err ~= nil then
+            t:eq( case.err, err )
+            t:eq( case.errmes, errmes )
+        end
     end
 end
