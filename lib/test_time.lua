@@ -1,5 +1,7 @@
 local time = require("acid.time")
 
+local dd = test.dd
+
 function test.iso(t)
     local p = time.parse_iso
     local f = time.format_iso
@@ -13,127 +15,128 @@ end
 
 function test.parse(t)
     local cases = {
-        -- func, args, res, err, errmes
+        -- func, args, expected, err, err_msg
         {
             func=time.parse_isobase,
             args='20170414T105302Z',
-            res=1492167182
+            expected=1492167182
         },
         {
             func=time.parse_iso,
             args='2015-06-21T04:33:42.000Z',
-            res=1434861222
+            expected=1434861222
         },
         {
             func=time.parse_utc,
             args='Sun, 21 Jun 2015 04:33:42 UTC',
-            res=1434861222
+            expected=1434861222
         },
         {
             func=time.parse_std,
             args='2015-06-21 12:33:42',
-            res=1434861222
+            expected=1434861222
         },
         {
             func=time.parse_ngxaccesslog,
             args='21/Jun/2015:12:33:42',
-            res=1434861222
+            expected=1434861222
         },
         {
             func=time.parse_ngxerrorlog,
             args='2015/06/21 12:33:42',
-            res=1434861222
+            expected=1434861222
         },
 
         {
             func=time.parse_utc,
             args='Tun, 21 Jun 2015 04:33:42 UTC',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='Tun, 21 Jun 2015 04:33:42 UTC date format error'
+            err_msg='Tun, 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
             args='un, 21 Jun 2015 04:33:42 UTC',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='un, 21 Jun 2015 04:33:42 UTC date format error'
+            err_msg='un, 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
             args=' 21 Jun 2015 04:33:42 UTC',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes=' 21 Jun 2015 04:33:42 UTC date format error'
+            err_msg=' 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
             args='Sun, 21 Jux 2015 04:33:42 UTC',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='Sun, 21 Jux 2015 04:33:42 UTC date format error'
+            err_msg='Sun, 21 Jux 2015 04:33:42 UTC date format error'
         },
         {
             func=time.parse_utc,
             args='Sun, 21 Jun 2015 04:33:42',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='Sun, 21 Jun 2015 04:33:42 date format error'
+            err_msg='Sun, 21 Jun 2015 04:33:42 date format error'
         },
 
         {
             func=time.parse_std,
             args='2015-06-21 12:u:42',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='2015-06-21 12:u:42 date format error'
+            err_msg='2015-06-21 12:u:42 date format error'
         },
         {
             func=time.parse_std,
             args='2015-06-21 12:33:',
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='2015-06-21 12:33: date format error'
+            err_msg='2015-06-21 12:33: date format error'
         },
         {
             func=time.parse_std,
             args=nil,
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='type: nil date format error'
+            err_msg='type: nil date format error'
         },
         {
             func=time.parse_std,
             args={},
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='type: table date format error'
+            err_msg='type: table date format error'
         },
         {
             func=time.parse_std,
             args=true,
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='type: boolean date format error'
+            err_msg='type: boolean date format error'
         },
         {
             func=time.parse_std,
             args=10,
-            res=nil,
+            expected=nil,
             err='FormatError',
-            errmes='type: number date format error'
+            err_msg='type: number date format error'
         },
 
     }
 
     for i, case in ipairs( cases ) do
-        local res, err, errmes = case.func(case.args)
+        local res, err, err_msg = case.func(case.args)
 
-        t:eq( case.res, res )
+        dd( case.args, case.expected )
+        t:eq( case.expected, res )
 
         if(err ~= nil) then
             t:eq( case.err, err )
-            t:eq( case.errmes, errmes )
+            t:eq( case.err_msg, err_msg )
         end
     end
 end
@@ -143,67 +146,68 @@ function test.format(t)
         {
             func=time.format_iso,
             args=1434861222,
-            res='2015-06-21T04:33:42.000Z'
+            expected='2015-06-21T04:33:42.000Z'
         },
         {
             func=time.format_utc,
             args=1434861222,
-            res='Sun, 21 Jun 2015 04:33:42 UTC'
+            expected='Sun, 21 Jun 2015 04:33:42 UTC'
         },
         {
             func=time.format_std,
             args=1434861222,
-            res='2015-06-21 12:33:42'
+            expected='2015-06-21 12:33:42'
         },
         {
             func=time.format_ngxaccesslog,
             args=1434861222,
-            res='21/Jun/2015:12:33:42'
+            expected='21/Jun/2015:12:33:42'
         },
         {
             func=time.format_ngxerrorlog,
             args=1434861222,
-            res='2015/06/21 12:33:42'
+            expected='2015/06/21 12:33:42'
         },
 
         {
             func=time.format_std,
             args=nil,
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot tonumber'
+            err_msg='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
             args={},
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot tonumber'
+            err_msg='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
             args=':',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot tonumber'
+            err_msg='timestamp cannot tonumber'
         },
         {
             func=time.format_std,
             args='XxX',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot tonumber'
+            err_msg='timestamp cannot tonumber'
         },
     }
 
     for i, case in ipairs( cases ) do
-        local res, err, errmes = case.func(case.args)
+        local res, err, err_msg = case.func(case.args)
 
-        t:eq( case.res, res )
+        dd( case.args, case.expected )
+        t:eq( case.expected, res )
 
         if(err ~= nil) then
             t:eq( case.err, err )
-            t:eq( case.errmes, errmes )
+            t:eq( case.err_msg, err_msg )
         end
     end
 end
@@ -221,118 +225,125 @@ function test.to_sec(t)
     local cases = {
         {
             args='1499850242',
-            res=1499850242
+            expected=1499850242
         },
         {
-            args='1499850242000',
-            res=1499850242
+            args='1499850242' .. '000',
+            expected=1499850242
         },
         {
-            args='1499850242000000',
-            res=1499850242
+            args='1499850242' .. '000' .. '000',
+            expected=1499850242
         },
         {
-            args='1499850242000000000',
-            res=1499850242
+            args='1499850242' .. '000' .. '000' .. '000',
+            expected=1499850242
         },
         {
             args='abc1499850242',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be converted to number or less than 0, ts:abc1499850242'
+            err_msg='timestamp cannot be converted to number or less than 0, ts:abc1499850242'
         },
         {
             args='1499850242abc',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be converted to number or less than 0, ts:1499850242abc'
+            err_msg='timestamp cannot be converted to number or less than 0, ts:1499850242abc'
         },
         {
             args='-1499850242',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be converted to number or less than 0, ts:-1499850242'
+            err_msg='timestamp cannot be converted to number or less than 0, ts:-1499850242'
         },
         {
             args='1e10',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be scientific notation or decimal, ts:1e10'
+            err_msg='timestamp cannot be scientific notation or decimal, ts:1e10'
         },
         {
             args='1499850242.1',
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be scientific notation or decimal, ts:1499850242.1'
+            err_msg='timestamp cannot be scientific notation or decimal, ts:1499850242.1'
         },
         {
-            args='12345',
-            res=nil,
+            args=string.sub('1499850242', 1, -2),
+            expected=nil,
             err='ArgumentError',
-            errmes='invalid time length, not 10, 13, 16 or 19, ts:12345'
+            err_msg='invalid time length, not 10, 13, 16 or 19, ts:149985024'
+        },
+        {
+            args='1499850242' .. '1',
+            expected=nil,
+            err='ArgumentError',
+            err_msg='invalid time length, not 10, 13, 16 or 19, ts:14998502421'
         },
 
         {
             args=1499850242,
-            res=1499850242
+            expected=1499850242
         },
         {
-            args=1499850242001,
-            res=1499850242
+            args=1499850242 * 1000,
+            expected=1499850242
         },
         {
-            args=1499850242001002,
-            res=nil,
+            args=1499850242 * 1000 * 1000,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be scientific notation or decimal, ts:1.499850242001e+15'
+            err_msg='timestamp cannot be scientific notation or decimal, ts:1.499850242e+15'
         },
         {
-            args=1499850242001002003,
-            res=nil,
+            args=1499850242 * 1000 * 1000 * 1000,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be scientific notation or decimal, ts:1.499850242001e+18'
+            err_msg='timestamp cannot be scientific notation or decimal, ts:1.499850242e+18'
         },
         {
             args=1e15,
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be scientific notation or decimal, ts:1e+15'
+            err_msg='timestamp cannot be scientific notation or decimal, ts:1e+15'
         },
         {
             args=-1499850242,
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be converted to number or less than 0, ts:-1499850242'
+            err_msg='timestamp cannot be converted to number or less than 0, ts:-1499850242'
         },
         {
             args=1499850242.123,
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be scientific notation or decimal, ts:1499850242.123'
+            err_msg='timestamp cannot be scientific notation or decimal, ts:1499850242.123'
         },
 
         {
             args=nil,
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be converted to number or less than 0, ts:nil'
+            err_msg='timestamp cannot be converted to number or less than 0, ts:nil'
         },
         {
             args=true,
-            res=nil,
+            expected=nil,
             err='ArgumentError',
-            errmes='timestamp cannot be converted to number or less than 0, ts:true'
+            err_msg='timestamp cannot be converted to number or less than 0, ts:true'
         },
     }
 
     for i, case in pairs(cases) do
-        local ts, err, errmes = time.to_sec(case.args)
+        local ts, err, err_msg = time.to_sec(case.args)
 
-        t:eq( case.res, ts)
+        dd( case.args, case.expected )
+        t:eq( case.expected, ts )
 
         if err ~= nil then
             t:eq( case.err, err )
-            t:eq( case.errmes, errmes )
+            t:eq( case.err_msg, err_msg )
         end
     end
 end
