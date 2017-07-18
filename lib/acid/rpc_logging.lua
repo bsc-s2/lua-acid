@@ -41,12 +41,18 @@ function _M.new_entry(service_key, opt)
                 -- sendbody = nil,
                 -- recv = nil,
                 -- recvbody = nil,
+                -- lastrecvbody = nil,
+                -- lastsendbody = nil,
             },
             byte = {
                 -- send = nil,
                 -- sendbody = nil,
                 -- recv = nil,
                 -- recvbody = nil,
+            },
+            count = {
+                -- recvbody = nil,
+                -- sendbody = nil,
             },
         },
 
@@ -61,12 +67,18 @@ function _M.new_entry(service_key, opt)
                 -- sendbody = nil,
                 -- recv = nil,
                 -- recvbody = nil,
+                -- lastrecvbody = nil,
+                -- lastsendbody = nil,
             },
             byte = {
                 -- send = nil,
                 -- sendbody = nil,
                 -- recv = nil,
                 -- recvbody = nil,
+            },
+            count = {
+                -- recvbody = nil,
+                -- sendbody = nil,
             },
         },
     }
@@ -85,6 +97,24 @@ function _M.new_entry(service_key, opt)
     return e
 end
 
+
+local function update_count(entry, updown, field)
+    if field ~= 'sendbody' and field ~= 'recvbody' then
+        return
+    end
+
+    local prev = entry[updown].count[field] or 0
+    entry[updown].count[field] = prev + 1
+end
+
+local function update_last_time(entry, updown, field)
+    if field ~= 'sendbody' and field ~= 'recvbody' then
+        return
+    end
+
+    local last_time = ngx.now() - entry.begin_process
+    entry[updown].time['last'..field] = last_time
+end
 
 function _M.reset_start(entry)
     if entry == nil then
@@ -147,6 +177,9 @@ function _M.incr_byte(entry, updown, field, size)
 
     local prev = entry[updown].byte[field] or 0
     entry[updown].byte[field] = prev + size
+
+    update_last_time(entry, updown, field)
+    update_count(entry, updown, field)
 end
 
 
@@ -258,7 +291,9 @@ function _M.entry_str(e)
             addfield(s, 'send:', st.send, ',')
             addfield(s, 'sendbody:', st.sendbody, ',')
             addfield(s, 'recv:', st.recv, ',')
-            addfield(s, 'recvbody:', st.recvbody)
+            addfield(s, 'recvbody:', st.recvbody, ',')
+            addfield(s, 'lastsendbody:', st.lastsendbody, ',')
+            addfield(s, 'lastrecvbody:', st.lastrecvbody)
             addfield(s, '},', '')
         end
 
@@ -272,8 +307,15 @@ function _M.entry_str(e)
             addfield(s, '},', '')
         end
 
-        addfield(s, '}', '')
+        st = up.count
+        if st then
+            addfield(s, 'count:{', '')
+            addfield(s, 'sendbody:', st.sendbody, ',')
+            addfield(s, 'recvbody:', st.recvbody)
+            addfield(s, '},', '')
+        end
 
+        addfield(s, '}', '')
     end
 
     local down = e.downstream
@@ -289,7 +331,9 @@ function _M.entry_str(e)
             addfield(s, 'send:', st.send, ',')
             addfield(s, 'sendbody:', st.sendbody, ',')
             addfield(s, 'recv:', st.recv, ',')
-            addfield(s, 'recvbody:', st.recvbody)
+            addfield(s, 'recvbody:', st.recvbody, ',')
+            addfield(s, 'lastsendbody:', st.lastsendbody, ',')
+            addfield(s, 'lastrecvbody:', st.lastrecvbody)
             addfield(s, '},', '')
         end
 
@@ -299,6 +343,14 @@ function _M.entry_str(e)
             addfield(s, 'send:', st.send, ',')
             addfield(s, 'sendbody:', st.sendbody, ',')
             addfield(s, 'recv:', st.recv, ',')
+            addfield(s, 'recvbody:', st.recvbody)
+            addfield(s, '},', '')
+        end
+
+        st = down.count
+        if st then
+            addfield(s, 'count:{', '')
+            addfield(s, 'sendbody:', st.sendbody, ',')
             addfield(s, 'recvbody:', st.recvbody)
             addfield(s, '},', '')
         end
