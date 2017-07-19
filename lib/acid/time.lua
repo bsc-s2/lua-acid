@@ -28,6 +28,11 @@ local week2num= {
 
 
 -- local_time + timezone = utc_time
+--Daylight Saving Time(DST)
+--
+--"!*t" convert time stamp to UTS time string.
+--os.date() returns a time table with field isdst = false
+--Thus this function returns the offset to timezone 0 without DST info
 local function get_timezone()
 
     local local_time = os.time()
@@ -84,7 +89,8 @@ local function _parse(dt, fmtkey, withzone)
     end
 
     -- os.time convert local time to timestamp
-    local ts = os.time({ year=yy, month=mm, day=dd, hour=h, min=m, sec=s })
+    --timezone does not include DST info, thus we must not convert it as a DST time
+    local ts = os.time({ year=yy, month=mm, day=dd, hour=h, min=m, sec=s, isdst=false })
     if withzone then
         ts = ts - timezone
     end
@@ -97,7 +103,7 @@ local function _format(ts, fmtkey, withzone)
 
     local fmt = time2str[fmtkey]
 
-    local ts = tonumber(ts)
+    ts = tonumber(ts)
     if ts == nil then
         return nil, 'ArgumentError', 'timestamp cannot tonumber'
     end
