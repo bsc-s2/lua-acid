@@ -345,10 +345,14 @@ function _M.output(s)
 end
 
 
-function _M.ngx_test_modules(module_names)
+function _M.ngx_test_modules(module_names, opts)
     -- In nginx, do not raise error to interrupt lua execution.
     -- We check test output to see if it succeeded("** all tests passed")
     -- or failed.
+
+    opts = opts or {}
+
+    _M.debug = opts.debug or false
 
     pcall(_test_modules, module_names)
 end
