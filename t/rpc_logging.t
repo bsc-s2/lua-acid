@@ -72,7 +72,7 @@ __DATA__
 --- request
 GET /t
 --- response_body_like chomp
-basic,status:200,url:127.0.0.1:80/basic/rpc_log,start_in_req:(0|0.0\d{2}),upstream:{time:{conn:0.00\d,send:0.00\d,recv:0.00\d,recvbody:0.00\d,lastsendbody:0.0\d{2},lastrecvbody:0.0\d{2}},byte:{sendbody:128,recvbody:128},count:{sendbody:1,recvbody:1},},downstream:{time:{},byte:{},count:{},}
+basic,status:200,url:127.0.0.1:80/basic/rpc_log,start_in_req:(0|0.0\d{2}),upstream:{time:{conn:0.00\d,send:0.0\d{2},recv:0.0\d{2},recvbody:0.0\d{2},lastsendbody:0.0\d{2},lastrecvbody:0.0\d{2}},byte:{sendbody:128,recvbody:128},count:{sendbody:1,recvbody:1},},downstream:{time:{},byte:{},count:{},}
 --- no_error_log
 [error]
 
@@ -131,7 +131,7 @@ basic,status:200,url:127.0.0.1:80/basic/rpc_log,start_in_req:(0|0.0\d{2}),upstre
 --- request
 GET /t
 --- response_body_like chomp
-basic,status:200,url:127.0.0.1:80/basic/rpc_log,start_in_req:(0|0.0\d{2}),upstream:{time:{},byte:{},count:{},},downstream:{time:{conn:0.00\d,send:0.001,recv:0.00\d,recvbody:0.00\d,lastsendbody:0.0\d{2},lastrecvbody:0.0\d{2}},byte:{sendbody:128,recvbody:128},count:{sendbody:1,recvbody:1},}
+basic,status:200,url:127.0.0.1:80/basic/rpc_log,start_in_req:(0|0.0\d{2}),upstream:{time:{},byte:{},count:{},},downstream:{time:{conn:0.0\d{2},send:0.0\d{2},recv:0.00\d,recvbody:0.0\d{2},lastsendbody:0.0\d{2},lastrecvbody:0.0\d{2}},byte:{sendbody:128,recvbody:128},count:{sendbody:1,recvbody:1},}
 --- no_error_log
 [error]
 
