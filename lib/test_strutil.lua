@@ -256,22 +256,22 @@ end
 function test.strip(t)
 
     local cases = {
-        {'',                 nil,            ''      },
-        {'',                 '',             ''      },
-        {'abc',              nil,            'abc'   },
-        {'abc',              '',             'abc'   },
-        {' abc	',           nil,            'abc'   },
-        {' abc	',           '',             'abc'   },
-        {' a b c	',   '',             'a b c' },
-        {'\n abc	\r', '',             'abc'   },
-        {'abc',              'a',            'bc'    },
-        {'abc',              'c',            'ab'    },
-        {'abc',              'ac',           'b'     },
-        {'acbcac',           'ac',           'b'     },
-        {'.a.a.',            '.',            'a.a'   },
-        {'[a.a]',            '[]',           'a.a'   },
-        {'\\a.a\\',          '\\',           'a.a'   },
-        {'^$()%a.a[]*+-?',   '^$()%.[]*+-?', 'a.a'   },
+        {'',               nil,            ''      },
+        {'',               '',             ''      },
+        {'abc',            nil,            'abc'   },
+        {'abc',            '',             'abc'   },
+        {' abc\t',         nil,            'abc'   },
+        {' abc\t',         '',             'abc'   },
+        {' a b c\t',       '',             'a b c' },
+        {'\n abc\t\r',     '',             'abc'   },
+        {'abc',            'a',            'bc'    },
+        {'abc',            'c',            'ab'    },
+        {'abc',            'ac',           'b'     },
+        {'acbcac',         'ac',           'b'     },
+        {'.a.a.',          '.',            'a.a'   },
+        {'[a.a]',          '[]',           'a.a'   },
+        {'\\a.a\\',        '\\',           'a.a'   },
+        {'^$()%a.a[]*+-?', '^$()%.[]*+-?', 'a.a'   },
     }
 
     for ii, c in ipairs(cases) do
