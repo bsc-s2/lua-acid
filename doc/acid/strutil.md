@@ -7,11 +7,13 @@
 - [Description](#description)
 - [Synopsis](#synopsis)
 - [Methods](#methods)
+  - [strutil.fromhex](#strutilfromhex)
   - [strutil.join](#strutiljoin)
   - [strutil.placeholder](#strutilplaceholder)
   - [strutil.rsplit](#strutilrsplit)
   - [strutil.split](#strutilsplit)
   - [strutil.strip](#strutilstrip)
+  - [strutil.tohex](#strutiltohex)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
 
@@ -43,6 +45,26 @@ strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
 ```
 
 #   Methods
+
+
+##  strutil.fromhex
+
+**syntax**:
+`strutil.fromhex(str)`
+
+Convert `'00ab'` to `'\x00\xab'`.
+See also: `strutil.tohex`
+
+**arguments**:
+
+-   `str`:
+    hex string.
+
+**return**:
+byte string.
+
+**error**:
+An error will be emit if `str` is not a string, or it is not a valid hex.
 
 ##  strutil.join
 
@@ -164,6 +186,26 @@ Return a string with leading and trailing chars those matches `pth` removed.
 
 **return**:
 a string with `pth` removed from both side.
+
+
+##  strutil.tohex
+
+**syntax**:
+`strutil.tohex(str)`
+
+Convert `'\x00\xab'` to `'00ab'`.
+See also: `strutil.fromhex`
+
+**arguments**:
+
+-   `str`:
+    any string.
+
+**return**:
+hex string.
+
+**error**:
+An error will be emit if `str` is not a string, or it is not a valid hex.
 
 
 #   Author

@@ -1,10 +1,16 @@
 local repr = require( "acid.repr" )
 
-local math_floor = math.floor
-local string_find = string.find
-local string_sub = string.sub
-local table_insert = table.insert
-local table_concat = table.concat
+local tonumber = tonumber
+
+local math_floor    = math.floor
+local string_byte   = string.byte
+local string_char   = string.char
+local string_find   = string.find
+local string_format = string.format
+local string_gsub   = string.gsub
+local string_sub    = string.sub
+local table_concat  = table.concat
+local table_insert  = table.insert
 
 local repr_str = repr.str
 
@@ -263,6 +269,7 @@ end
 
 
 function _M.replace(s, src, dst)
+    -- TODO no one is using this.. remove it?
     -- TODO test
     return table.concat(_M.split(s, src), dst)
 end
@@ -287,19 +294,28 @@ function _M.fnmatch(s, ptn)
 end
 
 
+local function _hex_to_char(cc)
+    return string_char(tonumber(cc, 16))
+end
+
+
 function _M.fromhex(str)
-    -- TODO test
-    return (str:gsub('..', function (cc)
-        return string.char(tonumber(cc, 16))
-    end))
+
+    assert(type(str) == 'string', 'str must be string')
+    assert(#str % 2 == 0, 'str length must be 2n')
+
+    return string_gsub(str, '..', _hex_to_char)
+end
+
+
+local function _char_to_hex(c)
+    return string_format('%02X', string_byte(c))
 end
 
 
 function _M.tohex(str)
-    -- TODO test
-    return (str:gsub('.', function (c)
-        return string.format('%02X', string.byte(c))
-    end))
+    assert(type(str) == 'string', 'str must be string')
+    return string_gsub(str, '.', _char_to_hex)
 end
 
 
