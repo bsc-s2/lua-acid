@@ -8,6 +8,7 @@
 - [Synopsis](#synopsis)
 - [Methods](#methods)
   - [strutil.join](#strutiljoin)
+  - [strutil.placeholder](#strutilplaceholder)
   - [strutil.rsplit](#strutilrsplit)
   - [strutil.split](#strutilsplit)
   - [strutil.strip](#strutilstrip)
@@ -57,6 +58,34 @@ Same as `table.concat({...}, sep)`
 
 **return**:
 a string.
+
+
+##  strutil.placeholder
+
+**syntax**:
+`strutil.placeholder(val, pholder, float_fmt)`
+
+Return a string representing `val`
+or a placeholder string if `val` is `nil` or `''`.
+
+**arguments**:
+
+-   `val`:
+    any type of value.
+
+-   `pholder`:
+    specifies what string to use as a place holder.
+
+    By default it is `'-'`.
+
+-   `float_fmt`:
+    specifies float number format to convert to string.
+
+    By default it is `nil`.
+    If `val` is float, it is converted to string with `tostring(val)`.
+
+**return**:
+string.
 
 
 ##  strutil.rsplit

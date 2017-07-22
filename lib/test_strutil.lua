@@ -335,17 +335,48 @@ function test.to_str(t)
 end
 
 
-function test.rjust(t)
-    local f = strutil.rjust
-    t:eq( '.......abc', f( 'abc', 10, '.' ) )
-    t:eq( '       abc', f( 'abc', 10 ) )
+function test.placeholder(t)
+
+    local cases = {
+        {nil,     nil,  nil,    '-'     },
+        {'',      nil,  nil,    '-'     },
+        {nil,     'xx', nil,    'xx'    },
+        {'',      'xx', nil,    'xx'    },
+        {'a',     nil,  nil,    'a'     },
+        {1,       nil,  nil,    '1'     },
+        {true,    nil,  nil,    'true'  },
+        {false,   nil,  nil,    'false' },
+        {1.2,     nil,  nil,    '1.2'   }, -- float
+        {1.23456, nil,  '%.3f', '1.235' },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local val, ph, float_fmt, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = strutil.placeholder(val, ph, float_fmt)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, msg)
+    end
 end
+
 
 function test.ljust(t)
     local f = strutil.ljust
     t:eq( 'abc.......', f( 'abc', 10, '.' ) )
     t:eq( 'abc       ', f( 'abc', 10 ) )
 end
+
+
+function test.rjust(t)
+    local f = strutil.rjust
+    t:eq( '.......abc', f( 'abc', 10, '.' ) )
+    t:eq( '       abc', f( 'abc', 10 ) )
+end
+
 
 function test.fnmatch(t)
 
