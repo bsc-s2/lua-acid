@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+#   Table of Content
+
+- [Name](#name)
+- [Status](#status)
+- [Description](#description)
+- [Synopsis](#synopsis)
+- [Methods](#methods)
+  - [strutil.join](#strutiljoin)
+  - [strutil.rsplit](#strutilrsplit)
+  - [strutil.split](#strutilsplit)
+  - [strutil.strip](#strutilstrip)
+- [Author](#author)
+- [Copyright and License](#copyright-and-license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #   Name
 
 acid.strutil
@@ -24,6 +42,22 @@ strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
 ```
 
 #   Methods
+
+##  strutil.join
+
+**syntax**:
+`strutil.join(sep, ...)`
+
+Same as `table.concat({...}, sep)`
+
+**arguments**:
+
+-   `sep`:
+    Separator string.
+
+**return**:
+a string.
+
 
 ##  strutil.rsplit
 
@@ -80,6 +114,27 @@ strutil.split('a/b/c/d', '/', 2)     -- {'a', 'b', 'c/d'}
 
 **return**:
 a table of split strings.
+
+##  strutil.strip
+
+**syntax**:
+`strutil.strip(str, ptn)`
+
+Return a string with leading and trailing chars those matches `pth` removed.
+
+**arguments**:
+
+-   `str`:
+    string.
+
+-   `ptn`:
+    specifies chars in plain text to remove from both side of the `str`.
+
+    if `ptn` is `nil` or empty string `""`,
+    it removes all space chars(`" ", "\t", "\r" and "\n"`).
+
+**return**:
+a string with `pth` removed from both side.
 
 
 #   Author

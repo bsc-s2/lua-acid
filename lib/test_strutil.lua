@@ -252,6 +252,42 @@ function test.join(t)
     t:eq(nil, pcall_j('/', table, 'c', 'bb'))
 end
 
+
+function test.strip(t)
+
+    local cases = {
+        {'',                 nil,            ''      },
+        {'',                 '',             ''      },
+        {'abc',              nil,            'abc'   },
+        {'abc',              '',             'abc'   },
+        {' abc	',           nil,            'abc'   },
+        {' abc	',           '',             'abc'   },
+        {' a b c	',   '',             'a b c' },
+        {'\n abc	\r', '',             'abc'   },
+        {'abc',              'a',            'bc'    },
+        {'abc',              'c',            'ab'    },
+        {'abc',              'ac',           'b'     },
+        {'acbcac',           'ac',           'b'     },
+        {'.a.a.',            '.',            'a.a'   },
+        {'[a.a]',            '[]',           'a.a'   },
+        {'\\a.a\\',          '\\',           'a.a'   },
+        {'^$()%a.a[]*+-?',   '^$()%.[]*+-?', 'a.a'   },
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local str, ptn, expected, desc = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = strutil.strip(str, ptn)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, msg)
+    end
+end
+
+
 function test.startswith(t)
     local s = strutil.startswith
     t:eq(true, s( '', '' ) )

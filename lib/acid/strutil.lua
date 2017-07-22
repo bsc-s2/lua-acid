@@ -4,10 +4,26 @@ local math_floor = math.floor
 local string_find = string.find
 local string_sub = string.sub
 local table_insert = table.insert
+local table_concat = table.concat
 
 local repr_str = repr.str
 
 local _M = { _VERSION = "0.1" }
+
+local special_char = {
+    ["^"] = "%^",
+    ["$"] = "%$",
+    ["("] = "%(",
+    [")"] = "%)",
+    ["%"] = "%%",
+    ["."] = "%.",
+    ["["] = "%[",
+    ["]"] = "%]",
+    ["*"] = "%*",
+    ["+"] = "%+",
+    ["-"] = "%-",
+    ["?"] = "%?",
+}
 
 local fnmatch_wildcard_translate = {
     ['*'] = '.*',
@@ -168,15 +184,26 @@ function _M.join(sep, ...)
 end
 
 
-function _M.strip( s, ptn )
+function _M.strip(str, ptn)
 
-    -- TODO test
+    local pattern
 
     if ptn == nil or ptn == "" then
-        ptn = "%s"
+        pattern = "%s"
+    else
+
+        pattern = {}
+
+        for i = 1, #ptn do
+            local chr = string_sub(ptn, i, i)
+            chr = special_char[chr] or chr
+            table_insert(pattern, chr)
+        end
+
+        pattern = table_concat(pattern)
     end
 
-    local r = s:gsub( "^[" .. ptn .. "]+", '' ):gsub( "[" .. ptn .. "]+$", "" )
+    local r = str:gsub( "^[" .. pattern .. "]+", '' ):gsub( "[" .. pattern .. "]+$", "" )
     return r
 end
 
