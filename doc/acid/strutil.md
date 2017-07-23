@@ -15,6 +15,7 @@
   - [strutil.split](#strutilsplit)
   - [strutil.startswith](#strutilstartswith)
   - [strutil.strip](#strutilstrip)
+  - [strutil.to_str](#strutilto_str)
   - [strutil.tohex](#strutiltohex)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
@@ -239,6 +240,28 @@ Return a string with leading and trailing chars those matches `pth` removed.
 **return**:
 a string with `pth` removed from both side.
 
+##  strutil.to_str
+
+**syntax**:
+`strutil.to_str(...)`
+
+Convert all arguments to a human readable string.
+Example:
+
+```
+strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
+```
+
+It is actually just a wrapper of underlying `repr.str()`.
+
+**arguments**:
+
+-   `...`:
+    a series of element of type `number, string, bool, table or nil`.
+
+
+**return**:
+a human readable string
 
 ##  strutil.tohex
 
