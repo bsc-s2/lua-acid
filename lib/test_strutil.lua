@@ -261,23 +261,49 @@ end
 
 
 function test.startswith(t)
-    local s = strutil.startswith
-    t:eq(true, s( '', '' ) )
-    t:eq(true, s( 'a', '' ) )
-    t:eq(false, s( 'a', 'b' ) )
-    t:eq(true, s( 'ab', 'a' ) )
-    t:eq(true, s( 'ab', 'ab' ) )
-    t:eq(false, s( 'ab', 'abc' ) )
+
+    for str, prefix, start, expected, desc in t:case_iter(4, {
+        { '',      '',               nil, true,  },
+        { 'a',     '',               nil, true,  },
+        { 'a',     'b',              nil, false, },
+        { 'ab',    'a',              nil, true,  },
+        { 'ab',    'ab',             nil, true,  },
+        { 'ab',    'abc',            nil, false, },
+        { 'abcd',  'abc',            nil, true,  },
+        { 'xabcd', 'abc',            2,   true,  },
+        { 'xabcd', 'd',              5,   true,  },
+        { 'xabcd', 'd',              6,   false, },
+        { 'xabcd', 'abc',            nil, false, },
+        { 'xabcd', {'12','ab','cd'}, 2,   true,  },
+        { 'xabcd', {'12','AB','cd'}, 2,   false, },
+    }) do
+
+        local rst = strutil.startswith(str, prefix, start)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, desc)
+    end
 end
 
+
 function test.endswith(t)
-    local s = strutil.endswith
-    t:eq(true, s( '', '' ) )
-    t:eq(true, s( 'a', '' ) )
-    t:eq(false, s( 'a', 'b' ) )
-    t:eq(true, s( 'ab', 'b' ) )
-    t:eq(true, s( 'ab', 'ab' ) )
-    t:eq(false, s( 'ab', 'bc' ) )
+
+    for str, suffix, expected, desc in t:case_iter(3, {
+        { '',   '',                true,  },
+        { 'a',  '',                true,  },
+        { 'a',  'b',               false, },
+        { 'ab', 'b',               true,  },
+        { 'ab', 'ab',              true,  },
+        { 'ab', 'bc',              false, },
+        { 'xab', {'12','ab','cd'}, true,  },
+        { 'xab', {'12','AB','cd'}, false, },
+    }) do
+
+        local rst = strutil.endswith(str, suffix)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, desc)
+    end
 end
 
 
