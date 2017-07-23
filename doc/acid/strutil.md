@@ -9,8 +9,10 @@
 - [Methods](#methods)
   - [strutil.endswith](#strutilendswith)
   - [strutil.fromhex](#strutilfromhex)
+  - [strutil.ljust](#strutilljust)
   - [strutil.join](#strutiljoin)
   - [strutil.placeholder](#strutilplaceholder)
+  - [strutil.rjust](#strutilrjust)
   - [strutil.rsplit](#strutilrsplit)
   - [strutil.split](#strutilsplit)
   - [strutil.startswith](#strutilstartswith)
@@ -91,6 +93,32 @@ byte string.
 **error**:
 An error will be emitted if `str` is not a string, or it is not a valid hex.
 
+##  strutil.ljust
+
+**syntax**:
+`strutil.ljust(str, n, char)`
+
+Return `str` left-justified in a string of length `n`.
+Padding is done using the specified fill character.
+By default `char` is space.
+
+See also `strutil.rjust`.
+
+**arguments**:
+
+-   `str`:
+    string to justify.
+
+-   `n`:
+    specifies result string length.
+
+-   `char`:
+    is filling char.
+
+**return**:
+a padded string.
+
+
 ##  strutil.join
 
 **syntax**:
@@ -133,6 +161,32 @@ or a placeholder string if `val` is `nil` or `''`.
 
 **return**:
 string.
+
+
+##  strutil.rjust
+
+**syntax**:
+`strutil.rjust(str, n, char)`
+
+Return `str` right-justified in a string of length `n`.
+Padding is done using the specified fill character.
+By default `char` is space.
+
+See also `strutil.ljust`.
+
+**arguments**:
+
+-   `str`:
+    string to justify.
+
+-   `n`:
+    specifies result string length.
+
+-   `char`:
+    is filling char.
+
+**return**:
+a padded string.
 
 
 ##  strutil.rsplit
