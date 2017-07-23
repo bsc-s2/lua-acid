@@ -18,6 +18,7 @@ $ lua -l unittest test_empty.lua
     is a table that provides assertion function, like:
 
     -   t:unpack(table_value)                              unpack a table.
+    -   t:case_iter(n_column, cases)                       loop over cases table. unpack each case.
     -   t:ass(bool_value, expection_desc, case_message)    general assert. You do not need this.
     -   t:eq(a, b, case_message)                           assert a==b
     -   t:neq(a, b, case_message)                          assert a~=b
@@ -29,7 +30,7 @@ $ lua -l unittest test_empty.lua
 
 local ngx = ngx
 
-local _M = { _VERSION='0.1' }
+local _M = { _VERSION = '0.1' }
 
 _M.debug = false
 
@@ -162,7 +163,37 @@ local testfuncs = {
         return unpack(tbl, 1, table.maxn(tbl))
     end,
 
-    ass= function (self, expr, expection, mes)
+    case_iter = function(self, n, cases)
+
+        local i = 0
+
+        return function()
+
+            i = i + 1
+
+            local case = cases[i]
+
+            if case == nil then
+                -- iteration complete
+                return nil
+            end
+
+            local desc = 'case: ' .. tostring(i) .. '-th: ' .. _M.to_str(case)
+            dd()
+            dd(desc)
+
+            -- if there is no desc for a case, add a default one
+            if case[n + 1] == nil then
+                case[n + 1] = desc
+            else
+                case[n + 1] = case[n + 1] .. ': ' .. desc
+            end
+
+            return unpack(case, 1, n + 1)
+        end
+    end,
+
+    ass = function (self, expr, expection, mes)
         mes = mes or ''
 
         local thisfile = debug.getinfo(1).short_src
@@ -189,20 +220,20 @@ local testfuncs = {
         self._suite.n_assert = self._suite.n_assert + 1
     end,
 
-    eq= function( self, a, b, mes )
+    eq = function( self, a, b, mes )
         self:ass( a==b, 'to be ' .. to_str(a) .. ' but is ' .. to_str(b), mes )
     end,
 
-    neq= function( self, a, b, mes )
+    neq = function( self, a, b, mes )
         self:ass( a~=b, 'not to be' .. to_str(a) .. ' but the same: ' .. to_str(b), mes )
     end,
 
-    err= function ( self, func, mes )
+    err = function ( self, func, mes )
         local ok, rst = pcall( func )
         self:eq( false, ok, mes )
     end,
 
-    eqlist= function( self, a, b, mes )
+    eqlist = function( self, a, b, mes )
 
         if a == b then
             return
@@ -220,7 +251,7 @@ local testfuncs = {
         end
     end,
 
-    eqdict= function( self, a, b, mes )
+    eqdict = function( self, a, b, mes )
         mes = mes or ''
 
         if a == b then
@@ -250,7 +281,7 @@ local testfuncs = {
 
     end,
 
-    contain= function( self, a, b, mes )
+    contain = function( self, a, b, mes )
         self:neq( nil, a, "left table is not nil" )
         self:neq( nil, b, "right table is not nil" )
 

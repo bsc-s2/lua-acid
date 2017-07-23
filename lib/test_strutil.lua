@@ -5,7 +5,7 @@ local dd = test.dd
 
 function test.split(t)
 
-    local cases = {
+    for str, ptn, expected, desc in t:case_iter(3, {
         {'',             '/',  {'' },                    'empty string'               },
         {'/',            '/',  {'', '' },                'single pattern'             },
         {'//',           '/',  {'', '', '' },            'dual pattern'               },
@@ -18,18 +18,12 @@ function test.split(t)
         {'abc/xyz/uvw',  '/',  {'abc', 'xyz', 'uvw' },   'full'                       },
         {'/abc/',        '/',  {'', 'abc', '' },         '/abc/'                      },
         {'//abc',        '/',  {'', '', 'abc' },         '//abc'                      },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, ptn, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.split(str, ptn)
         dd('rst: ', rst)
 
-        t:eqdict(expected, rst, msg)
+        t:eqdict(expected, rst, desc)
     end
 
     local str ='/v1/get/video.vic.sina.com.cn%2fmt788%2f9e%2f1a%2f81403.jpg/%7b%22xACL%22%3a%20%7b%22GRPS000000ANONYMOUSE%22%3a%20%5b%22read%22%5d, %20%22SINA00000000000SALES%22%3a%20%5b%22read%22, %20%22write%22, %20%22read_acp%22, %20%22write_acp%22%5d%7d, %20%22Info%22%3a%20null, %20%22Type%22%3a%20%22image%5c%2fjpeg%22, %20%22ver%22%3a%201042410872, %20%22Get-Location%22%3a%20%5b%7b%22CheckNumber%22%3a%201042410872, %20%22GroupID%22%3a%20341476, %20%22Partitions%22%3a%20%5b%7b%22IPs%22%3a%20%5b%2258.63.236.89%22, %20%2210.71.5.89%22%5d, %20%22PartitionID%22%3a%20%22185c3e5700014004975f90b11c13fc5e%22, %20%22IDC%22%3a%20%22.dx.GZ%22%7d, %20%7b%22IPs%22%3a%20%5b%2258.63.236.184%22, %20%2210.71.5.184%22%5d, %20%22PartitionID%22%3a%20%225a56155500014009aaa590b11c148e88%22, %20%22IDC%22%3a%20%22.dx.GZ%22%7d, %20%7b%22IPs%22%3a%20%5b%2260.28.228.36%22, %20%22172.16.228.36%22%5d, %20%22PartitionID%22%3a%20%22a41d4006000140029595d4ae52b17fe1%22, %20%22IDC%22%3a%20%22.wt.TJ%22%7d, %20%7b%22IPs%22%3a%20%5b%22111.161.78.59%22, %20%22172.16.48.59%22%5d, %20%22PartitionID%22%3a%20%22d7fee54d00014006b58090b11c145321%22, %20%22IDC%22%3a%20%22.wt.TJ%22%7d%5d%7d%5d, %20%22Info-Int%22%3a%200, %20%22ts%22%3a%201356544141, %20%22ACL%22%3a%20%7b%22SINA00000000000SALES%22%3a%20%5b%22read%22, %20%22write%22, %20%22read_acp%22, %20%22write_acp%22%5d%7d, %20%22ETag2%22%3a%20%2235b4ec0bfd826ea609054ccca4976e4fc77f3a8b%22, %20%22ETag%22%3a%20%22e14526f8858e2e0f898e72f141f108e4%22, %20%22Key%22%3a%20%22mt788%5c%2f9e%5c%2f1a%5c%2f81403.jpg%22, %20%22Owner%22%3a%20%22SINA00000000000SALES%22, %20%22Origo%22%3a%20%220000000000000000000090b11c09b4d9%22, %20%22GroupClassID%22%3a%206, %20%22File-Meta%22%3a%20%7b%22Content-Type%22%3a%20%22image%5c%2fjpeg%22%7d, %20%22Size%22%3a%2095964%7d?n=1&r=1&w=1&expire=60&ver_key=ts'
@@ -41,9 +35,10 @@ function test.split(t)
     t:eqdict({'', '', 'abc' }, strutil.split( '..abc', '.', {plain=true} ), '//abc' )
 end
 
+
 function test.split_maxsplit(t)
 
-    local cases = {
+    for str, ptn, maxsplit, expected, desc in t:case_iter(4, {
         {'',      '/', nil, {''}          },
         {'',      '/', -1,  {''}          },
         {'',      '/', 0,   {''}          },
@@ -61,32 +56,26 @@ function test.split_maxsplit(t)
         {'abc',   '',  1,   {'a','bc'}    },
         {'abc',   '',  2,   {'a','b','c'} },
         {'abc',   '',  3,   {'a','b','c'} },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, ptn, maxsplit, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.split(str, ptn, {plain=true, maxsplit=maxsplit})
         dd('rst: ', rst)
 
-        t:eqlist(expected, rst, msg)
+        t:eqlist(expected, rst, desc)
 
         -- test shortcut form
 
         local rst = strutil.split(str, ptn, maxsplit)
         dd('rst: ', rst)
 
-        t:eqlist(expected, rst, msg)
+        t:eqlist(expected, rst, desc)
     end
 end
 
 
 function test.right_n_split(t)
 
-    local cases = {
+    for str, ptn, frm, n, expected, desc in t:case_iter(5, {
         {'',           '/', 1,  -1,  {0, {}               } },
         {'',           '/', 1,  0,   {0, {}               } },
         {'',           '/', 1,  1,   {0, {}               } },
@@ -104,25 +93,19 @@ function test.right_n_split(t)
         {'/aa/bb/cc',  '/', 1,  2,   {3, {'cc','bb'}      } },
         {'/aa/bb/cc',  '/', 1,  3,   {0, {'cc','bb','aa'} } },
         {'/aa/bb/cc',  '/', 1,  4,   {0, {'cc','bb','aa'} } },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, ptn, frm, n, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local r1, r2 = strutil.right_n_split(str, ptn, frm, true, n)
         dd('rst: ', r1, ' ', r2)
 
-        t:eqdict(expected, {r1, r2}, msg)
+        t:eqdict(expected, {r1, r2}, desc)
     end
 end
 
 
 function test.rsplit(t)
 
-    local cases = {
+    for str, ptn, plain, maxsplit, expected, desc in t:case_iter(5, {
         {'',           '/',     true,  nil, {''}                },
         {'',           '/',     true,  -1,  {''}                },
         {'',           '/',     true,  0,   {''}                },
@@ -156,18 +139,12 @@ function test.rsplit(t)
         {'aa--bb//cc', '[-/]+', false, 1,   {'aa--bb','cc'}     },
         {'aa--bb//cc', '[-/]+', false, 2,   {'aa','bb','cc'}    },
         {'aa--bb//cc', '[-/]+', false, 3,   {'aa','bb','cc'}    },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, ptn, plain, maxsplit, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.rsplit(str, ptn, {plain=plain, maxsplit=maxsplit})
         dd('rst: ', rst)
 
-        t:eqlist(expected, rst, msg)
+        t:eqlist(expected, rst, desc)
 
         -- test shortcut form
 
@@ -175,10 +152,11 @@ function test.rsplit(t)
             local rst = strutil.rsplit(str, ptn, maxsplit)
             dd('rst: ', rst)
 
-            t:eqlist(expected, rst, msg)
+            t:eqlist(expected, rst, desc)
         end
     end
 end
+
 
 function test.placeholder(t)
     local ph = strutil.placeholder
@@ -255,7 +233,7 @@ end
 
 function test.strip(t)
 
-    local cases = {
+    for str, ptn, expected, desc in t:case_iter(3, {
         {'',               nil,            ''      },
         {'',               '',             ''      },
         {'abc',            nil,            'abc'   },
@@ -272,18 +250,12 @@ function test.strip(t)
         {'[a.a]',          '[]',           'a.a'   },
         {'\\a.a\\',        '\\',           'a.a'   },
         {'^$()%a.a[]*+-?', '^$()%.[]*+-?', 'a.a'   },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, ptn, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.strip(str, ptn)
         dd('rst: ', rst)
 
-        t:eq(expected, rst, msg)
+        t:eq(expected, rst, desc)
     end
 end
 
@@ -313,31 +285,25 @@ function test.to_str(t)
 
     -- simplified test. underlaying repr.str() has been tested in test_repr.lua
 
-    local cases = {
+    for inp, expected, desc in t:case_iter(2, {
         {{},                    ''                 },
         {{1,2},                 '12'               },
         {{1,2,{}},              '12{}'             },
         {{1,2,{10,a=1,20}},     '12{10,20,a=1}'    },
         {{1,2,nil,{10,a=1,20}}, '12nil{10,20,a=1}' },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local inp, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.to_str(unpack(inp))
         dd('rst: ', rst)
 
-        t:eq(expected, rst, msg)
+        t:eq(expected, rst, desc)
     end
 end
 
 
 function test.placeholder(t)
 
-    local cases = {
+    for val, ph, float_fmt, expected, desc in t:case_iter(4, {
         {nil,     nil,  nil,    '-'     },
         {'',      nil,  nil,    '-'     },
         {nil,     'xx', nil,    'xx'    },
@@ -348,18 +314,12 @@ function test.placeholder(t)
         {false,   nil,  nil,    'false' },
         {1.2,     nil,  nil,    '1.2'   }, -- float
         {1.23456, nil,  '%.3f', '1.235' },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local val, ph, float_fmt, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.placeholder(val, ph, float_fmt)
         dd('rst: ', rst)
 
-        t:eq(expected, rst, msg)
+        t:eq(expected, rst, desc)
     end
 end
 
@@ -448,7 +408,7 @@ end
 
 function test.fromhex_err(t)
 
-    local cases = {
+    for str, desc in t:case_iter(1, {
         {1                        },
         {true                     },
         {false                    },
@@ -456,104 +416,77 @@ function test.fromhex_err(t)
         {'0'                      },
         {'110'                    },
         {'az', 'out of range hex' },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         t:err(function() strutil.fromhex(str) end,
-              msg)
+              desc)
     end
 end
 
 
 function test.fromhex(t)
 
-    local cases = {
+    for str, expected, desc in t:case_iter(2, {
         {'',     ''         },
         {'00',   '\x00'     },
         {'0011', '\x00\x11' },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.fromhex(str)
         dd('rst: ', rst)
 
-        t:eq(expected, rst, msg)
+        t:eq(expected, rst, desc)
     end
 end
 
 
 function test.tohex_err(t)
 
-    local cases = {
+    for str, desc in t:case_iter(2, {
         {1     },
         {true  },
         {false },
         {{}    },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local str, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         t:err(function() strutil.tohex(str) end,
-              msg)
+              desc)
     end
 end
 
 
 function test.tohex(t)
 
-    local cases = {
+    for inp, expected, desc in t:case_iter(2, {
         {'',         ''      },
         {'\x00',     '00',   },
         {'\x00\x11', '0011', },
-    }
-
-    for ii, c in ipairs(cases) do
-
-        local inp, expected, desc = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.tohex(inp)
         dd('rst: ', rst)
 
-        t:eq(expected, rst, msg)
+        t:eq(expected, rst, desc)
     end
 end
 
 
 function test.to_chunks_err(t)
 
-    local cases = {
+    for s, n, desc in t:case_iter(3, {
         {'a', 0},
         {'a', -1},
-    }
-
-    for ii, c in ipairs(cases) do
-        local s, n = unpack(c)
+    }) do
 
         t:err(function() strutil.to_chunks(s, n) end,
-              tostring(ii) .. 'th: ' .. (desc or ''))
+              desc)
     end
 end
 
 
 function test.to_chunks(t)
 
-    local cases    = {
+    for s, n, expected, desc in t:case_iter(3, {
         {'',           1,         {''},                                      'n = 0'},
         {'a',          1,         {'a'},                                     'n = 1'},
         {'ab',         1,         {'a','b'},                                 'n = 1:1'},
@@ -569,18 +502,12 @@ function test.to_chunks(t)
         {'abcdefghij', 1.333334,  {'a','b','cd','e','f','gh','i','j'},       'n = 1.333334'},
         {'abcdef',     1.5,       {'a','bc','d','ef'},                       'n = 1.5'},
         {'abcd',       0.333334,  {'','','a','','','b','','','c','','','d'}, 'n = 0.333334'},
-
-    }
-
-    for ii, c in ipairs(cases) do
-        local s, n, expected, desc = unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
+    }) do
 
         local rst = strutil.to_chunks(s, n)
         dd('rst: ', rst)
 
-        t:eqdict(expected, rst)
+        t:eqdict(expected, rst, desc)
     end
 end
 
