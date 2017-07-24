@@ -1,3 +1,24 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+#   Table of Content
+
+- [Name](#name)
+- [Status](#status)
+- [Description](#description)
+- [Synopsis](#synopsis)
+- [Methods](#methods)
+  - [strutil.fromhex](#strutilfromhex)
+  - [strutil.join](#strutiljoin)
+  - [strutil.placeholder](#strutilplaceholder)
+  - [strutil.rsplit](#strutilrsplit)
+  - [strutil.split](#strutilsplit)
+  - [strutil.strip](#strutilstrip)
+  - [strutil.tohex](#strutiltohex)
+- [Author](#author)
+- [Copyright and License](#copyright-and-license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #   Name
 
 acid.strutil
@@ -24,6 +45,70 @@ strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
 ```
 
 #   Methods
+
+
+##  strutil.fromhex
+
+**syntax**:
+`strutil.fromhex(str)`
+
+Convert `'00ab'` to `'\x00\xab'`.
+See also: `strutil.tohex`
+
+**arguments**:
+
+-   `str`:
+    hex string.
+
+**return**:
+byte string.
+
+**error**:
+An error will be emitted if `str` is not a string, or it is not a valid hex.
+
+##  strutil.join
+
+**syntax**:
+`strutil.join(sep, ...)`
+
+Same as `table.concat({...}, sep)`
+
+**arguments**:
+
+-   `sep`:
+    Separator string.
+
+**return**:
+a string.
+
+
+##  strutil.placeholder
+
+**syntax**:
+`strutil.placeholder(val, pholder, float_fmt)`
+
+Return a string representing `val`
+or a placeholder string if `val` is `nil` or `''`.
+
+**arguments**:
+
+-   `val`:
+    any type of value.
+
+-   `pholder`:
+    specifies what string to use as a place holder.
+
+    By default it is `'-'`.
+
+-   `float_fmt`:
+    specifies float number format to convert to string.
+
+    By default it is `nil`.
+    If `val` is float, it is converted to string with `tostring(val)`.
+
+**return**:
+string.
+
 
 ##  strutil.rsplit
 
@@ -80,6 +165,47 @@ strutil.split('a/b/c/d', '/', 2)     -- {'a', 'b', 'c/d'}
 
 **return**:
 a table of split strings.
+
+##  strutil.strip
+
+**syntax**:
+`strutil.strip(str, ptn)`
+
+Return a string with leading and trailing chars those matches `pth` removed.
+
+**arguments**:
+
+-   `str`:
+    string.
+
+-   `ptn`:
+    specifies chars in plain text to remove from both side of the `str`.
+
+    if `ptn` is `nil` or empty string `""`,
+    it removes all space chars(`" ", "\t", "\r" and "\n"`).
+
+**return**:
+a string with `pth` removed from both side.
+
+
+##  strutil.tohex
+
+**syntax**:
+`strutil.tohex(str)`
+
+Convert `'\x00\xab'` to `'00ab'`.
+See also: `strutil.fromhex`
+
+**arguments**:
+
+-   `str`:
+    any string.
+
+**return**:
+hex string.
+
+**error**:
+An error will be emit if `str` is not a string, or it is not a valid hex.
 
 
 #   Author
