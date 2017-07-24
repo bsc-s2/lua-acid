@@ -236,8 +236,8 @@ function _M.endswith(str, suffix)
     end
 
     if type(suffix) == 'table' then
-        for ii, pref in ipairs(suffix) do
-            if _M.endswith(str, pref) then
+        for ii, suff in ipairs(suffix) do
+            if _M.endswith(str, suff) then
                 return true
             end
         end
