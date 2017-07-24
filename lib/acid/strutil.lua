@@ -214,16 +214,37 @@ function _M.strip(str, ptn)
 end
 
 
-function _M.startswith( s, pref )
-    return string_sub(s, 1, #pref) == pref
+function _M.startswith(str, prefix, start)
+    start = start or 1
+
+    if type(prefix) == 'table' then
+        for ii, pref in ipairs(prefix) do
+            if _M.startswith(str, pref, start) then
+                return true
+            end
+        end
+        return false
+    else
+        return string_sub(str, start, start - 1 + #prefix) == prefix
+    end
 end
 
 
-function _M.endswith( s, suf )
-    if suf == '' then
+function _M.endswith(str, suffix)
+    if suffix == '' then
         return true
     end
-    return string_sub(s, -#suf, -1) == suf
+
+    if type(suffix) == 'table' then
+        for ii, suff in ipairs(suffix) do
+            if _M.endswith(str, suff) then
+                return true
+            end
+        end
+        return false
+    else
+        return string_sub(str, -#suffix, -1) == suffix
+    end
 end
 
 

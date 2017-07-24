@@ -7,12 +7,17 @@
 - [Description](#description)
 - [Synopsis](#synopsis)
 - [Methods](#methods)
+  - [strutil.endswith](#strutilendswith)
   - [strutil.fromhex](#strutilfromhex)
+  - [strutil.ljust](#strutilljust)
   - [strutil.join](#strutiljoin)
   - [strutil.placeholder](#strutilplaceholder)
+  - [strutil.rjust](#strutilrjust)
   - [strutil.rsplit](#strutilrsplit)
   - [strutil.split](#strutilsplit)
+  - [strutil.startswith](#strutilstartswith)
   - [strutil.strip](#strutilstrip)
+  - [strutil.to_str](#strutilto_str)
   - [strutil.tohex](#strutiltohex)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
@@ -47,6 +52,28 @@ strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
 #   Methods
 
 
+##  strutil.endswith
+
+**syntax**:
+`strutil.endswith(str, suffix)`
+
+Return `true` if `str` ends with the specified `suffix`,
+`false` otherwise.
+
+See also: `strutil.startswith`.
+
+**arguments**:
+
+-   `str`:
+    is a string.
+
+-   `suffix`:
+    suffix string or a table of strings to try.
+
+**return**:
+bool
+
+
 ##  strutil.fromhex
 
 **syntax**:
@@ -65,6 +92,32 @@ byte string.
 
 **error**:
 An error will be emitted if `str` is not a string, or it is not a valid hex.
+
+##  strutil.ljust
+
+**syntax**:
+`strutil.ljust(str, n, char)`
+
+Return `str` left-justified in a string of length `n`.
+Padding is done using the specified fill character.
+By default `char` is space.
+
+See also `strutil.rjust`.
+
+**arguments**:
+
+-   `str`:
+    string to justify.
+
+-   `n`:
+    specifies result string length.
+
+-   `char`:
+    is filling char.
+
+**return**:
+a padded string.
+
 
 ##  strutil.join
 
@@ -108,6 +161,32 @@ or a placeholder string if `val` is `nil` or `''`.
 
 **return**:
 string.
+
+
+##  strutil.rjust
+
+**syntax**:
+`strutil.rjust(str, n, char)`
+
+Return `str` right-justified in a string of length `n`.
+Padding is done using the specified fill character.
+By default `char` is space.
+
+See also `strutil.ljust`.
+
+**arguments**:
+
+-   `str`:
+    string to justify.
+
+-   `n`:
+    specifies result string length.
+
+-   `char`:
+    is filling char.
+
+**return**:
+a padded string.
 
 
 ##  strutil.rsplit
@@ -166,6 +245,34 @@ strutil.split('a/b/c/d', '/', 2)     -- {'a', 'b', 'c/d'}
 **return**:
 a table of split strings.
 
+
+##  strutil.startswith
+
+**syntax**:
+`strutil.startswith(str, prefix, start)`
+
+Return `true` if `str` starts with the specified `prefix`,
+`false` otherwise.
+
+See also: `strutil.endswith`.
+
+**arguments**:
+
+-   `str`:
+    is a string.
+
+-   `prefix`:
+    prefix string or a table of strings to try.
+
+-   `start`:
+    is the position to start test.
+
+    By default it is `nil`: to test from the first char.
+
+**return**:
+bool
+
+
 ##  strutil.strip
 
 **syntax**:
@@ -187,6 +294,28 @@ Return a string with leading and trailing chars those matches `pth` removed.
 **return**:
 a string with `pth` removed from both side.
 
+##  strutil.to_str
+
+**syntax**:
+`strutil.to_str(...)`
+
+Convert all arguments to a human readable string.
+Example:
+
+```
+strutil.to_str(1,2,{10,a=1,20}) -- 12{10,20,a=1}
+```
+
+It is actually just a wrapper of underlying `repr.str()`.
+
+**arguments**:
+
+-   `...`:
+    a series of element of type `number, string, bool, table or nil`.
+
+
+**return**:
+a human readable string
 
 ##  strutil.tohex
 
