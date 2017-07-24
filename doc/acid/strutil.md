@@ -65,10 +65,10 @@ See also: `strutil.startswith`.
 **arguments**:
 
 -   `str`:
-    is a string or a table of strings to try.
+    is a string.
 
 -   `suffix`:
-    suffix string.
+    suffix string or a table of strings to try.
 
 **return**:
 bool
@@ -259,10 +259,10 @@ See also: `strutil.endswith`.
 **arguments**:
 
 -   `str`:
-    is a string or a table of strings to try.
+    is a string.
 
 -   `prefix`:
-    prefix string.
+    prefix string or a table of strings to try.
 
 -   `start`:
     is the position to start test.
