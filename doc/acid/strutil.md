@@ -64,7 +64,7 @@ See also: `strutil.tohex`
 byte string.
 
 **error**:
-An error will be emit if `str` is not a string, or it is not a valid hex.
+An error will be emitted if `str` is not a string, or it is not a valid hex.
 
 ##  strutil.join
 

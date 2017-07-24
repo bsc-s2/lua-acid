@@ -473,6 +473,7 @@ end
 function test.fromhex(t)
 
     local cases = {
+        {'',     ''         },
         {'00',   '\x00'     },
         {'0011', '\x00\x11' },
     }
@@ -515,6 +516,7 @@ end
 function test.tohex(t)
 
     local cases = {
+        {'',         ''      },
         {'\x00',     '00',   },
         {'\x00\x11', '0011', },
     }
