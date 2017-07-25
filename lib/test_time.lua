@@ -2,81 +2,71 @@ local time = require("acid.time")
 
 local dd = test.dd
 
-function test.iso(t)
-    local p = time.parse_iso
-    local f = time.format_iso
-
-    local date = '2015-04-06T21:26:32.000Z'
-    local ts = 1428355592
-
-    t:eq( ts, p(date), 'timezone 0: ' .. (ts - p(date)) )
-    t:eq( date, f(p(date)), 'timezone 0: ' .. date .. ' ' .. f(p(date)) )
-end
 
 function test.parse(t)
     local cases = {
-        -- func, args, expected, err, err_msg
+        -- fmtkey, args, expected, err, err_msg
         {
-            func=time.parse_isobase,
+            fmtkey='isobase',
             args='20170414T105302Z',
             expected=1492167182
         },
         {
-            func=time.parse_iso,
+            fmtkey='iso',
             args='2015-06-21T04:33:42.000Z',
             expected=1434861222
         },
         {
-            func=time.parse_utc,
+            fmtkey='utc',
             args='Sun, 21 Jun 2015 04:33:42 UTC',
             expected=1434861222
         },
         {
-            func=time.parse_std,
+            fmtkey='std',
             args='2015-06-21 12:33:42',
             expected=1434861222
         },
         {
-            func=time.parse_ngxaccesslog,
+            fmtkey='ngxaccesslog',
             args='21/Jun/2015:12:33:42',
             expected=1434861222
         },
         {
-            func=time.parse_ngxerrorlog,
+            fmtkey='ngxerrorlog',
             args='2015/06/21 12:33:42',
             expected=1434861222
         },
 
         {
-            func=time.parse_utc,
+            fmtkey='utc',
             args='Tun, 21 Jun 2015 04:33:42 UTC',
             expected=nil,
             err='FormatError',
             err_msg='Tun, 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
-            func=time.parse_utc,
+            fmtkey='utc',
             args='un, 21 Jun 2015 04:33:42 UTC',
             expected=nil,
             err='FormatError',
             err_msg='un, 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
-            func=time.parse_utc,
+            fmtkey='utc',
             args=' 21 Jun 2015 04:33:42 UTC',
             expected=nil,
             err='FormatError',
             err_msg=' 21 Jun 2015 04:33:42 UTC date format error'
         },
         {
-            func=time.parse_utc,
+            fmtkey='utc',
             args='Sun, 21 Jux 2015 04:33:42 UTC',
             expected=nil,
             err='FormatError',
             err_msg='Sun, 21 Jux 2015 04:33:42 UTC date format error'
         },
         {
-            func=time.parse_utc,
+            fmtkey='utc',
             args='Sun, 21 Jun 2015 04:33:42',
             expected=nil,
             err='FormatError',
@@ -84,52 +74,24 @@ function test.parse(t)
         },
 
         {
-            func=time.parse_std,
+            fmtkey='std',
             args='2015-06-21 12:u:42',
             expected=nil,
             err='FormatError',
             err_msg='2015-06-21 12:u:42 date format error'
         },
         {
-            func=time.parse_std,
+            fmtkey='std',
             args='2015-06-21 12:33:',
             expected=nil,
             err='FormatError',
             err_msg='2015-06-21 12:33: date format error'
         },
-        {
-            func=time.parse_std,
-            args=nil,
-            expected=nil,
-            err='FormatError',
-            err_msg='type: nil date format error'
-        },
-        {
-            func=time.parse_std,
-            args={},
-            expected=nil,
-            err='FormatError',
-            err_msg='type: table date format error'
-        },
-        {
-            func=time.parse_std,
-            args=true,
-            expected=nil,
-            err='FormatError',
-            err_msg='type: boolean date format error'
-        },
-        {
-            func=time.parse_std,
-            args=10,
-            expected=nil,
-            err='FormatError',
-            err_msg='type: number date format error'
-        },
 
     }
 
     for i, case in ipairs( cases ) do
-        local res, err, err_msg = case.func(case.args)
+        local res, err, err_msg = time.parse( case.args, case.fmtkey )
 
         dd( case.args, case.expected )
         t:eq( case.expected, res )
@@ -144,54 +106,54 @@ end
 function test.format(t)
     local cases={
         {
-            func=time.format_iso,
+            fmtkey='iso',
             args=1434861222,
             expected='2015-06-21T04:33:42.000Z'
         },
         {
-            func=time.format_utc,
+            fmtkey='utc',
             args=1434861222,
             expected='Sun, 21 Jun 2015 04:33:42 UTC'
         },
         {
-            func=time.format_std,
+            fmtkey='std',
             args=1434861222,
             expected='2015-06-21 12:33:42'
         },
         {
-            func=time.format_ngxaccesslog,
+            fmtkey='ngxaccesslog',
             args=1434861222,
             expected='21/Jun/2015:12:33:42'
         },
         {
-            func=time.format_ngxerrorlog,
+            fmtkey='ngxerrorlog',
             args=1434861222,
             expected='2015/06/21 12:33:42'
         },
 
         {
-            func=time.format_std,
+            fmtkey='std',
             args=nil,
             expected=nil,
             err='ArgumentError',
             err_msg='timestamp cannot tonumber'
         },
         {
-            func=time.format_std,
+            fmtkey='std',
             args={},
             expected=nil,
             err='ArgumentError',
             err_msg='timestamp cannot tonumber'
         },
         {
-            func=time.format_std,
+            fmtkey='std',
             args=':',
             expected=nil,
             err='ArgumentError',
             err_msg='timestamp cannot tonumber'
         },
         {
-            func=time.format_std,
+            fmtkey='std',
             args='XxX',
             expected=nil,
             err='ArgumentError',
@@ -200,7 +162,7 @@ function test.format(t)
     }
 
     for i, case in ipairs( cases ) do
-        local res, err, err_msg = case.func(case.args)
+        local res, err, err_msg = time.format( case.args, case.fmtkey )
 
         dd( case.args, case.expected )
         t:eq( case.expected, res )
