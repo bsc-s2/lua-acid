@@ -56,25 +56,28 @@ local function _parse(dt, fmtkey, withzone)
     local m
     local s
 
-    assert(type(dt) == 'string', 'type: ' .. type(dt) .. 'date format error')
+    assert(type(dt) == 'string', 'date is not a string, type: ' .. type(dt))
 
     if fmtkey == 'utc' then
         local wk
         wk, dd, mm, yy, h, m, s = string.match(dt, ptn)
         if mm == nil or month2num[mm] == nil then
-            return nil, 'FormatError', dt .. ' date format error'
+            return nil, 'FormatError',
+                'date does not include month or month is wrong, ' .. dt
         else
             mm = month2num[mm]
         end
 
         if wk == nil or week2num[wk] == nil then
-            return nil, 'FormatError', dt .. ' date format error'
+            return nil, 'FormatError',
+                'date does not include week or week is wrong, ' .. dt
         end
 
     elseif fmtkey == 'ngxaccesslog' then
         dd, mm, yy, h, m, s = string.match(dt, ptn)
         if mm == nil or month2num[mm] == nil then
-            return nil, 'FormatError', dt .. ' date format error'
+            return nil, 'FormatError',
+                'date does not include month or month is wrong, ' .. dt
         else
             mm = month2num[mm]
         end
@@ -83,7 +86,8 @@ local function _parse(dt, fmtkey, withzone)
     end
 
     if yy == nil then
-        return nil, 'FormatError', dt .. ' date format error'
+        return nil, 'FormatError',
+            'date format is wrong, ' .. dt
     end
 
     -- os.time convert local time to timestamp
@@ -103,7 +107,7 @@ local function _format(ts, fmtkey, withzone)
 
     ts = tonumber(ts)
     if ts == nil then
-        return nil, 'ArgumentError', 'timestamp cannot tonumber'
+        return nil, 'ArgumentError', 'timestamp cannot be converted to numbers'
     end
 
     if withzone then
@@ -134,32 +138,15 @@ end
 function _M.parse(dt, fmtkey, withzone)
     assert(type(fmtkey) == 'string', 'date cannot be formated into a timestamp')
 
-    if fmtkey == 'isobase' then
-        withzone = default_true(withzone)
-        return _parse( dt, 'isobase', withzone )
+    if fmtkey == 'isobase' or fmtkey == 'iso' or fmtkey == 'utc' then
+        return _parse( dt, fmtkey, default_true(withzone) )
 
-    elseif fmtkey == 'iso' then
-        withzone = default_true(withzone)
-        return _parse( dt, 'iso', withzone )
-
-    elseif fmtkey == 'utc' then
-        withzone = default_true(withzone)
-        return _parse( dt, 'utc', withzone )
-
-    elseif fmtkey == 'std' then
-        withzone = default_false(withzone)
-        return _parse( dt, 'std', withzone )
-
-    elseif fmtkey == 'ngxaccesslog' then
-        withzone = default_false(withzone)
-        return _parse( dt, 'ngxaccesslog', withzone )
-
-    elseif fmtkey == 'ngxerrorlog' then
-        withzone = default_false(withzone)
-        return _parse( dt, 'ngxerrorlog', withzone )
+    elseif fmtkey == 'std' or fmtkey == 'ngxaccesslog'
+                           or fmtkey == 'ngxerrorlog' then
+        return _parse( dt, fmtkey, default_false(withzone))
 
     else
-        return nil, 'FmtkeyError', 'date cannot be formated into a timestamp'
+        return nil, 'FormatKeyError', 'date cannot be formated into a timestamp'
     end
 end
 
@@ -167,28 +154,15 @@ end
 function _M.format(ts, fmtkey, withzone)
     assert(type(fmtkey) == 'string', 'timestamp cannot be converted')
 
-    if fmtkey == 'iso' then
-        withzone = default_true(withzone)
-        return _format( ts, 'iso', withzone )
+    if fmtkey == 'iso' or fmtkey == 'utc' then
+        return _format( ts, fmtkey, default_true(withzone) )
 
-    elseif fmtkey == 'utc' then
-        withzone = default_true(withzone)
-        return _format( ts, 'utc', withzone )
-
-    elseif fmtkey == 'std' then
-        withzone = default_false(withzone)
-        return _format( ts, 'std', withzone )
-
-    elseif fmtkey == 'ngxaccesslog' then
-        withzone = default_false(withzone)
-        return _format( ts, 'ngxaccesslog', withzone )
-
-    elseif fmtkey == 'ngxerrorlog' then
-        withzone = default_false(withzone)
-        return _format( ts, 'ngxerrorlog', withzone )
+    elseif fmtkey == 'std' or fmtkey == 'ngxaccesslog'
+                           or fmtkey == 'ngxerrorlog' then
+        return _format( ts, fmtkey, default_false(withzone) )
 
     else
-        return nil, 'FmtkeyError', 'timestamp cannot be converted'
+        return nil, 'FormatKeyError', 'timestamp cannot be converted'
     end
 end
 
