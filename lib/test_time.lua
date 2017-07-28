@@ -5,7 +5,7 @@ local dd = test.dd
 
 function test.parse(t)
 
-    for fmtkey, args, expected, err_code, desc in t:case_iter(4, {
+    for fmtkey, date, expected, err_code, desc in t:case_iter(4, {
         {'isobase',      '20170726T061317Z',              1501049597, nil           },
         {'iso',          '2017-07-26T06:13:17.000Z',      1501049597, nil           },
         {'utc',          'Wed, 26 Jul 2017 06:13:17 UTC', 1501049597, nil           },
@@ -24,8 +24,8 @@ function test.parse(t)
         {'ngxaccesslog', '26//2017:14:13:17',             nil,        'FormatError' },
     }) do
 
-        local res, err, err_msg = time.parse(args, fmtkey)
-        dd(args, expected)
+        local res, err, err_msg = time.parse(date, fmtkey)
+        dd(date, expected)
 
         t:eq(expected, res, desc)
         t:eq(err_code, err, err_msg)
@@ -35,7 +35,7 @@ end
 
 function test.format(t)
 
-    for fmtkey, args, expected, err_code, desc in t:case_iter(4, {
+    for fmtkey, ts, expected, err_code, desc in t:case_iter(4, {
         {'iso',          1501049597, '2017-07-26T06:13:17.000Z',      nil             },
         {'utc',          1501049597, 'Wed, 26 Jul 2017 06:13:17 UTC', nil             },
         {'std',          1501049597, '2017-07-26 14:13:17',           nil             },
@@ -47,8 +47,8 @@ function test.format(t)
         {'std',          'XxX',      nil,                             'ArgumentError' },
     }) do
 
-        local res, err, err_msg = time.format(args, fmtkey)
-        dd(args, expected)
+        local res, err, err_msg = time.format(ts, fmtkey)
+        dd(ts, expected)
 
         t:eq(expected, res, desc)
         t:eq(err_code, err, err_msg)
@@ -68,7 +68,7 @@ end
 
 function test.to_sec(t)
 
-    for args, expected, err_code, desc in t:case_iter(3, {
+    for ts, expected, err_code, desc in t:case_iter(3, {
         {'1499850242',                            1499850242, nil             },
         {'1499850242' .. '000',                   1499850242, nil             },
         {'1499850242' .. '000' .. '000',          1499850242, nil             },
@@ -81,7 +81,19 @@ function test.to_sec(t)
         {string.sub('1499850242', 1, -2),         nil,        'ArgumentError' },
         {'1499850242' .. '1',                     nil,        'ArgumentError' },
         {1499850242,                              1499850242, nil             },
+        {1000000000,                              1000000000, nil             },
+        {1000000000 + 1,                          1000000001, nil             },
+        {1000000000 - 1,                          nil,        'ArgumentError' },
+        {9999999999,                              9999999999, nil             },
+        {9999999999 + 1,                          nil,        'ArgumentError' },
+        {9999999999 - 1,                          9999999998, nil             },
         {1499850242 * 1000,                       1499850242, nil             },
+        {1000000000 * 1000,                       1000000000, nil             },
+        {1000000000 * 1000 + 1,                   1000000000, nil             },
+        {1000000000 * 1000 - 1,                   nil,        'ArgumentError' },
+        {9999999999 * 1000 + 999,                 9999999999, nil             },
+        {9999999999 * 1000 + 999 + 1,             nil,        'ArgumentError' },
+        {9999999999 * 1000 + 999 - 1,             9999999999, nil             },
         {1499850242 * 1000 * 1000,                nil,        'ArgumentError' },
         {1499850242 * 1000 * 1000 * 1000,         nil,        'ArgumentError' },
         {1e15,                                    nil,        'ArgumentError' },
@@ -91,8 +103,8 @@ function test.to_sec(t)
         {true,                                    nil,        'ArgumentError' },
     }) do
 
-        local res, err, err_msg = time.to_sec(args)
-        dd(args, expected)
+        local res, err, err_msg = time.to_sec(ts)
+        dd(ts, expected)
 
         t:eq(expected, res, desc)
         t:eq(err_code, err, err_msg)

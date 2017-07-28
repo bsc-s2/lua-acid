@@ -1,6 +1,6 @@
 local _M = { _VERSION = '1.0' }
 
-local str2time = {
+local str_time = {
     isobase="(%d%d%d%d)(%d%d)(%d%d)T(%d%d)(%d%d)(%d%d)Z",
     iso="(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)%.(%d+)Z",
     utc="(%u%l%l)%,% (%d+)% (%u%l%l)% (%d+)% (%d+):(%d+):(%d+)% UTC",
@@ -9,7 +9,7 @@ local str2time = {
     ngxerrorlog ="(%d+)%/(%d+)%/(%d+)% (%d+):(%d+):(%d+)",
 }
 
-local time2str = {
+local time_str = {
     iso='%Y-%m-%dT%H:%M:%S.000Z',
     utc='%a, %d %b %Y %H:%M:%S UTC',
     std='%Y-%m-%d %H:%M:%S',
@@ -17,13 +17,22 @@ local time2str = {
     ngxerrorlog ='%Y/%m/%d %H:%M:%S',
 }
 
-local month2num= {
+local month_num= {
     Jan='01', Feb='02', Mar='03', Apr='04', May='05', Jun='06',
     Jul='07', Aug='08', Sep='09', Oct='10', Nov='11', Dec='12',
 }
 
-local week2num= {
+local week_num= {
     Sun='0', Mon='1', Tue='2', Wed='3', Thu='4', Fri='5', Sat='6',
+}
+
+local time_withzone={
+    isobase=true,
+    iso=true,
+    utc=true,
+    std=false,
+    ngxaccesslog=false,
+    ngxerrorlog=false,
 }
 
 
@@ -47,7 +56,7 @@ _M.timezone = timezone
 
 local function _parse(dt, fmtkey, withzone)
 
-    local ptn = str2time[fmtkey]
+    local ptn = str_time[fmtkey]
 
     local yy
     local mm
@@ -61,25 +70,25 @@ local function _parse(dt, fmtkey, withzone)
     if fmtkey == 'utc' then
         local wk
         wk, dd, mm, yy, h, m, s = string.match(dt, ptn)
-        if mm == nil or month2num[mm] == nil then
+        if mm == nil or month_num[mm] == nil then
             return nil, 'FormatError',
                 'date does not include month or month is wrong, ' .. dt
         else
-            mm = month2num[mm]
+            mm = month_num[mm]
         end
 
-        if wk == nil or week2num[wk] == nil then
+        if wk == nil or week_num[wk] == nil then
             return nil, 'FormatError',
                 'date does not include week or week is wrong, ' .. dt
         end
 
     elseif fmtkey == 'ngxaccesslog' then
         dd, mm, yy, h, m, s = string.match(dt, ptn)
-        if mm == nil or month2num[mm] == nil then
+        if mm == nil or month_num[mm] == nil then
             return nil, 'FormatError',
                 'date does not include month or month is wrong, ' .. dt
         else
-            mm = month2num[mm]
+            mm = month_num[mm]
         end
     else
         yy, mm, dd, h, m, s = string.match(dt, ptn)
@@ -103,7 +112,7 @@ end
 
 local function _format(ts, fmtkey, withzone)
 
-    local fmt = time2str[fmtkey]
+    local fmt = time_str[fmtkey]
 
     ts = tonumber(ts)
     if ts == nil then
@@ -117,52 +126,22 @@ local function _format(ts, fmtkey, withzone)
 end
 
 
-local function default_true(withzone)
-    if withzone == nil then
-        withzone = true
-    end
-
-    return withzone
-end
-
-
-local function default_false(withzone)
-    if withzone == nil then
-        withzone = false
-    end
-
-    return withzone
-end
-
-
 function _M.parse(dt, fmtkey, withzone)
-    assert(type(fmtkey) == 'string', 'date cannot be formated into a timestamp')
-
-    if fmtkey == 'isobase' or fmtkey == 'iso' or fmtkey == 'utc' then
-        return _parse( dt, fmtkey, default_true(withzone) )
-
-    elseif fmtkey == 'std' or fmtkey == 'ngxaccesslog'
-                           or fmtkey == 'ngxerrorlog' then
-        return _parse( dt, fmtkey, default_false(withzone))
+    if fmtkey == nil or time_withzone[fmtkey] == nil then
+        return nil, 'FormatKeyError', 'date cannot be formated into a timestamp'
 
     else
-        return nil, 'FormatKeyError', 'date cannot be formated into a timestamp'
+        return _parse( dt, fmtkey, withzone or time_withzone[fmtkey] )
     end
 end
 
 
 function _M.format(ts, fmtkey, withzone)
-    assert(type(fmtkey) == 'string', 'timestamp cannot be converted')
-
-    if fmtkey == 'iso' or fmtkey == 'utc' then
-        return _format( ts, fmtkey, default_true(withzone) )
-
-    elseif fmtkey == 'std' or fmtkey == 'ngxaccesslog'
-                           or fmtkey == 'ngxerrorlog' then
-        return _format( ts, fmtkey, default_false(withzone) )
+    if fmtkey == nil or time_withzone[fmtkey] == nil then
+        return nil, 'FormatKeyError', 'timestamp cannot be converted to a date'
 
     else
-        return nil, 'FormatKeyError', 'timestamp cannot be converted'
+        return _format( ts, fmtkey, withzone or time_withzone[fmtkey] )
     end
 end
 
