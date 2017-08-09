@@ -1,0 +1,107 @@
+local _M = {
+
+    -- statndard keys, alpha-only keys and lower alpha keys
+
+    ["Continue"]                             = 100, Continue                         = 100, continue                         = 100,
+    ["Switching Protocols"]                  = 101, SwitchingProtocols               = 101, switchingprotocols               = 101,
+    ["Processing"]                           = 102, Processing                       = 102, processing                       = 102,
+
+    ["OK"]                                   = 200, OK                               = 200, ok                               = 200,
+    ["Created"]                              = 201, Created                          = 201, created                          = 201,
+    ["Accepted"]                             = 202, Accepted                         = 202, accepted                         = 202,
+    ["Non-Authoritative Information"]        = 203, NonAuthoritativeInformation      = 203, nonauthoritativeinformation      = 203,
+    ["No Content"]                           = 204, NoContent                        = 204, nocontent                        = 204,
+    ["Reset Content"]                        = 205, ResetContent                     = 205, resetcontent                     = 205,
+    ["Partial Content"]                      = 206, PartialContent                   = 206, partialcontent                   = 206,
+    ["Multi-Status"]                         = 207, MultiStatus                      = 207, multistatus                      = 207,
+    ["Already Reported"]                     = 208, AlreadyReported                  = 208, alreadyreported                  = 208,
+    ["IM Used"]                              = 226, IMUsed                           = 226, imused                           = 226,
+
+    ["Multiple Choices"]                     = 300, MultipleChoices                  = 300, multiplechoices                  = 300,
+    ["Moved Permanently"]                    = 301, MovedPermanently                 = 301, movedpermanently                 = 301,
+    ["Found"]                                = 302, Found                            = 302, found                            = 302,
+    ["See Other"]                            = 303, SeeOther                         = 303, seeother                         = 303,
+    ["Not Modified"]                         = 304, NotModified                      = 304, notmodified                      = 304,
+    ["Use Proxy"]                            = 305, UseProxy                         = 305, useproxy                         = 305,
+    ["Switch Proxy"]                         = 306, SwitchProxy                      = 306, switchproxy                      = 306,
+    ["Temporary Redirect"]                   = 307, TemporaryRedirect                = 307, temporaryredirect                = 307,
+    ["Permanent Redirect"]                   = 308, PermanentRedirect                = 308, permanentredirect                = 308,
+
+    ["Bad Request"]                          = 400, BadRequest                       = 400, badrequest                       = 400,
+    ["Unauthorized"]                         = 401, Unauthorized                     = 401, unauthorized                     = 401,
+    ["Payment Required"]                     = 402, PaymentRequired                  = 402, paymentrequired                  = 402,
+    ["Forbidden"]                            = 403, Forbidden                        = 403, forbidden                        = 403,
+    ["Not Found"]                            = 404, NotFound                         = 404, notfound                         = 404,
+    ["Method Not Allowed"]                   = 405, MethodNotAllowed                 = 405, methodnotallowed                 = 405,
+    ["Not Acceptable"]                       = 406, NotAcceptable                    = 406, notacceptable                    = 406,
+    ["Proxy Authentication Required"]        = 407, ProxyAuthenticationRequired      = 407, proxyauthenticationrequired      = 407,
+    ["Request Timeout"]                      = 408, RequestTimeout                   = 408, requesttimeout                   = 408,
+    ["Conflict"]                             = 409, Conflict                         = 409, conflict                         = 409,
+    ["Gone"]                                 = 410, Gone                             = 410, gone                             = 410,
+    ["Length Required"]                      = 411, LengthRequired                   = 411, lengthrequired                   = 411,
+    ["Precondition Failed"]                  = 412, PreconditionFailed               = 412, preconditionfailed               = 412,
+    ["Payload Too Large"]                    = 413, PayloadTooLarge                  = 413, payloadtoolarge                  = 413,
+    ["URI Too Long"]                         = 414, URITooLong                       = 414, uritoolong                       = 414,
+    ["Unsupported Media Type"]               = 415, UnsupportedMediaType             = 415, unsupportedmediatype             = 415,
+    ["Range Not Satisfiable"]                = 416, RangeNotSatisfiable              = 416, rangenotsatisfiable              = 416,
+    ["Expectation Failed"]                   = 417, ExpectationFailed                = 417, expectationfailed                = 417,
+    ["I'm a teapot"]                         = 418, Imateapot                        = 418, imateapot                        = 418,
+    ["Misdirected Request"]                  = 421, MisdirectedRequest               = 421, misdirectedrequest               = 421,
+    ["Unprocessable Entity"]                 = 422, UnprocessableEntity              = 422, unprocessableentity              = 422,
+    ["Locked"]                               = 423, Locked                           = 423, locked                           = 423,
+    ["Failed Dependency"]                    = 424, FailedDependency                 = 424, faileddependency                 = 424,
+    ["Upgrade Required"]                     = 426, UpgradeRequired                  = 426, upgraderequired                  = 426,
+    ["Precondition Required"]                = 428, PreconditionRequired             = 428, preconditionrequired             = 428,
+    ["Too Many Requests"]                    = 429, TooManyRequests                  = 429, toomanyrequests                  = 429,
+    ["Request Header Fields Too Large"]      = 431, RequestHeaderFieldsTooLarge      = 431, requestheaderfieldstoolarge      = 431,
+    ["Unavailable For Legal Reasons"]        = 451, UnavailableForLegalReasons       = 451, unavailableforlegalreasons       = 451,
+
+    ["Internal Server Error"]                = 500, InternalServerError              = 500, internalservererror              = 500,
+    ["Not Implemented"]                      = 501, NotImplemented                   = 501, notimplemented                   = 501,
+    ["Bad Gateway"]                          = 502, BadGateway                       = 502, badgateway                       = 502,
+    ["Service Unavailable"]                  = 503, ServiceUnavailable               = 503, serviceunavailable               = 503,
+    ["Gateway Timeout"]                      = 504, GatewayTimeout                   = 504, gatewaytimeout                   = 504,
+    ["HTTP Version Not Supported"]           = 505, HTTPVersionNotSupported          = 505, httpversionnotsupported          = 505,
+    ["Variant Also Negotiates"]              = 506, VariantAlsoNegotiates            = 506, variantalsonegotiates            = 506,
+    ["Insufficient Storage"]                 = 507, InsufficientStorage              = 507, insufficientstorage              = 507,
+    ["Loop Detected"]                        = 508, LoopDetected                     = 508, loopdetected                     = 508,
+    ["Not Extended"]                         = 510, NotExtended                      = 510, notextended                      = 510,
+    ["Network Authentication Required"]      = 511, NetworkAuthenticationRequired    = 511, networkauthenticationrequired    = 511,
+
+    -- Unofficial
+    ["Checkpoint"]                           = 103, Checkpoint                       = 103, checkpoint                       = 103,
+    ["Early Hints"]                          = 103, EarlyHints                       = 103, earlyhints                       = 103,
+    ["Method Failure"]                       = 420, MethodFailure                    = 420, methodfailure                    = 420,
+    ["Enhance Your Calm"]                    = 420, EnhanceYourCalm                  = 420, enhanceyourcalm                  = 420,
+    ["Blocked by Windows Parental Controls"] = 450, BlockedbyWindowsParentalControls = 450, blockedbywindowsparentalcontrols = 450,
+    ["Invalid Token"]                        = 498, InvalidToken                     = 498, invalidtoken                     = 498,
+    ["Token Required"]                       = 499, TokenRequired                    = 499, tokenrequired                    = 499,
+    ["Bandwidth Limit Exceeded"]             = 509, BandwidthLimitExceeded           = 509, bandwidthlimitexceeded           = 509,
+    ["Site is frozen"]                       = 530, Siteisfrozen                     = 530, siteisfrozen                     = 530,
+    ["Network read timeout error"]           = 598, Networkreadtimeouterror          = 598, networkreadtimeouterror          = 598,
+
+    -- Internet
+    ["Login Time-out"]                       = 440, LoginTimeout                     = 440, logintimeout                     = 440,
+    ["Retry With"]                           = 449, RetryWith                        = 449, retrywith                        = 449,
+    ["Redirect"]                             = 451, Redirect                         = 451, redirect                         = 451,
+
+    -- nginx
+    ["No Response"]                          = 444, NoResponse                       = 444, noresponse                       = 444,
+    ["SSL Certificate Error"]                = 495, SSLCertificateError              = 495, sslcertificateerror              = 495,
+    ["SSL Certificate Required"]             = 496, SSLCertificateRequired           = 496, sslcertificaterequired           = 496,
+    ["HTTP Request Sent to HTTPS Port"]      = 497, HTTPRequestSenttoHTTPSPort       = 497, httprequestsenttohttpsport       = 497,
+    ["Client Closed Request"]                = 499, ClientClosedRequest              = 499, clientclosedrequest              = 499,
+
+    -- Cloudflare
+    ["Unknown Error"]                        = 520, UnknownError                     = 520, unknownerror                     = 520,
+    ["Web Server Is Down"]                   = 521, WebServerIsDown                  = 521, webserverisdown                  = 521,
+    ["Connection Timed Out"]                 = 522, ConnectionTimedOut               = 522, connectiontimedout               = 522,
+    ["Origin Is Unreachable"]                = 523, OriginIsUnreachable              = 523, originisunreachable              = 523,
+    ["A Timeout Occurred"]                   = 524, ATimeoutOccurred                 = 524, atimeoutoccurred                 = 524,
+    ["SSL Handshake Failed"]                 = 525, SSLHandshakeFailed               = 525, sslhandshakefailed               = 525,
+    ["Invalid SSL Certificate"]              = 526, InvalidSSLCertificate            = 526, invalidsslcertificate            = 526,
+    ["Railgun Error"]                        = 527, RailgunError                     = 527, railgunerror                     = 527,
+
+}
+
+return _M
