@@ -547,36 +547,36 @@ end
 
 function test.extends(t)
 
-    local cases = {
+    for _, a, b, desc in t:case_iter(2, {
+        {{'a'},         1,             },
+        {{'a'},         'a',           },
+        {{'a'},         function()end, },
+    }) do
 
-        {{1,2},     {3,4},       {1,2,3,4}},
-        {{1,2},     {3},         {1,2,3}},
-        {{1,2},     {nil},       {1,2}},
-        {{1,2},     {},          {1,2}},
-        {{},        {1,2},       {1,2}},
-        {nil,       {1},         nil},
-        {{1,{2,3}}, {4,5},       {1,{2,3},4,5}},
-        {{1},       {{2,3},4,5}, {1,{2,3},4,5}},
+        t:err(function()
+            tableutil.extends(a, b)
+        end, desc)
+    end
+
+    for _, a, b, expected, desc in t:case_iter(3, {
+        {{1,2},     {3,4},       {1,2,3,4}      },
+        {{1,2},     {3},         {1,2,3}        },
+        {{1,2},     {nil},       {1,2}          },
+        {{1,2},     {},          {1,2}          },
+        {{},        {1,2},       {1,2}          },
+        {nil,       {1},         nil            },
+        {{1,{2,3}}, {4,5},       {1,{2,3},4,5}  },
+        {{1},       {{2,3},4,5}, {1,{2,3},4,5}  },
         {{"xx",2},  {3,"yy"},    {"xx",2,3,"yy"}},
-        {{1,2},     {3,nil,4},   {1,2,3}},
+        {{1,2},     {3,nil,4},   {1,2,3}        },
+        {{1,nil,2}, {3,4},       {1,3,2,4}      },
+    }) do
 
-        -- with luajit, after inserting 3, then tbl is {1, 3, 2}
-        {{1,nil,2}, {3,4},       {1,3,2,4}},
+        local rst = tableutil.extends(a, b)
 
-        -- -- with lua5.2:
-        -- {{1,nil,2}, {3,4},       {1,nil,2,3,4}},
-
-    }
-
-    for ii, c in ipairs( cases ) do
-
-        local inp, inp2, expected = t:unpack(c)
-        local msg = 'case: ' .. tostring(ii) .. '-th '
-        dd(msg, c)
-
-        local rst = tableutil.extends(inp, inp2)
         dd('rst: ', rst)
-        t:eqdict(expected, rst, msg)
+
+        t:eqdict(expected, rst, desc)
     end
 end
 
