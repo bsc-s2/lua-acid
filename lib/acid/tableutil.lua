@@ -4,6 +4,11 @@ local strutil = require('acid.strutil')
 
 local _M = { _VERSION = '0.1' }
 
+local incomparable_types = {
+    ['nil'] = true,
+    ['boolean'] = true,
+}
+
 _M.repr = repr.repr
 _M.str = repr.str
 
@@ -117,6 +122,57 @@ end
 -- TODO add doc
 function _M.eq(a, b)
     return _M.contains(a, b) and _M.contains(b, a)
+end
+
+
+-- TODO add doc
+function _M.cmp_list(a, b)
+
+    local ta = type(a)
+    local tb = type(b)
+
+    if ta ~= tb then
+        error('can not compare different type: ' .. ta .. ' with ' .. tb)
+    end
+
+    if incomparable_types[ta] then
+        error('can not compare two ' .. ta .. ' value')
+    end
+
+    if ta ~= 'table' then
+        -- same type but primitive type.
+        if a > b then
+            return 1
+        elseif a == b then
+            return 0
+        else
+            return -1
+        end
+    end
+
+    for i, va in ipairs(a) do
+        local vb = b[i]
+        if vb == nil then
+            -- a has more element. thus a > b
+            return 1
+        end
+        local rst = _M.cmp_list(va, vb)
+        if rst ~= 0 then
+            return rst
+        end
+
+        -- else: continue to compare next elt.
+    end
+
+    -- finished comparing all elts in a.
+
+    if b[#a + 1] ~= nil then
+        --  b has more elts.
+        return -1
+    else
+        -- a and b has the same nr of elts.
+        return 0
+    end
 end
 
 
