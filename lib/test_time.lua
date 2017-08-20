@@ -5,7 +5,7 @@ local dd = test.dd
 
 function test.parse(t)
 
-    for fmtkey, date, expected, err_code, desc in t:case_iter(4, {
+    for i, fmtkey, date, expected, err_code, desc in t:case_iter(4, {
         {'isobase',        '20170726T061317Z',              1501049597, nil           },
         {'iso',            '2017-07-26T06:13:17.000Z',      1501049597, nil           },
         {'utc',            'Wed, 26 Jul 2017 06:13:17 UTC', 1501049597, nil           },
@@ -35,7 +35,7 @@ end
 
 function test.format(t)
 
-    for fmtkey, ts, expected, err_code, desc in t:case_iter(4, {
+    for i, fmtkey, ts, expected, err_code, desc in t:case_iter(4, {
         {'iso',            1501049597, '2017-07-26T06:13:17.000Z',      nil             },
         {'utc',            1501049597, 'Wed, 26 Jul 2017 06:13:17 UTC', nil             },
         {'std',            1501049597, '2017-07-26 14:13:17',           nil             },
@@ -68,7 +68,7 @@ end
 
 function test.to_sec(t)
 
-    for ts, expected, err_code, desc in t:case_iter(3, {
+    for i, ts, expected, err_code, desc in t:case_iter(3, {
         {'1499850242',                            1499850242, nil             },
         {'1499850242' .. '000',                   1499850242, nil             },
         {'1499850242' .. '000' .. '000',          1499850242, nil             },

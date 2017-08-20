@@ -189,7 +189,13 @@ local testfuncs = {
                 case[n + 1] = case[n + 1] .. ': ' .. desc
             end
 
-            return unpack(case, 1, n + 1)
+            -- add index
+            local _case = {i}
+            for j = 1, n + 1 do
+                _case[j + 1] = case[j]
+            end
+
+            return unpack(_case, 1, n + 1 + 1)
         end
     end,
 
@@ -230,6 +236,8 @@ local testfuncs = {
 
     err = function ( self, func, mes )
         local ok, rst = pcall( func )
+        dd('ok: ', ok)
+        dd('error msg: ', rst)
         self:eq( false, ok, mes )
     end,
 
@@ -370,6 +378,7 @@ _M.dd = dd
 function _M.output(s)
     if ngx then
         ngx.say(s)
+        print(s)
     else
         print(s)
     end
