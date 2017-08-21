@@ -30,7 +30,7 @@ To explain this concept, we need two definitions:
     access `3`.
 
     A **non-leaf** `key_path` is a prefix of some other `key_path` and is used
-    to access an intermedia table, such as `.x`.
+    to access an intermediate table, such as `.x`.
 
     A **leaf** `key_path` is **NOT** a prefix of any other `key_path` and is
     used to access a primitive value, such as `.x.y`.
@@ -40,8 +40,8 @@ To explain this concept, we need two definitions:
     For any finite `key_path` `pb` in `b`, if:
 
     -   `pb` is also a valid `key_path` in `a`,
-    -   and: if `pb` is a leaf `key_path` and the values referred by `pb` in `a`
-        and `b` are the same.
+    -   and: if `pb` is a leaf `key_path`, the value referred with `pb` in `a`
+        and the value referred with `pb` in `b` are the same.
 
     then `a` contains `b`.
 
