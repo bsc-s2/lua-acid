@@ -190,12 +190,7 @@ local testfuncs = {
             end
 
             -- add index
-            local _case = {i}
-            for j = 1, n + 1 do
-                _case[j + 1] = case[j]
-            end
-
-            return unpack(_case, 1, n + 1 + 1)
+            return i, unpack(case, 1, n + 1 + 1)
         end
     end,
 
