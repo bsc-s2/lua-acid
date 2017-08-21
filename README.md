@@ -18,15 +18,16 @@ It is meant to be a underlaying code base for building a distributed system.
 
 # Modules
 
-| name                                    | description                                             | status          |
-| :--                                     | :--                                                     | :--             |
-| [acid.strutil](doc/acid/strutil.md)     | string operation functions.                             | well tested     |
-| [acid.tableutil](doc/acid/tableutil.md) | table operation functions.                              | well tested     |
-| [acid.unittest](doc/acid/unittest.md)   | unittest engine that looks for test functions in a dir. | well tested     |
-| [acid.cache](doc/acid/cache.md)         | in-process or shared-dict based cache.                  | not well tested |
-| [acid.cluster](doc/acid/cluster.md)     | cluster implementation based on paxos.                  | not well tested |
-| [acid.logging](doc/acid/logging.md)     | logging utilities.                                      | not well tested |
-| [acid.paxos](doc/acid/paxos.md)         | classic paxos implementation.                           | not well tested |
+| name                                        | description                                             | status          |
+| :--                                         | :--                                                     | :--             |
+| [acid.async_cache](doc/acid/async_cache.md) | shared-dict based cache, update asynchronously.         | well tested     |
+| [acid.strutil](doc/acid/strutil.md)         | string operation functions.                             | well tested     |
+| [acid.tableutil](doc/acid/tableutil.md)     | table operation functions.                              | well tested     |
+| [acid.unittest](doc/acid/unittest.md)       | unittest engine that looks for test functions in a dir. | well tested     |
+| [acid.cache](doc/acid/cache.md)             | in-process or shared-dict based cache.                  | not well tested |
+| [acid.cluster](doc/acid/cluster.md)         | cluster implementation based on paxos.                  | not well tested |
+| [acid.logging](doc/acid/logging.md)         | logging utilities.                                      | not well tested |
+| [acid.paxos](doc/acid/paxos.md)             | classic paxos implementation.                           | not well tested |
 
 
 # Install
