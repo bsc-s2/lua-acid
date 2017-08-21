@@ -5,7 +5,7 @@ local dd = test.dd
 
 function test.split(t)
 
-    for i, str, ptn, expected, desc in t:case_iter(3, {
+    for _, str, ptn, expected, desc in t:case_iter(3, {
         {'',             '/',  {'' },                    'empty string'               },
         {'/',            '/',  {'', '' },                'single pattern'             },
         {'//',           '/',  {'', '', '' },            'dual pattern'               },
@@ -38,7 +38,7 @@ end
 
 function test.split_maxsplit(t)
 
-    for i, str, ptn, maxsplit, expected, desc in t:case_iter(4, {
+    for _, str, ptn, maxsplit, expected, desc in t:case_iter(4, {
         {'',      '/', nil, {''}          },
         {'',      '/', -1,  {''}          },
         {'',      '/', 0,   {''}          },
@@ -75,7 +75,7 @@ end
 
 function test.right_n_split(t)
 
-    for i, str, ptn, frm, n, expected, desc in t:case_iter(5, {
+    for _, str, ptn, frm, n, expected, desc in t:case_iter(5, {
         {'',           '/', 1,  -1,  {0, {}               } },
         {'',           '/', 1,  0,   {0, {}               } },
         {'',           '/', 1,  1,   {0, {}               } },
@@ -105,7 +105,7 @@ end
 
 function test.rsplit(t)
 
-    for i, str, ptn, plain, maxsplit, expected, desc in t:case_iter(5, {
+    for _, str, ptn, plain, maxsplit, expected, desc in t:case_iter(5, {
         {'',           '/',     true,  nil, {''}                },
         {'',           '/',     true,  -1,  {''}                },
         {'',           '/',     true,  0,   {''}                },
@@ -233,7 +233,7 @@ end
 
 function test.strip(t)
 
-    for i, str, ptn, expected, desc in t:case_iter(3, {
+    for _, str, ptn, expected, desc in t:case_iter(3, {
         {'',               nil,            ''      },
         {'',               '',             ''      },
         {'abc',            nil,            'abc'   },
@@ -262,7 +262,7 @@ end
 
 function test.startswith(t)
 
-    for i, str, prefix, start, expected, desc in t:case_iter(4, {
+    for _, str, prefix, start, expected, desc in t:case_iter(4, {
         { '',      '',               nil, true,  },
         { 'a',     '',               nil, true,  },
         { 'a',     'b',              nil, false, },
@@ -288,7 +288,7 @@ end
 
 function test.endswith(t)
 
-    for i, str, suffix, expected, desc in t:case_iter(3, {
+    for _, str, suffix, expected, desc in t:case_iter(3, {
         { '',   '',                true,  },
         { 'a',  '',                true,  },
         { 'a',  'b',               false, },
@@ -311,7 +311,7 @@ function test.to_str(t)
 
     -- simplified test. underlaying repr.str() has been tested in test_repr.lua
 
-    for i, inp, expected, desc in t:case_iter(2, {
+    for _, inp, expected, desc in t:case_iter(2, {
         {{},                    ''                 },
         {{1,2},                 '12'               },
         {{1,2,{}},              '12{}'             },
@@ -329,7 +329,7 @@ end
 
 function test.placeholder(t)
 
-    for i, val, ph, float_fmt, expected, desc in t:case_iter(4, {
+    for _, val, ph, float_fmt, expected, desc in t:case_iter(4, {
         {nil,     nil,  nil,    '-'     },
         {'',      nil,  nil,    '-'     },
         {nil,     'xx', nil,    'xx'    },
@@ -434,7 +434,7 @@ end
 
 function test.fromhex_err(t)
 
-    for i, str, desc in t:case_iter(1, {
+    for _, str, desc in t:case_iter(1, {
         {1                        },
         {true                     },
         {false                    },
@@ -452,7 +452,7 @@ end
 
 function test.fromhex(t)
 
-    for i, str, expected, desc in t:case_iter(2, {
+    for _, str, expected, desc in t:case_iter(2, {
         {'',     ''         },
         {'00',   '\x00'     },
         {'0011', '\x00\x11' },
@@ -468,7 +468,7 @@ end
 
 function test.tohex_err(t)
 
-    for i, str, desc in t:case_iter(2, {
+    for _, str, desc in t:case_iter(2, {
         {1     },
         {true  },
         {false },
@@ -483,7 +483,7 @@ end
 
 function test.tohex(t)
 
-    for i, inp, expected, desc in t:case_iter(2, {
+    for _, inp, expected, desc in t:case_iter(2, {
         {'',         ''      },
         {'\x00',     '00',   },
         {'\x00\x11', '0011', },
@@ -499,7 +499,7 @@ end
 
 function test.to_chunks_err(t)
 
-    for i, s, n, desc in t:case_iter(3, {
+    for _, s, n, desc in t:case_iter(3, {
         {'a', 0},
         {'a', -1},
     }) do
@@ -512,7 +512,7 @@ end
 
 function test.to_chunks(t)
 
-    for i, s, n, expected, desc in t:case_iter(3, {
+    for _, s, n, expected, desc in t:case_iter(3, {
         {'',           1,         {''},                                      'n = 0'},
         {'a',          1,         {'a'},                                     'n = 1'},
         {'ab',         1,         {'a','b'},                                 'n = 1:1'},

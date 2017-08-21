@@ -272,7 +272,7 @@ end
 
 function test.cmp_list(t)
 
-    for i, a, b, desc in t:case_iter(2, {
+    for _, a, b, desc in t:case_iter(2, {
         {nil,           nil,           },
         {1,             true,          },
         {1,             '',            },
@@ -291,7 +291,7 @@ function test.cmp_list(t)
         end, desc)
     end
 
-    for i, a, b, expected, desc in t:case_iter(3, {
+    for _, a, b, expected, desc in t:case_iter(3, {
         {0,                 0,                 0  },
         {1,                 0,                 1  },
         {2,                 0,                 1  },

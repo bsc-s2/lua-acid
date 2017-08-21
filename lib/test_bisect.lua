@@ -4,7 +4,7 @@ local dd = test.dd
 
 function test.search(t)
 
-    for i, arr, key, expected_found, expected_l, desc in t:case_iter(4, {
+    for _, arr, key, expected_found, expected_l, desc in t:case_iter(4, {
         {{},      1, false, 0 },
         {{1},     0, false, 0 },
         {{1},     1, true,  1 },
