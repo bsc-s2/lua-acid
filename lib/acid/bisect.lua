@@ -16,7 +16,6 @@ function _M.search(array, key, opts)
     local l = 0
     local r = #array + 1
     local mid
-    local found
 
     while l < r - 1 do
         mid = l + r
