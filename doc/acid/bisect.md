@@ -32,7 +32,7 @@ It provides with bisection-search functions.
 `bisect.search(array, key, opts)`
 
 It search for `key` in `array` and returns
-three value: a boolean that indicates if `key` is found,
+two value: a boolean that indicates if `key` is found,
 and index so that:
 `array[index] <= key < array[index + 1]`.
 
@@ -79,7 +79,7 @@ bisect.search({1,3}, 4) -- false, 2
     for `a<b, a==b and a>b`.
 
 **return**:
-three values:
+two values:
 
 -   `found`: indicates if `key` is found or not.
     If found, the second return value `left` is the index where the element
