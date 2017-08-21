@@ -269,6 +269,63 @@ function test.eq(t)
 
 end
 
+
+function test.cmp_list(t)
+
+    for i, a, b, desc in t:case_iter(2, {
+        {nil,           nil,           },
+        {1,             true,          },
+        {1,             '',            },
+        {true,          true,          },
+        {true,          nil,           },
+        {{},            1,             },
+        {{},            true,          },
+        {{'a'},         {1},           },
+        {{{'a'}},       {{1}},         },
+        {function()end, function()end, },
+        {function()end, 1,             },
+    }) do
+
+        t:err(function()
+            tableutil.cmp_list(a, b)
+        end, desc)
+    end
+
+    for i, a, b, expected, desc in t:case_iter(3, {
+        {0,                 0,                 0  },
+        {1,                 0,                 1  },
+        {2,                 0,                 1  },
+        {2,                 2,                 0  },
+        {2,                 3,                 -1 },
+        {'',                '',                0  },
+        {'a',               'b',               -1 },
+        {'c',               'b',               1  },
+        {'foo',             'foo',             0  },
+        {{},                {},                0  },
+        {{1},               {},                1  },
+        {{1},               {1},               0  },
+        {{1,0},             {1},               1  },
+        {{1,0},             {1,0},             0  },
+        {{1,0},             {1,0,0},           -1 },
+        {{'a'},             {'a',1},           -1 },
+        {{'a',1,1},         {'a',1},           1  },
+        {{'a',1,{'b'}},     {'a',1,{'b'}},     0  },
+        {{'a',1,{'c'}},     {'a',1,{'b'}},     1  },
+        {{'a',1,{'c',1}},   {'a',1,{'c',1}},   0  },
+        {{'a',1,{'c',1,1}}, {'a',1,{'c',1}},   1  },
+        {{'a',1,{'c',1}},   {'a',1,{'c',1,1}}, -1 },
+        {{'a',1,{'c',1}},   {'a',1,{'c',2}},   -1 },
+        {{'a',1,{'c',2}},   {'a',1,{'c',1}},   1  },
+    }) do
+
+        local rst = tableutil.cmp_list(a, b)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, desc)
+    end
+end
+
+
 function test.intersection(t)
     local a = { a=1, 10 }
     local b = { 11, 12 }
