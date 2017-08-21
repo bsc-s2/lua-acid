@@ -273,15 +273,17 @@ end
 function test.cmp_list(t)
 
     for i, a, b, desc in t:case_iter(2, {
-        {nil,     nil,   },
-        {1,       true,  },
-        {1,       '',    },
-        {true,    true,  },
-        {true,    nil,   },
-        {{},      1,     },
-        {{},      true,  },
-        {{'a'},   {1},   },
-        {{{'a'}}, {{1}}, },
+        {nil,           nil,           },
+        {1,             true,          },
+        {1,             '',            },
+        {true,          true,          },
+        {true,          nil,           },
+        {{},            1,             },
+        {{},            true,          },
+        {{'a'},         {1},           },
+        {{{'a'}},       {{1}},         },
+        {function()end, function()end, },
+        {function()end, 1,             },
     }) do
 
         t:err(function()

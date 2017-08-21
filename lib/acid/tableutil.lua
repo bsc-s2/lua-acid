@@ -4,9 +4,10 @@ local strutil = require('acid.strutil')
 
 local _M = { _VERSION = '0.1' }
 
-local incomparable_types = {
-    ['nil'] = true,
-    ['boolean'] = true,
+local comparable_types = {
+    ['number'] = true,
+    ['string'] = true,
+    ['table'] = true,
 }
 
 _M.repr = repr.repr
@@ -135,7 +136,7 @@ function _M.cmp_list(a, b)
         error('can not compare different type: ' .. ta .. ' with ' .. tb)
     end
 
-    if incomparable_types[ta] then
+    if not comparable_types[ta] then
         error('can not compare two ' .. ta .. ' value')
     end
 
