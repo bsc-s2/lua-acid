@@ -77,10 +77,20 @@ To explain this concept, we need two definitions:
     have the same key path set: `(.x)+`:
 
     ```
+
     .x
     .x.x
     .x.x.x
     ...
+
+    .------x-------.
+    |              |
+    `-> a -x-> {} -'
+
+    .----------x----------.
+    |                     |
+    `-> b -x-> {} -x-> {}-'
+
     ```
 
 >   If a and b are both primitive type, "contains" is defined by a==b.
