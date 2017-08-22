@@ -24,7 +24,7 @@ This library is considered production ready.
 
 #   Description
 
-It use nginx shared memory to cache values, and update values asynchronously.
+It use nginx shared dictionary to cache values, and update values asynchronously.
 
 #   Synopsis
 
@@ -87,11 +87,12 @@ http {
     The name of shared dictionary(carete by lua_shared_dict) used by lua-resty-lock.
 
 -   `service_name`:
-    It is a string.
+    It is a string used as key prefix when set shared dict, so different services
+    can use same keys.
 
 -   `update_handler`:
-    It is a table, must contain field `get_latest`, which is a callback function,
-    used to get the latest value of a key. The syntax of function `get_latest` is
+    A table contains a callback function `get_latest`, which is used to get the
+    latest value of a key. The syntax of function `get_latest` is
     `get_latest(self, storage_key)`, the first argument is the `update_handler` table,
     the second argument is the key passed to `get`, prefixed by service_name and a slash,
     the return of this function is a table contain two fields: `value` and `cache_expire_time`,
