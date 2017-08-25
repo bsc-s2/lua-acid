@@ -365,16 +365,16 @@ end
 
 function test.depth_iter(t)
 
-    for _, _ in tableutil.deep_iter({}) do
+    for _, _ in tableutil.depth_iter({}) do
         t:err( "should not get any keys" )
     end
 
-    for ks, v in tableutil.deep_iter({1}) do
+    for ks, v in tableutil.depth_iter({1}) do
         t:eqdict( {1}, ks )
         t:eq( 1, v )
     end
 
-    for ks, v in tableutil.deep_iter({a="x"}) do
+    for ks, v in tableutil.depth_iter({a="x"}) do
         t:eqdict( {{"a"}, "x"}, {ks, v} )
     end
 
@@ -427,7 +427,7 @@ function test.depth_iter(t)
     }
 
     local i = 0
-    for ks, v in tableutil.deep_iter(a) do
+    for ks, v in tableutil.depth_iter(a) do
         i = i + 1
         t:eqdict( r[i], {ks, v} )
     end

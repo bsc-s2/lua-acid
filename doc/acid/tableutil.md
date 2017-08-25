@@ -7,7 +7,7 @@
 - [Description](#description)
 - [Methods](#methods)
   - [tableutil.contains](#tableutilcontains)
-  - [tableutil.deep_iter](#tableutildeep_iter)
+  - [tableutil.depth_iter](#tableutildepth_iter)
   - [tableutil.dup](#tableutildup)
   - [tableutil.duplist](#tableutilduplist)
   - [tabelutil.eq](#tabelutileq)
@@ -177,10 +177,10 @@ Algorithm:
 **return**:
 `true` if `a` contains `b`. Or `false`
 
-##  tableutil.deep_iter
+##  tableutil.depth_iter
 
 **syntax**:
-`tableutil.deep_iter(tbl)`
+`tableutil.depth_iter(tbl)`
 
 Get an iterator which returns a key_path-value pair sorted by key_path once
 called.
@@ -196,7 +196,7 @@ local tbl = {1, a = {
                       c = 'c'}},
              }
 
-for kp, v in deep_iter(tbl) do
+for kp, v in depth_iter(tbl) do
     print(table.concat(kp, '.') .. ':' .. v)
 end
 

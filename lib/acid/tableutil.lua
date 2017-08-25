@@ -248,7 +248,7 @@ function _M.iter(tbl)
 end
 
 
-function _M.deep_iter(tbl)
+function _M.depth_iter(tbl)
 
     local ks = {}
     local iters = {_M.iter( tbl )}
