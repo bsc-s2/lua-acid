@@ -69,44 +69,145 @@ end
 function test.to_sec(t)
 
     for _, ts, expected, err_code, desc in t:case_iter(3, {
-        {'1499850242',                            1499850242, nil             },
-        {'1499850242' .. '000',                   1499850242, nil             },
-        {'1499850242' .. '000' .. '000',          1499850242, nil             },
-        {'1499850242' .. '000' .. '000' .. '000', 1499850242, nil             },
-        {'abc1499850242',                         nil,        'ArgumentError' },
-        {'1499850242abc',                         nil,        'ArgumentError' },
-        {'-1499850242',                           nil,        'ArgumentError' },
-        {'1e10',                                  nil,        'ArgumentError' },
-        {'1499850242.1',                          nil,        'ArgumentError' },
-        {string.sub('1499850242', 1, -2),         nil,        'ArgumentError' },
-        {'1499850242' .. '1',                     nil,        'ArgumentError' },
-        {1499850242,                              1499850242, nil             },
-        {1000000000,                              1000000000, nil             },
-        {1000000000 + 1,                          1000000001, nil             },
-        {1000000000 - 1,                          nil,        'ArgumentError' },
-        {9999999999,                              9999999999, nil             },
-        {9999999999 + 1,                          nil,        'ArgumentError' },
-        {9999999999 - 1,                          9999999998, nil             },
-        {1499850242 * 1000,                       1499850242, nil             },
-        {1000000000 * 1000,                       1000000000, nil             },
-        {1000000000 * 1000 + 1,                   1000000000, nil             },
-        {1000000000 * 1000 - 1,                   nil,        'ArgumentError' },
-        {9999999999 * 1000 + 999,                 9999999999, nil             },
-        {9999999999 * 1000 + 999 + 1,             nil,        'ArgumentError' },
-        {9999999999 * 1000 + 999 - 1,             9999999999, nil             },
-        {1499850242 * 1000 * 1000,                nil,        'ArgumentError' },
-        {1499850242 * 1000 * 1000 * 1000,         nil,        'ArgumentError' },
-        {1e15,                                    nil,        'ArgumentError' },
-        {-1499850242,                             nil,        'ArgumentError' },
-        {1499850242.123,                          nil,        'ArgumentError' },
-        {nil,                                     nil,        'ArgumentError' },
-        {true,                                    nil,        'ArgumentError' },
+        {1503831195,             1503831195,  nil                            },
+        {'1503831195',           1503831195,  nil                            },
+        {1503831195.1,           1503831195,  nil                            },
+        {'1503831195.1',         1503831195,  nil                            },
+        {1503831195123,          1503831195,  nil                            },
+        {'1503831195123',        1503831195,  nil                            },
+        {1503831195123456,       nil,         'ScientificNotationNotAllowed' },
+        {'1503831195123456',     1503831195,  nil                            },
+        {1503831195123456789,    nil,         'ScientificNotationNotAllowed' },
+        {'1503831195123456789',  1503831195,  nil                            },
+        {'',                     nil,         'NotNumber'                    },
+        {function() end,         nil,         'NotNumber'                    },
+        {'a',                    nil,         'NotNumber'                    },
+        {'abcdefghij',           nil,         'NotNumber'                    },
+        {{1, 2, 3},              nil,         'NotNumber'                    },
+        {true,                   nil,         'NotNumber'                    },
+        {nil,                    nil,         'NotNumber'                    },
+        {15038311951,            nil,         'InvalidLength'                },
+        {150383119,              nil,         'InvalidLength'                },
+        {-1503831195,            nil,         'NotPositive'                  },
+        {'1.5038311951235e+18',  nil,         'ScientificNotationNotAllowed' },
     }) do
 
         local res, err, err_msg = time.to_sec(ts)
-        dd(ts, expected)
+        dd(ts, res)
 
         t:eq(expected, res, desc)
         t:eq(err_code, err, err_msg)
+    end
+end
+
+
+function test.to_ms(t)
+
+    for _, ts, expected, err_expected, desc in t:case_iter(3, {
+        {1503831195,              1503831195000,   nil                            },
+        {'1503831195',            1503831195000,   nil                            },
+        {1503831195.1,            1503831195100,   nil                            },
+        {'1503831195.1',          1503831195100,   nil                            },
+        {1503831195.123,          1503831195123,   nil                            },
+        {'1503831195.123',        1503831195123,   nil                            },
+        {1503831195123,           1503831195123,   nil                            },
+        {1503831195123.0,         1503831195123,   nil                            },
+        {1503831195123.123,       1503831195123,   nil                            },
+        {1503831195123456,        nil,             'ScientificNotationNotAllowed' },
+        {'1503831195123456',      1503831195123,   nil                            },
+        {1503831195123456789,     nil,             'ScientificNotationNotAllowed' },
+        {'1503831195123456789',   1503831195123,   nil                            },
+        {'',                      nil,             'NotNumber'                    },
+        {function() end,          nil,             'NotNumber'                    },
+        {'a',                     nil,             'NotNumber'                    },
+        {'abcdefghij',            nil,             'NotNumber'                    },
+        {{1, 2, 3},               nil,             'NotNumber'                    },
+        {true,                    nil,             'NotNumber'                    },
+        {nil,                     nil,             'NotNumber'                    },
+        {15038311951,             nil,             'InvalidLength'                },
+        {-1503831195,             nil,             'NotPositive'                  },
+        {'1.5038311951235e+18',   nil,             'ScientificNotationNotAllowed' },
+    }) do
+
+        local rst, err, errmsg = time.to_ms(ts)
+        dd(ts, rst)
+
+        t:eq(expected, rst, desc)
+        t:eq(err_expected, err, errmsg)
+    end
+end
+
+
+function test.to_str_ns(t)
+
+    for _, ts, expected, err_expected, desc in t:case_iter(3, {
+        {1503831195,                '1503831195000000000',   nil                            },
+        {'1503831195',              '1503831195000000000',   nil                            },
+        {1503831195.123456,         '1503831195123500000',   nil                            },
+        {'1503831195.123456',       '1503831195123456000',   nil                            },
+        {1503831195123,             '1503831195123000000',   nil                            },
+        {1503831195123.123,         '1503831195123100000',   nil                            },
+        {'1503831195123.123',       '1503831195123123000',   nil                            },
+        {1503831195123456,          nil,                     'ScientificNotationNotAllowed' },
+        {'1503831195123456',        '1503831195123456000',   nil                            },
+        {1503831195123456.123,      nil,                     'ScientificNotationNotAllowed' },
+        {'1503831195123456.123',    '1503831195123456123',   nil                            },
+        {1503831195123456789,       nil,                     'ScientificNotationNotAllowed' },
+        {'1503831195123456789',     '1503831195123456789',   nil                            },
+        {'',                        nil,                     'NotNumber'                    },
+        {function() end,            nil,                     'NotNumber'                    },
+        {'a',                       nil,                     'NotNumber'                    },
+        {'abcdefghij',              nil,                     'NotNumber'                    },
+        {{1, 2, 3},                 nil,                     'NotNumber'                    },
+        {true,                      nil,                     'NotNumber'                    },
+        {nil,                       nil,                     'NotNumber'                    },
+        {15038311951,               nil,                     'InvalidLength'                },
+        {-1503831195,               nil,                     'NotPositive'                  },
+        {'1.5038311951235e+18',     nil,                     'ScientificNotationNotAllowed' },
+    }) do
+
+        local rst, err, errmsg = time.to_str_ns(ts)
+        dd(ts, rst)
+
+        t:eq(expected, rst, desc)
+        t:eq(err_expected, err, errmsg)
+    end
+end
+
+
+function test.to_str_us(t)
+
+    for _, ts, expected, err_expected, desc in t:case_iter(3, {
+        {1503831195,                '1503831195000000',    nil                            },
+        {'1503831195',              '1503831195000000',    nil                            },
+        {1503831195.123,            '1503831195123000',    nil                            },
+        {'1503831195.123',          '1503831195123000',    nil                            },
+        {1503831195.123456,         '1503831195123500',    nil                            },
+        {'1503831195.123456',       '1503831195123456',    nil                            },
+        {1503831195123,             '1503831195123000',    nil                            },
+        {'1503831195123',           '1503831195123000',    nil                            },
+        {1503831195123.123,         '1503831195123100',    nil                            },
+        {'1503831195123.123',       '1503831195123123',    nil                            },
+        {1503831195123456,          nil,                   'ScientificNotationNotAllowed' },
+        {'1503831195123456',        '1503831195123456',    nil                            },
+        {1503831195123456789,       nil,                   'ScientificNotationNotAllowed' },
+        {'1503831195123456789',     '1503831195123456',    nil                            },
+        {'',                        nil,                   'NotNumber'                    },
+        {function() end,            nil,                   'NotNumber'                    },
+        {'a',                       nil,                   'NotNumber'                    },
+        {'abcdefghij',              nil,                   'NotNumber'                    },
+        {{1, 2, 3},                 nil,                   'NotNumber'                    },
+        {true,                      nil,                   'NotNumber'                    },
+        {nil,                       nil,                   'NotNumber'                    },
+        {15038311951,               nil,                   'InvalidLength'                },
+        {-1503831195,               nil,                   'NotPositive'                  },
+        {'1.5038311951235e+18',     nil,                   'ScientificNotationNotAllowed' },
+    }) do
+
+        local rst, err, errmsg = time.to_str_us(ts)
+        dd(ts, rst)
+
+        t:eq(expected, rst, desc)
+        t:eq(err_expected, err, errmsg)
     end
 end
