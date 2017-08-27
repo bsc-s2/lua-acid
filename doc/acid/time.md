@@ -1,15 +1,18 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+e!-- START doctoc generated TOC please keep comment here to allow nuto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-# Table of Content
+#   Table of Content
 
 - [Name](#name)
 - [Status](#status)
 - [Description](#description)
 - [Synopsis](#synopsis)
 - [Methods](#methods)
-  - [time.parse](#timeparse)
   - [time.format](#timeformat)
+  - [time.parse](#timeparse)
+  - [time.to_ms](#timeto_ms)
   - [time.to_sec](#timeto_sec)
+  - [time.to_str_ns](#timeto_str_ns)
+  - [time.to_str_us](#timeto_str_us)
 - [Properties](#properties)
   - [time.timezone](#timetimezone)
 - [Author](#author)
@@ -50,6 +53,54 @@ print(dt)
 ```
 
 # Methods
+
+
+## time.format
+
+**syntax**:
+`time.format(ts, fmtkey, withzone)`
+
+Convert timestamp to specified format time string.
+
+**arguments**:
+
+- `ts`:
+    is a timestamp in second.
+
+- `fmtkey`:
+    specifies time string format.
+    `fmtkey` is a format string alias.
+
+    For example:
+
+    ```
+    fmtkey = 'iso'
+    fmtkey = 'utc'
+    fmtkey = 'std'
+    fmtkey = 'nginxaccesslog'
+    fmtkey = 'nginxerrorlog'
+    ```
+
+    See also `time.parse`.
+
+- `withzone`:
+    is a Boolean value to determine if time has timezone.
+    `withzone` can be defaulted.
+
+    By default it is:
+
+    ```
+    'iso'           = true
+    'utc'           = true
+    'std'           = false
+    'nginxaccesslog'= false
+    'nginxerrorlog' = false
+    ```
+
+    See also: `time.parse`.
+
+**return**:
+specified format time string.
 
 
 ## time.parse
@@ -113,52 +164,22 @@ Parse time string to a timestamp.
 timestamp in second.
 
 
-## time.format
+## time.to_ms
 
 **syntax**:
-`time.format(ts, fmtkey, withzone)`
+`time.to_ms(ts)`
 
-Convert timestamp to specified format time string.
+Convert a timestamp to millisecond.
 
 **arguments**:
 
 - `ts`:
-    is a timestamp in second.
-
-- `fmtkey`:
-    specifies time string format.
-    `fmtkey` is a format string alias.
-
-    For example:
-
-    ```
-    fmtkey = 'iso'
-    fmtkey = 'utc'
-    fmtkey = 'std'
-    fmtkey = 'nginxaccesslog'
-    fmtkey = 'nginxerrorlog'
-    ```
-
-    See also `time.parse`.
-
-- `withzone`:
-    is a Boolean value to determine if time has timezone.
-    `withzone` can be defaluted.
-
-    By default it is:
-
-    ```
-    'iso'           = true
-    'utc'           = true
-    'std'           = false
-    'nginxaccesslog'= false
-    'nginxerrorlog' = false
-    ```
-
-    See also: `time.parse`.
+    is a timestamp in second, millisecond, microsecond or nanosecond.
+    Can be a number or string.
+    But do not accept a scientific notation.
 
 **return**:
-specified format time string.
+is a timestamp in millsecond.
 
 
 ## time.to_sec
@@ -173,10 +194,45 @@ Convert timestamp in second, millisecond, microsecond or nanosecond to second.
 - `ts`:
     is a number string or number that is not scientific notation,
     and it can be a timestamp in second, millisecond(10e-3), microsecond(10e-6) or nanosecond(10e-9),
-    and it can not be a float number or less than 0.
 
 **return**:
-timestamp in second.
+is a timestamp in second.
+
+
+## time.to_str_ns
+
+**syntax**:
+`time.to_str_ns(ts)`
+
+Convert a timestamp to nanosecond.
+
+**arguments**:
+
+- `ts`:
+    is a timestamp in second, millisecond, microsecond or nanosecond.
+    Can be a number or string.
+    But do not accept a scientific notation.
+
+**return**:
+is a string timestamp in nanosecond.
+
+
+## time.to_str_us
+
+**syntax**:
+`time.to_str_us(ts)`
+
+Convert a timestamp to microsecond.
+
+**arguments**:
+
+- `ts`:
+    is a timestamp in second, millisecond, microsecond or nanosecond.
+    Can be a number or string.
+    But do not accept a scientific notation.
+
+**return:**
+is a string timestamp in microsecond.
 
 
 # Properties

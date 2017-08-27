@@ -1,3 +1,5 @@
+local strutil = require('acid.strutil')
+
 local _M = { _VERSION = '1.0' }
 
 local str_time = {
@@ -33,6 +35,13 @@ local time_withzone={
     std=false,
     nginxaccesslog=false,
     nginxerrorlog=false,
+}
+
+local ts_len_to_unit = {
+    [10]='s',
+    [13]='ms',
+    [16]='us',
+    [19]='ns',
 }
 
 
@@ -146,40 +155,88 @@ function _M.format(ts, fmtkey, withzone)
 end
 
 
+local function get_timestamp(ts)
+
+    --if 'number' is greater than 1 * 10^15, 'number' will be scientific notation
+    --timestamp can only be a string of numbers or a non scientific notation of numbers
+
+    local num_ts = tonumber(ts)
+
+    if num_ts == nil then
+        return nil, 'NotNumber',
+            'timestamp can not be converted to number, ts:' .. tostring(ts)
+    end
+
+    if num_ts < 0 then
+        return nil, 'NotPositive',
+            'timestamp can not be a negative number. ts:' .. tostring(ts)
+    end
+
+    local str_ts = tostring(ts)
+
+    if string.find(str_ts, '[e]') ~= nil then
+        return nil, 'ScientificNotationNotAllowed',
+            'timestamp cannot be scientific notation, ts:' .. tostring(ts)
+    end
+
+    local tsparts = strutil.split(str_ts, '[.]')
+    local intger = tsparts[1]
+    local float = tsparts[2] or ''
+
+    if ts_len_to_unit[#intger] then
+        return intger .. float
+    else
+        return nil, 'InvalidLength',
+            'invalid time length, not 10, 13, 16 or 19, ts:' .. tostring(ts)
+    end
+end
+
+
+local function ts_conversion(ts, len)
+
+    local origin_ts, err, errmsg = get_timestamp(ts)
+    if not origin_ts then
+        return nil, err, errmsg
+    end
+
+    local extended_ts = strutil.ljust(origin_ts, len, '0')
+    return string.sub(extended_ts, 1, len)
+end
+
+
 function _M.to_sec(ts)
 
     --Convert millisecond, microsecond or nanosecond to second
-
-    --if 'number' is greater than 1 * 10^15, 'number' will be scientific notation
-    --timestamp can only be a string of numbers or not a scientific notation of numbers
-
-    if tonumber(ts) == nil or tonumber(ts) < 0 then
-        return nil, 'ArgumentError',
-            'timestamp cannot be converted to number or less than 0, ts:' .. tostring(ts)
+    local ts_sec, err, errmsg = ts_conversion(ts, 10)
+    if err ~= nil then
+        return nil, err, errmsg
     end
-
-    ts = tostring(ts)
-
-    if string.find(ts, '[e.]') ~= nil then
-        return nil, 'ArgumentError',
-            'timestamp cannot be scientific notation or decimal, ts:' .. tostring(ts)
-    end
-
-    if #ts == 10 then
-        ts = ts
-    elseif #ts == 13 then
-        ts = ts:sub(1, -4)
-    elseif #ts == 16 then
-        ts = ts:sub(1, -7)
-    elseif #ts == 19 then
-        ts = ts:sub(1, -10)
-    else
-        return nil, 'ArgumentError',
-            'invalid time length, not 10, 13, 16 or 19, ts:' .. tostring(ts)
-    end
-
-    return tonumber(ts)
+    return tonumber(ts_sec)
 end
 
+
+function _M.to_ms(ts)
+
+    --Convert a timestamp to millisecond
+    local ts_ms, err, errmsg = ts_conversion(ts, 13)
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+    return tonumber(ts_ms)
+end
+
+
+function _M.to_str_us(ts)
+
+    --Convert a timestamp to microsecond
+    return ts_conversion(ts, 16)
+end
+
+
+function _M.to_str_ns(ts)
+
+    --Convert a timestamp to nanosecond
+    return ts_conversion(ts, 19)
+end
 
 return _M
