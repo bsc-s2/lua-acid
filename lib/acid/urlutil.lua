@@ -1,16 +1,20 @@
 -- base on https://github.com/bikong0411/lua_url.git
+local strutil = require('acid.strutil')
 
 local _M = {}
+
 
 function _M.url_escape(str, safe)
     safe = safe or '/'
 
     local pattern = "^A-Za-z0-9%-%._" .. safe
 
-    str = str:gsub("[" .. pattern .. "]",function(c) return string.format("%%%02X",string.byte(c)) end)
+    str = str:gsub("[" .. pattern .. "]", function(c)
+        return string.format("%%%02X", string.byte(c)) end)
 
     return str
 end
+
 
 function _M.url_escape_plus(str,safe)
     local s
@@ -19,83 +23,79 @@ function _M.url_escape_plus(str,safe)
 
     if str:find(' ') ~= nil then
         s = _M.url_escape(str, safe .. ' ')
-        return s:gsub(' ', '+')
+        s = s:gsub(' ', '+')
+        return s
     end
 
     return _M.url_escape(str, safe)
 end
+
 
 function _M.url_unescape(str)
    str = str:gsub("%%(%x%x)",function(x) return string.char(tonumber(x,16)) end)
    return str
 end
 
+
 function _M.url_unescape_plus(str)
     str = str:gsub( '+', ' ' )
     return _M.url_unescape( str )
 end
 
-function _M.parse_url(url)
-   local tb = {}
-   local dot = string.find(url,":")
-   tb['scheme'] = string.sub(url,1,dot)
-   local slash = string.find(url,"/",dot+3)
-   local userinfo = string.find(url,"@",dot,slash)
 
-   if userinfo ~= nil then
-       userinfo = string.sub(url,dot+3,userinfo-1)
-       local user,pass = string.match(userinfo,"([^:]*):([^:]*)")
-       tb['user'] = user
-       tb['pass'] = pass
-   end
+-- <scheme>://<username>:<password>@<host>:<port>/<path>;<parameters>?<query>#<fragment>
+function _M.url_parse(url)
+    local r = {}
+    local parts = strutil.split(url, ':', {maxsplit=1})
+    r.scheme = parts[1]
 
-   local name = string.sub(url,dot+3,slash-1)
-   local host,port
-   host,port = string.match(name,"([%w%.]+):?([%d]*)")
-   tb['host'] = host
-   port = tonumber(port)
-   if port ~= nil then tb['port'] = port end
-   local question = string.find(url,"?")
-   if question ~= nil then
-      local path = string.sub(url,slash,question-1)
-      tb['path'] = path
-      local fragment = string.find(url,"#")
-      if fragment ~= nil then
-          tb['query'] = string.sub(url,question+1,fragment-1)
-          tb['fragment'] = string.sub(url,fragment+1)
-      end
-   end
-   return tb
+    local remain = parts[2] or ''
+
+    parts = strutil.split(remain, '?', {maxsplit=1})
+    remain = parts[1]
+
+    local query_frag = parts[2] or ''
+    parts = strutil.split(query_frag, '#', {maxsplit=1})
+    r.query = parts[1]
+    r.fragment = parts[2] or ''
+
+    if strutil.startswith(remain, '//') then
+        remain = string.sub(remain, 3)
+    end
+
+    local slash_index = string.find(remain, '/') or #remain + 1
+    local path_params = string.sub(remain, slash_index)
+    remain = string.sub(remain, 1, slash_index - 1)
+
+    parts = strutil.split(path_params, ';', {maxsplit=1})
+    r.path = parts[1]
+    r.params = parts[2] or ''
+
+    parts = strutil.rsplit(remain, '@', {maxsplit=1})
+    local host_port = parts[2] or parts[1]
+    local user_password = parts[2] and parts[1] or ''
+
+    parts = strutil.split(host_port, ':', {maxsplit=1})
+    r.host = parts[1]
+    r.port = parts[2] or ''
+
+    parts = strutil.split(user_password, ':', {maxsplit=1})
+    r.user = parts[1]
+    r.password = parts[2] or ''
+
+    return r, nil, nil
 end
 
-function _M.parse_str(str)
-   assert(type(str)=="string","url must be a string")
-   local tb = {}
-   local pos = 1
-   local s = string.find(str,"&",pos)
-   while true do
-      local kv = string.sub(str,1,s-1)
-      local k,v = string.match(kv,"([^=]*)=([^=]*)")
-      tb[k] = v
-      pos = s+1
-      s=string.find(str,"&",pos)
-      if s == nil then
-        kv = string.sub(str,pos)
-        k,v = string.match(kv,"([^=]*)=([^=]*)")
-        tb[k] = v
-        break
-      end
-   end
-   return tb
-end
 
-function _M.http_build_query(tb)
+function _M.build_query(tb)
    assert(type(tb)=="table","tb must be a table")
    local t = {}
-   for k,v in pairs(tb) do
-       table.insert(t,_M.url_escape(tostring(k)) .. "=" .. _M.url_escape(tostring(v)))
+   for k, v in pairs(tb) do
+       table.insert(t, _M.url_escape(tostring(k)) ..
+                    "=" .. _M.url_escape(tostring(v)))
    end
    return table.concat(t,'&')
 end
+
 
 return _M
