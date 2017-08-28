@@ -1,5 +1,4 @@
 local strutil = require("acid.strutil")
-local tableutil = require("acid.tableutil")
 
 local _M = {}
 
@@ -14,6 +13,7 @@ local table_insert = table.insert
 
 _M.__index = _M
 
+
 local utf8_leading = {
     -- 0x00, 0x80    1     --  0xxxxxxx
     -- 0x80, 0xc0    nil   --  10xxxxxx
@@ -25,6 +25,7 @@ local utf8_leading = {
     { 0xfe, 0xff, nil },   --  11111110 10xxxxxx*6
 }
 
+
 local xml_conv = {
     ['&'] = '&amp;',
     ['<'] = '&lt;',
@@ -32,6 +33,7 @@ local xml_conv = {
     ['"'] = '&quot;',
     ["'"] = '&apos;',
 }
+
 
 local un_xml_conv = {
     ['&amp;'] = '&',
@@ -45,6 +47,7 @@ local un_xml_conv = {
     ['&apos;'] = "'",
     ['&#39;'] = "'",
 }
+
 
 function _M.from_utf8(ss)
     -- ss should be utf8 string
@@ -98,6 +101,7 @@ function _M.from_utf8(ss)
     return rst
 end
 
+
 function _M:xml_enc()
     local seq = self
     local r = {}
@@ -117,6 +121,7 @@ function _M:xml_enc()
     return table_concat(r)
 end
 
+
 function _M:xml_dec()
     local seq = self
 
@@ -127,6 +132,7 @@ function _M:xml_dec()
 
     return seq
 end
+
 
 local function character_reference(char)
 
@@ -146,6 +152,7 @@ local function character_reference(char)
     end
 end
 
+
 function _M.xml_enc_character_reference(str)
 
     -- document is here: https://www.w3.org/TR/REC-xml/#wf-Legalchar
@@ -163,5 +170,6 @@ function _M.xml_enc_character_reference(str)
 
     return table_concat(rst)
 end
+
 
 return _M
