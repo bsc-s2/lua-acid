@@ -1,12 +1,11 @@
 local strutil = require("acid.strutil")
-local urlutil = require("urlutil")
+local urlutil = require("acid.urlutil")
 local httpclient = require( "acid.httpclient" )
 local acid_json = require("acid.json")
-local signature = require("signature")
+
 local ngx = ngx
 
 local ETCD_PORT_CLIENT = 2379
-local ETCD_PORT_PEER = 2380
 local ETCD_READ_TIMEOUT = 10000     -- millisecond
 
 local REDIRECT_STATUS = { [301]=true, [302]=true, [303]=true,
@@ -26,7 +25,6 @@ local etcderrors = {
     [104] = "KeyError",
     [105] = "KeyError",
     [106] = "KeyError",
-    [107] = "ValueError",
     [107] = "ValueError",
     [200] = "ValueError",
     [201] = "ValueError",
@@ -102,7 +100,7 @@ local function request( self, path, method, params, timeout )
 
     local err, msg, msg_tail
 
-    local body, expires, ssig
+    local body
     local headers, qs
 
     local _
@@ -132,7 +130,7 @@ local function request( self, path, method, params, timeout )
             params = nil
             body = ''
         elseif method == 'PUT' or method == 'POST' then
-            body = urlutil.http_build_query( params or {} )
+            body = urlutil.build_query( params or {} )
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
             headers['Content-Length'] = #body
         else
@@ -145,9 +143,9 @@ local function request( self, path, method, params, timeout )
 
         local s = string.find( path, '?' )
         if s then
-            path = path .. '&' .. urlutil.http_build_query( qs )
+            path = path .. '&' .. urlutil.build_query( qs )
         else
-            path = path .. '?' .. urlutil.http_build_query( qs )
+            path = path .. '?' .. urlutil.build_query( qs )
         end
 
         msg_tail = ' to conn: ' .. method .. ' '
@@ -245,7 +243,7 @@ function _M.api_execute( self, path, method, params, timeout )
 
     local resp, err, msg
 
-    for ii = 1, #self._hosts * 3 do
+    for _ = 1, #self._hosts * 3 do
         resp, err, msg = request( self, path, method, params, timeout )
         if resp ~= nil then
             break
