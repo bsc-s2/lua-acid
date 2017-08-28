@@ -1,4 +1,4 @@
-local unicode = require("unicode")
+local unicode = require("acid.unicode")
 
 local _M = {}
 
@@ -7,7 +7,7 @@ local function xml_safe(s)
         return tostring(s)
     end
 
-    local u, err, errmes = unicode.from_utf8(s)
+    local u, err, _ = unicode.from_utf8(s)
     if err then
         return unicode.xml_enc_character_reference(s)
     end
@@ -156,7 +156,8 @@ function _M.from_xml( str )
     local top = {}
 
     local idx_i, name, label, attr, empty
-    local pos, idx_j = 1, 1
+    local pos = 1
+    local idx_j
 
     local ptn = '<(%/?)([%w:_-]+)(.-)(%/?)>'
 
