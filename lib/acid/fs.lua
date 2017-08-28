@@ -1,22 +1,14 @@
-local table = require("table")
 local libluafs = require( "libluafs" )
 local strutil = require("acid.strutil")
-local s2conf = require("s2conf")
-
-local io = io
-local os = os
-local ngx = ngx
-local base = _G
-local math = math
-local string = string
-
-module("fs")
 
 math.randomseed(ngx.now()*1000)
 
-function read_dir( name )
+local _M = {}
 
-    local ds, i, k
+
+function _M.read_dir( name )
+
+    local ds
     local dirs = {}
 
     if not libluafs.is_dir(name) then
@@ -39,26 +31,29 @@ function read_dir( name )
 
 end
 
-function is_dir(path)
+
+function _M.is_dir(path)
     return libluafs.is_dir(path)
 end
 
-function is_file(path)
+
+function _M.is_file(path)
     return libluafs.is_file(path)
 end
 
-function is_exist(path)
+
+function _M.is_exist(path)
     return libluafs.is_exist(path)
 end
 
-function get_sorted_unique_fns(origin_fns)
-    local i, fn
+
+function _M.get_sorted_unique_fns(origin_fns)
     local prev_fn = nil
     local fns = {}
 
     table.sort(origin_fns)
 
-    for i, fn in base.ipairs(origin_fns) do
+    for _, fn in ipairs(origin_fns) do
         if prev_fn ~= fn then
             table.insert(fns, fn)
             prev_fn = fn
@@ -66,32 +61,19 @@ function get_sorted_unique_fns(origin_fns)
     end
 
     return fns
-
 end
 
-function rm_file( path )
+
+function _M.rm_file( path )
     local rst, err = os.remove( path )
-    return rst, err
-end
-
-function mk_dir( path, mode, uid, gid )
-
-    local rst, err_msg = libluafs.makedir( path, mode or 0755 )
-
-    if not rst and not libluafs.is_dir( path ) then
-
-        err_msg = string.format( 'make dir %s error:%s',
-                path, err_msg )
-
-        return 'FileError', err_msg
+    if err ~= nil then
+        return nil, 'RemoveError', err
     end
-
-    return nil, nil
-
+    return rst, nil, nil
 end
 
-function make_dir( path, mode, uid, gid )
 
+function _M.make_dir( path, mode, uid, gid )
     local rst, err_msg
 
     rst, err_msg = libluafs.makedir( path, mode or 0755 )
@@ -114,24 +96,20 @@ function make_dir( path, mode, uid, gid )
     end
 
     return nil, nil, nil
-
 end
 
-function atomic_write( fpath, data, mode )
-    local res
-    local tmp_fpath
-    local rst, err_code, err_msg
 
-    tmp_fpath = fpath .. '._tmp_.'
+function _M.atomic_write( fpath, data, mode )
+    local tmp_fpath = fpath .. '._tmp_.'
             .. math.random(10000).. ngx.md5(data)
 
-    rst, err_code, err_msg = write( tmp_fpath, data, mode )
+    local rst, err_code, err_msg = _M.write( tmp_fpath, data, mode )
     if err_code ~= nil then
         os.remove(tmp_fpath)
         return nil, err_code, err_msg
     end
 
-    res, err_msg = os.rename( tmp_fpath, fpath )
+    local _, err_msg = os.rename( tmp_fpath, fpath )
     if err_msg ~= nil then
         os.remove(tmp_fpath)
         return nil, 'FileError', err_msg
@@ -140,7 +118,8 @@ function atomic_write( fpath, data, mode )
     return rst, nil, nil
 end
 
-function write( fpath, data, mode )
+
+function _M.write( fpath, data, mode )
     local fp
     local rst
     local err_msg
@@ -161,7 +140,8 @@ function write( fpath, data, mode )
     return #data, nil, nil
 end
 
-function read( fpath, mode )
+
+function _M.read( fpath, mode )
     local fp
     local data
     local err_msg
@@ -183,38 +163,44 @@ function read( fpath, mode )
     return data, nil, nil
 end
 
-function rm_tree(path)
+
+function _M.rm_tree(path, opts)
+    opts = opts or {}
 
     local names
     local fullname
     local _
     local err_code, err_msg
 
-    names, err_code, err_msg = read_dir( path )
+    names, err_code, err_msg = _M.read_dir( path )
     if err_code ~= nil then
         return nil, err_code, err_msg
     end
 
-    for _, name in base.ipairs(names) do
+    for _, name in ipairs(names) do
 
         fullname = path .. '/' .. name
 
-        if is_dir(fullname) then
+        if _M.is_dir(fullname) then
 
-            _, err_code, err_msg = rm_tree(fullname)
+            _, err_code, err_msg = _M.rm_tree(fullname)
             if err_code ~= nil then
                 return nil, err_code, err_msg
             end
 
         else
 
-            _, err_msg = rm_file(fullname)
+            _, err_msg = _M.rm_file(fullname)
             if err_msg ~= nil then
                 return nil, 'FileError', err_msg
             end
 
         end
 
+    end
+
+    if opts.keep_root == true then
+        return nil, nil, nil
     end
 
     _, err_msg = libluafs.rmdir(path)
@@ -226,28 +212,39 @@ function rm_tree(path)
 
 end
 
-function base_path(path)
-    local elts = strutil.split( path, '/' )
-    elts[ #elts ] = nil
-    local base = table.concat( elts, '/' )
-    return base
+
+function _M.base_path(path)
+    local elts = strutil.rsplit(path, '/', {maxsplit=1} )
+    if #elts == 1 then
+        return ''
+    end
+
+    if elts[1] == '' then
+        return '/'
+    end
+
+    return elts[1]
 end
 
-function make_dirs(path, mode, uid, gid)
 
+function _M.make_dirs(path, mode, uid, gid)
     local _
     local err_code, err_msg
 
-    if is_dir(path) then
+    if path == '' then
         return nil, nil, nil
     end
 
-    _, err_code, err_msg = make_dirs( base_path(path), mode, uid, gid )
+    if _M.is_dir(path) then
+        return nil, nil, nil
+    end
+
+    _, err_code, err_msg = _M.make_dirs( _M.base_path(path), mode, uid, gid )
     if err_code ~= nil then
         return nil, err_code, err_msg
     end
 
-    _, err_code, err_msg = make_dir( path, mode, uid, gid )
+    _, err_code, err_msg = _M.make_dir( path, mode, uid, gid )
     if err_code ~= nil then
         return nil, err_code, err_msg
     end
@@ -255,29 +252,15 @@ function make_dirs(path, mode, uid, gid)
     return nil, nil, nil
 end
 
-function mk_s2_dir(path)
-    return make_dir( path, 0755,  s2conf.s2uid, s2conf.s2gid )
-end
 
-function make_s2_dirs(path)
-    return make_dirs( path, 0755, s2conf.s2uid, s2conf.s2gid )
-end
-
-function chown_s2_file(fpath)
-
-    local rst, err_msg = libluafs.chown( fpath, s2conf.s2uid, s2conf.s2gid )
-    if not rst then
-        return nil, 'FileError', err_msg
-    end
-
-    return nil, nil, nil
-end
-
-function file_size( fn )
+function _M.file_size( fn )
     local info, err_msg = libluafs.stat( fn )
     if info == nil then
         return nil, 'FileError', err_msg
     end
 
-    return base.tonumber(info.size)
+    return tonumber(info.size)
 end
+
+
+return _M
