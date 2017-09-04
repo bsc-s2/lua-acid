@@ -28,6 +28,7 @@ local function decode_one_character(utf8_str, index)
     local log_str = strutil.tohex(string.sub(utf8_str, index, index + 7))
 
     while true do
+        --  still have continuation bytes?
         if bit.band(lead_byte, 0x40) == 0 then
             break
         end
@@ -49,6 +50,7 @@ local function decode_one_character(utf8_str, index)
                     log_str, index)
         end
 
+        -- continuation byte (10xxxxxx) only have 6 effective bits
         res = bit.lshift(res, 6)
         res = bit.bor(res, bit.band(continue_byte, 0x3F))
 
@@ -61,7 +63,12 @@ local function decode_one_character(utf8_str, index)
                 continue_n, log_str)
     end
 
+    -- the first bit of lead_byte is 1, it is not effictive bit, remove it
+    -- the second bit is not effictive bit too, but it is 0, so
+    -- do not need to 'and' with 0x3F
     lead_byte = bit.band(lead_byte, 0x7F)
+
+    -- add effective bits of the lead byte to res
     -- here is 5 because the lead_byte had left shifed continue_n bits
     res = bit.bor(res, bit.lshift(lead_byte, continue_n * 5))
 
@@ -71,6 +78,7 @@ local function decode_one_character(utf8_str, index)
                 res, MAX_UNICODE)
     end
 
+    -- if not reach the limit, it should be encoded in less bytes
     if res < LIMITS[continue_n] then
         return nil, 'InvalidUTF8', string.format(
                 'code point: %d is smaller than: %d, but consist %s bytes',
