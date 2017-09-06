@@ -25,6 +25,7 @@ It is meant to be a underlaying code base for building a distributed system.
 | [acid.tableutil](doc/acid/tableutil.md)     | table operation functions.                              | well tested     |
 | [acid.unittest](doc/acid/unittest.md)       | unittest engine that looks for test functions in a dir. | well tested     |
 | [acid.utf8](doc/acid/utf8.md)               | utf8 encoding and decoding.                             | well tested     |
+| [acid.xml](doc/acid/xml.md)                 | xml to table and table to xml.                          | well tested     |
 | [acid.cache](doc/acid/cache.md)             | in-process or shared-dict based cache.                  | not well tested |
 | [acid.cluster](doc/acid/cluster.md)         | cluster implementation based on paxos.                  | not well tested |
 | [acid.logging](doc/acid/logging.md)         | logging utilities.                                      | not well tested |
