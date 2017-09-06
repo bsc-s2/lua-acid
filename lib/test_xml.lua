@@ -23,6 +23,18 @@ function test.to_xml(t)
             '<r><a></a></r>',
         },
         {
+            {{1}},
+            '<r>1</r>',
+        },
+        {
+            {a={{2}}},
+            '<r><a>2</a></r>',
+        },
+        {
+            {a={{2}, {b=3}}},
+            '<r><a>2</a><a><b>3</b></a></r>',
+        },
+        {
             {a={__attr={foo="bar"}}},
             '<r><a foo="bar"></a></r>',
         },
@@ -145,6 +157,10 @@ function test.from_xml(t)
         },
         {
             '<a>f<!--comment --->oo</a>',
+            { a='foo' },
+        },
+        {
+            '<?xml version="1.0" ?><a>foo</a>',
             { a='foo' },
         },
     }) do

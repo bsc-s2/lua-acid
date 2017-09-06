@@ -8,7 +8,7 @@ local DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>'
 local ATTR = '__attr'
 local KEY_ORDER = '__key_order'
 
-local open_tag_ptn = '<[^/<>]+/?>'
+local open_tag_ptn = '<[^<>]+/?>'
 
 local char_to_entity = {
     ['&'] = '&amp;',
@@ -48,7 +48,7 @@ end
 
 
 function _M.xml_unescape(str)
-    local function entity_ref_to_str(entity_ref)
+    local entity_ref_to_str = function(entity_ref)
         if entity_to_char[entity_ref] ~= nil then
             return entity_to_char[entity_ref]
         end
@@ -182,7 +182,7 @@ function _M.build_lines(lines, tag_name, tbl, indent_str, opts)
         tbl = {tbl}
     end
 
-    if #tbl == 1 then
+    if #tbl == 1 and type(tbl[1]) ~= 'table' then
         local tag = build_tag(tag_name, tbl)
         table.insert(lines, indent_str .. tag.open_tag)
 
@@ -439,6 +439,7 @@ end
 
 function _M.from_xml(str)
     str = string.gsub(str, '<!--(.-)-->', '')
+    str = string.gsub(str, '<?(.-)?>', '')
     local segment = {
         start_i = 1,
         end_i = #str,
