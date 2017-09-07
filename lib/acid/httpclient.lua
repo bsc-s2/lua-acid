@@ -245,7 +245,7 @@ local function _read_chunk( self, size )
 
         -- chunk end, ignore '\r\n'
         if self.chunk_pos == self.chunk_size then
-            buf, err_msg =  _read( self, #'\r\n')
+            _, err_msg =  _read( self, #'\r\n')
             if err_msg ~= nil then
                 return nil, 'SocketReadError', to_str('read chunked:', err_msg)
             end
@@ -343,7 +343,7 @@ function _M.send_request( self, uri, opts )
         })
 
         if headers['Range'] ~= nil then
-            local r, err, errmes = _M.parse_request_range(headers['Range'], nil)
+            local r, err, _ = _M.parse_request_range(headers['Range'], nil)
             if err == nil then
                 self.log.range = {from = r.start, to = r['end']}
             end
@@ -352,7 +352,7 @@ function _M.send_request( self, uri, opts )
         rpc_logging.add_log(self.log)
     end
 
-    local ret, err_msg = self.sock:connect( self.ip, self.port )
+    local _, err_msg = self.sock:connect( self.ip, self.port )
 
     rpc_logging.set_time(self.log, 'upstream', 'conn')
 
@@ -381,7 +381,7 @@ function _M.send_request( self, uri, opts )
 
     rpc_logging.reset_start(self.log)
 
-    ret, err_msg = self.sock:send( sbuf )
+    local _, err_msg = self.sock:send( sbuf )
 
     rpc_logging.set_time(self.log, 'upstream', 'send')
 
@@ -508,7 +508,7 @@ function _M.read_one_block( self, size )
 end
 
 function _M.set_keepalive( self, timeout, size )
-    local rst, err_msg = self.sock:setkeepalive( timeout, size )
+    local _, err_msg = self.sock:setkeepalive( timeout, size )
     if err_msg ~= nil then
         return nil, 'SocketError', to_str('set keepalive:', err_msg)
     end
@@ -525,7 +525,7 @@ function _M.set_timeouts( self, conn_timeout, send_timeout, read_timeout )
 end
 
 function _M.close( self )
-    local rst, err_msg = self.sock:close()
+    local _, err_msg = self.sock:close()
     if err_msg ~= nil then
         return nil, 'SocketCloseError', to_str('close:', err_msg)
     end
