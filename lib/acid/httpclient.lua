@@ -291,6 +291,12 @@ function _M.new( _, ip, port, timeouts, opts )
         body_end = false,
         chunked  = false,
 
+        ssl = opts.ssl == true,
+        reused_session = opts.reused_session,
+        server_name = opts.server_name,
+        ssl_verify = opts.ssl_verify ~= false,
+        send_status_req = opts.send_status_req == true,
+
         service_key = opts.service_key or 'port-' .. (port or DEFAULT_PORT),
     }
 
@@ -353,6 +359,24 @@ function _M.send_request( self, uri, opts )
     if err_msg ~= nil then
         rpc_logging.set_err(self.log, 'SocketError')
         return nil, 'SocketConnectError', to_str('connect:', err_msg)
+    end
+
+    if self.port == 443 or self.ssl == true then
+        rpc_logging.reset_start(self.log)
+
+        local session, err_msg = self.sock:sslhandshake(
+                self.reused_session, self.server_name,
+                self.ssl_verify, self.send_status_req)
+
+        self.ssl_session = session
+
+        rpc_logging.set_time(self.log, 'upstream', 'sslhandshake')
+
+        if err_msg ~= nil then
+            rpc_logging.set_err(self.log, 'SocketError')
+            return nil, 'SocketSSLHandShakeError',
+                    to_str('sslhandshake:', err_msg)
+        end
     end
 
     rpc_logging.reset_start(self.log)
