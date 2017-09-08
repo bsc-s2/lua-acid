@@ -37,6 +37,7 @@ function _M.new_entry(service_key, opt)
         upstream = {
             time = {
                 -- conn = nil,
+                -- sslhandshake = nil,
                 -- send = nil,
                 -- sendbody = nil,
                 -- recv = nil,
