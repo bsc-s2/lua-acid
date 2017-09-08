@@ -1,45 +1,54 @@
--- base on https://github.com/bikong0411/lua_url.git
 local strutil = require('acid.strutil')
 
 local _M = {}
 
 
-function _M.url_escape(str, safe)
-    safe = safe or '/'
-
-    local pattern = "^A-Za-z0-9%-%._" .. safe
-
-    str = str:gsub("[" .. pattern .. "]", function(c)
-        return string.format("%%%02X", string.byte(c)) end)
-
-    return str
+local function percent_encode(c)
+    local s = string.format('%%%02X', string.byte(c))
+    return s
 end
 
 
-function _M.url_escape_plus(str,safe)
-    local s
+function _M.url_escape(str, safe)
+    safe = safe or '/'
 
+    local pattern = '[^A-Za-z0-9%-%._' .. safe .. ']'
+
+    local escaped_str = string.gsub(str, pattern, percent_encode)
+
+    return escaped_str
+end
+
+
+function _M.url_escape_plus(str, safe)
     safe = safe or ''
 
-    if str:find(' ') ~= nil then
-        s = _M.url_escape(str, safe .. ' ')
-        s = s:gsub(' ', '+')
-        return s
-    end
+    local escaped_str = _M.url_escape(str, safe .. ' ')
 
-    return _M.url_escape(str, safe)
+    local plus_str = string.gsub(escaped_str, ' ', '+')
+
+    return plus_str
+end
+
+
+local function hex_to_char(hex_of_char)
+    local c = string.char(tonumber(hex_of_char, 16))
+    return c
 end
 
 
 function _M.url_unescape(str)
-   str = str:gsub("%%(%x%x)",function(x) return string.char(tonumber(x,16)) end)
-   return str
+    local unescaped = string.gsub(str, '%%(%x%x)', hex_to_char)
+
+    return unescaped
 end
 
 
 function _M.url_unescape_plus(str)
-    str = str:gsub( '+', ' ' )
-    return _M.url_unescape( str )
+    local no_plus_str = string.gsub(str, '+' , ' ')
+    local unescaped = _M.url_unescape(no_plus_str)
+
+    return unescaped
 end
 
 
@@ -87,14 +96,17 @@ function _M.url_parse(url)
 end
 
 
-function _M.build_query(tb)
-   assert(type(tb)=="table","tb must be a table")
-   local t = {}
-   for k, v in pairs(tb) do
-       table.insert(t, _M.url_escape(tostring(k)) ..
-                    "=" .. _M.url_escape(tostring(v)))
-   end
-   return table.concat(t,'&')
+function _M.build_query(args)
+    local args_str = {}
+    for k, v in pairs(args) do
+        local s = string.format('%s=%s', _M.url_escape(tostring(k)),
+                                _M.url_escape(tostring(v)))
+        table.insert(args_str, s)
+    end
+
+    local query_string = table.concat(args_str, '&')
+
+    return query_string
 end
 
 
