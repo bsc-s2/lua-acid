@@ -1,6 +1,16 @@
 local strutil = require('acid.strutil')
+local ffi = require("ffi")
 
 local _M = { _VERSION = '1.0' }
+
+ffi.cdef[[
+    typedef struct timeval{
+        long int tv_sec;
+        long int tv_usec;
+    }timeval;
+
+    int gettimeofday(struct timeval *tv, void *tz);
+]]
 
 local str_time = {
     isobase="(%d%d%d%d)(%d%d)(%d%d)T(%d%d)(%d%d)(%d%d)Z",
@@ -237,6 +247,38 @@ function _M.to_str_ns(ts)
 
     --Convert a timestamp to nanosecond
     return ts_conversion(ts, 19)
+end
+
+
+function _M.get_time()
+    local tv = ffi.new("timeval")
+    ffi.C.gettimeofday(tv, ffi.NULL)
+
+    local s = tonumber(tv.tv_sec)
+    local us = tonumber(tv.tv_usec)
+    local ms = math.floor(us / 1000)
+
+    return { seconds      = s,
+             milliseconds = ms,
+             microseconds = us }
+end
+
+
+function _M.get_sec()
+    local time = _M.get_time()
+    return time.seconds
+end
+
+
+function _M.get_ms()
+    local time = _M.get_time()
+    return time.seconds * 1000 + time.milliseconds
+end
+
+
+function _M.get_str_us()
+    local time = _M.get_time()
+    return string.format("%10d%06d", time.seconds, time.microseconds)
 end
 
 return _M

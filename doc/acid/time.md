@@ -8,6 +8,10 @@ e!-- START doctoc generated TOC please keep comment here to allow nuto update --
 - [Synopsis](#synopsis)
 - [Methods](#methods)
   - [time.format](#timeformat)
+  - [time.get_ms](#timeget_ms)
+  - [time.get_sec](#timeget_sec)
+  - [time.get_str_us](#timeget_str_us)
+  - [time.get_time](#timeget_time)
   - [time.parse](#timeparse)
   - [time.to_ms](#timeto_ms)
   - [time.to_sec](#timeto_sec)
@@ -103,6 +107,60 @@ Convert timestamp to specified format time string.
 specified format time string.
 
 
+## time.get_ms
+
+**syntax**:
+`time.get_ms()`
+
+Get now timestamp in millisecond.
+
+For example: `1504925787971`
+
+**return**:
+is a number timestamp in millisecond.
+
+
+## time.get_sec
+
+**syntax**:
+`time.get_sec()`
+
+Get now timestamp in second.
+
+For example: `1504925787`
+
+**return**:
+is a number timestamp in second.
+
+
+## time.get_str_us
+
+**syntax**:
+`time.get_str_us()`
+
+Get now timestamp in microsecond.
+
+For example: `"1504925787971777"`
+
+**return**:
+is a string timestamp in microsecond.
+
+
+## time.get_time
+
+**syntax**:
+`time.get_time()`
+
+Get now timestamp in seconds,
+milliseconds and microseconds.
+
+For example: `{seconds = 1504925787, milliseconds = 971, microseconds = 971777}`
+
+**return**:
+is a table with seconds,
+milliseconds and microseconds.
+
+
 ## time.parse
 
 **syntax**:
@@ -179,7 +237,7 @@ Convert a timestamp to millisecond.
     But do not accept a scientific notation.
 
 **return**:
-is a timestamp in millsecond.
+is a timestamp in millisecond.
 
 
 ## time.to_sec

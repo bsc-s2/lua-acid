@@ -211,3 +211,34 @@ function test.to_str_us(t)
         t:eq(err_expected, err, errmsg)
     end
 end
+
+
+function test.get_time(t)
+    local time = time.get_time()
+
+    dd(time.seconds, time.milliseconds, time.microseconds)
+
+    t:eq(10, #tostring(time.seconds))
+    t:eq(true , time.milliseconds >= 1 and time.milliseconds < 1000)
+    t:eq(true , time.microseconds >= 1 and time.microseconds < 1000 * 1000)
+end
+
+
+function test.timestamp(t)
+    for _, timestamp_fun, length, sleep_time, desc in t:case_iter(3, {
+        {time.get_sec,    10, 1     },
+        {time.get_ms,     13, 0.001 },
+        {time.get_str_us, 16, 0.001 }
+    }) do
+        local ts1 = timestamp_fun()
+
+        ngx.sleep(sleep_time)
+
+        local ts2 = timestamp_fun()
+
+        dd(ts1, ts2)
+
+        t:eq(true, ts1 < ts2, desc)
+        t:eq(length, #tostring(ts1), desc)
+    end
+end
