@@ -50,7 +50,31 @@ local _M = {
     S_IROTH = tonumber('00004', 8),
     S_IWOTH = tonumber('00002', 8),
     S_IXOTH = tonumber('00001', 8),
+
+    -- oflag
+    O_RDONLY = tonumber('00000000', 8),
+    O_WRONLY = tonumber('00000001', 8),
+    O_RDWR = tonumber('00000002', 8),
+    O_CREAT = tonumber('00000100', 8),
+    O_EXCL = tonumber('00000200', 8),
+    O_TRUNC = tonumber('00001000', 8),
+    O_APPEND = tonumber('00002000', 8),
+    O_NONBLOCK = tonumber('00004000', 8),
+    O_DSYNC = tonumber('00010000', 8),
+    O_SYNC = tonumber('04010000', 8),
+    O_DIRECT = tonumber('00040000', 8),
+    O_DIRECTORY = tonumber('00200000', 8),
+    O_CLOEXEC = tonumber('02000000', 8),
+
+    -- whence
+    SEEK_SET = 0,
+    SEEK_CUR = 1,
+    SEEK_END = 2,
 }
+
+local mt = { __index = _M }
+
+local fhandle_t = ffi.metatype("fhandle_t", {})
 
 
 function _M.stat(path)
@@ -165,6 +189,178 @@ function _M.chown(path, uid, gid)
     end
 
     return true, nil, nil
+end
+
+
+function _M.link(old_path, new_path)
+
+    local ret = ffi.C.link(old_path, new_path)
+    if ret < 0 then
+        return nil, 'LinkError', util.strerror(ffi.errno())
+    end
+
+    return nil, nil, nil
+end
+
+
+local function close_fhandle(fhandle)
+
+    if fhandle.fd == -1 then
+        return nil, nil, nil
+    end
+
+    local res = ffi.C.close(fhandle.fd)
+    if res < 0 then
+        return nil, 'CloseFileError', util.strerror(ffi.errno())
+    end
+
+    fhandle.fd = -1
+
+    return nil, nil, nil
+end
+
+
+function _M.open(fpath, flags, mode)
+    -- if O_CREAT is not specified, then mode is ignored.
+    flags = flags or 0
+    mode = mode or tonumber('00660', 8)
+
+    ffi.C.umask(000)
+
+    local fd = ffi.C.open(fpath, flags, mode)
+    if fd < 0 then
+        return nil, 'OpenFileError', util.strerror(ffi.errno())
+    end
+
+    local f = {
+        fpath = fpath,
+        flags = flags,
+        mode = mode,
+        fhandle = ffi.gc(fhandle_t(fd), close_fhandle),
+    }
+
+    return setmetatable(f, mt), nil, nil
+end
+
+
+function _M.close(self)
+    return close_fhandle(self.fhandle)
+end
+
+
+function _M.write(self, data, opts)
+    opts = opts or {}
+    local write_all = opts.write_all == true
+    local max_try_n = opts.max_try_n or 3
+
+    local total_size = #data
+
+    for _ = 1, max_try_n do
+        local written = ffi.C.write(self.fhandle.fd, data, #data)
+        written = tonumber(written)
+
+        if not write_all then
+            if written < 0 then
+                return nil, 'WriteFileError', util.strerror(ffi.errno())
+            end
+           return written, nil, nil
+        end
+
+        if written < 0 then
+            ngx.log(ngx.ERR, string.format(
+                    'failed to write file: %s %s',
+                    self.fpath, util.strerror(ffi.errno())))
+            written = 0
+        end
+
+        if written > 0 then
+            data = string.sub(data, written + 1)
+        end
+
+        if #data == 0 then
+            return nil, nil, nil
+        end
+
+        if opts.retry_sleep_time ~= nil then
+            ngx.sleep(opts.retry_sleep_time)
+        end
+    end
+
+    return nil, 'WriteFileError', string.format(
+            'failed to write all %d bytes in %d write, remain %d bytes',
+            total_size, max_try_n, #data)
+end
+
+
+function _M.pwrite(self, data, offset)
+    local written = ffi.C.pwrite(self.fhandle.fd, data, #data, offset)
+    local written = tonumber(written)
+
+    if written < 0 then
+        return nil, 'WriteFileError', util.strerror(ffi.errno())
+    end
+
+    return written, nil, nil
+end
+
+
+function _M.fsync(self)
+    local res = ffi.C.fsync(self.fhandle.fd)
+    if res < 0 then
+        return nil, 'FileSyncError', util.strerror(ffi.errno())
+    end
+
+    return nil, nil, nil
+end
+
+
+function _M.fdatasync(self)
+    local res = ffi.C.fdatasync(self.fhandle.fd)
+    if res < 0 then
+        return nil, 'FileDataSyncError', util.strerror(ffi.errno())
+    end
+
+    return nil, nil, nil
+end
+
+
+function _M.read(self, size)
+    local buf = ffi.new("char[?]", size)
+
+    local read = ffi.C.read(self.fhandle.fd, buf, size)
+    local read = tonumber(read)
+
+    if read < 0 then
+        return nil, 'ReadFileError', util.strerror(ffi.errno())
+    end
+
+    return ffi.string(buf, read), nil, nil
+end
+
+
+function _M.pread(self, size, offset)
+    local buf = ffi.new("char[?]", size)
+
+    local read = ffi.C.pread(self.fhandle.fd, buf, size, offset)
+    local read = tonumber(read)
+
+    if read < 0 then
+        return nil, 'ReadFileError', util.strerror(ffi.errno())
+    end
+
+    return ffi.string(buf, read), nil, nil
+end
+
+
+function _M.seek(self, offset, whence)
+    local off = ffi.C.lseek(self.fhandle.fd, offset, whence)
+    local off = tonumber(off)
+
+    if off < 0 then
+        return nil, 'SeekError', util.strerror(ffi.errno())
+    end
+
+    return off, nil, nil
 end
 
 
