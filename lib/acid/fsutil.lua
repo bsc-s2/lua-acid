@@ -69,6 +69,30 @@ end
 
 function _M.make_dir(path, mode, name_or_uid, name_or_gid)
     mode = mode or tonumber('755', 8)
+
+    local uid
+    local gid
+
+    if name_or_uid ~= nil then
+        local user, err, errmsg = util.get_user(name_or_uid)
+        if err ~= nil then
+            return nil, 'GetUserError', string.format(
+                    'failed to get user: %s, %s, %s',
+                    tostring(name_or_uid), err, errmsg)
+        end
+        uid = user.pw_uid
+    end
+
+    if name_or_gid ~= nil then
+        local group, err, errmsg = util.get_group(name_or_gid)
+        if err ~= nil then
+            return nil, 'GetGroupError', string.format(
+                    'failed to get group: %s, %s, %s',
+                    tostring(name_or_gid), err, errmsg)
+        end
+        gid = group.gr_gid
+    end
+
     if not _M.is_exist(path) then
         local _, err, errmsg = fs_ffi.mkdir(path, mode)
         if err ~= nil then
@@ -91,25 +115,9 @@ function _M.make_dir(path, mode, name_or_uid, name_or_gid)
         end
     end
 
-    if name_or_uid == nil or name_or_gid == nil then
+    if uid == nil or gid == nil then
         return true, nil, nil
     end
-
-    local user, err, errmsg = util.get_user(name_or_uid)
-    if err ~= nil then
-        return nil, 'GetUserError', string.format(
-                'failed to get user: %s, %s, %s',
-                tostring(name_or_uid), err, errmsg)
-    end
-    local uid = user.pw_uid
-
-    local group, err, errmsg = util.get_group(name_or_gid)
-    if err ~= nil then
-        return nil, 'GetGroupError', string.format(
-                'failed to get group: %s, %s, %s',
-                tostring(name_or_gid), err, errmsg)
-    end
-    local gid = group.gr_gid
 
     local _, err, errmsg = fs_ffi.chown(path, uid, gid)
     if err ~= nil then
