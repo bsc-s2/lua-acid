@@ -137,6 +137,7 @@ function _M.readdir(path)
         local dir_entry = ffi.C.readdir(dirp)
         if dir_entry == nil then
             if ffi.errno() ~= 0 then
+                ffi.C.closedir(dirp)
                 return nil, 'ReaddirError', util.strerror(ffi.errno())
             end
             break
