@@ -52,8 +52,10 @@ function test.is_exist(t)
     t:eq(true, exist)
 
     local exist, err, errmsg = fsutil.is_exist('/not_exist_file')
-    t:eq(nil, err, errmsg)
-    t:eq(false, exist)
+    test.dd(err)
+    test.dd(errmsg)
+    t:neq(nil, err)
+    t:eq(nil, exist)
 end
 
 
@@ -69,8 +71,10 @@ function test.is_dir(t)
     t:eq(false, is_dir)
 
     local is_dir, err, errmsg = fsutil.is_dir('/not_exist_file')
-    t:eq(nil, err, errmsg)
-    t:eq(false, is_dir)
+    test.dd(err)
+    test.dd(errmsg)
+    t:neq(nil, err)
+    t:eq(nil, is_dir)
 end
 
 
@@ -86,8 +90,10 @@ function test.is_file(t)
     t:eq(true, is_file)
 
     local is_file, err, errmsg = fsutil.is_file('/not_exist_file')
-    t:eq(nil, err, errmsg)
-    t:eq(false, is_file)
+    test.dd(err)
+    test.dd(errmsg)
+    t:neq(nil, err)
+    t:eq(nil, is_file)
 end
 
 
@@ -235,12 +241,12 @@ function test.remove_tree(t)
     local _, err, errmsg = fsutil.remove_tree(test_dir .. '/sub_dir',
                                               {keep_root = true})
     t:eq(nil, err, errmsg)
-    t:eq(false, fsutil.is_exist(test_dir .. '/sub_dir/file2'))
+    t:eq(nil, fsutil.is_exist(test_dir .. '/sub_dir/file2'))
     t:eq(true, fsutil.is_exist(test_dir .. '/sub_dir'))
 
     local _, err, errmsg = fsutil.remove_tree(test_dir)
     t:eq(nil, err, errmsg)
-    t:eq(false, fsutil.is_exist(test_dir))
+    t:eq(nil, fsutil.is_exist(test_dir))
 end
 
 

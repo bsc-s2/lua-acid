@@ -7,40 +7,40 @@ local _M = {}
 
 
 function _M.is_exist(path)
-    local _, err, _ = fs_ffi.access(path, fs_ffi.F_OK)
+    local _, err, errmsg = fs_ffi.access(path, fs_ffi.F_OK)
     if err ~= nil then
-        return false
+        return nil, err, errmsg
     end
 
-    return true
+    return true, nil, nil
 end
 
 
 function _M.is_dir(path)
-    local file_stat, err, _ = fs_ffi.stat(path)
+    local file_stat, err, errmsg = fs_ffi.stat(path)
     if err ~= nil then
-        return false
+        return nil, err, errmsg
     end
 
     if bit.band(file_stat.st_mode, fs_ffi.S_IFDIR) ~= 0 then
-        return true
+        return true, nil, nil
     end
 
-    return false
+    return false, nil, nil
 end
 
 
 function _M.is_file(path)
-    local file_stat, err, _ = fs_ffi.stat(path)
+    local file_stat, err, errmsg = fs_ffi.stat(path)
     if err ~= nil then
-        return false
+        return nil, err, errmsg
     end
 
     if bit.band(file_stat.st_mode, fs_ffi.S_IFREG) ~= 0 then
-        return true
+        return true, nil, nil
     end
 
-    return false
+    return false, nil, nil
 end
 
 
