@@ -269,6 +269,42 @@ function test.file_size(t)
 end
 
 
+function test.write_read(t)
+    local test_path = '/tmp/test_fsutil_path_' .. get_random_str()
+    test.dd(test_path)
+
+    for _, bytes_n, desc in t:case_iter(1, {
+        { 0                    },
+        { 1024                 },
+        { 1                    },
+        { 1024 * 1024          },
+        { 1024 * 1024 * 30     },
+        { 1024 * 1024 * 30 + 1 },
+    }) do
+        local write_str = string.rep('0', bytes_n)
+        local _, err, errmsg = fsutil.write(test_path, write_str)
+        t:eq(nil, err, errmsg)
+
+        local buf, err, errmsg = fsutil.read(test_path)
+        t:eq(nil, err, errmsg)
+        t:eq(true, write_str == buf, desc)
+    end
+
+    os.remove(test_path)
+end
+
+
+function test.atomic_write(t)
+    local test_path = '/tmp/test_fsutil_path_' .. get_random_str()
+    test.dd(test_path)
+
+    local _, err, errmsg = fsutil.atomic_write(test_path, 'foo')
+    t:eq(nil, err, errmsg)
+
+    t:eq('foo', fsutil.read(test_path))
+end
+
+
 function test.get_sorted_unique_fns(t)
     for _, ori_fns, expected, desc in t:case_iter(2, {
         {{                         },  {}                },
