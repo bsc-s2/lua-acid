@@ -247,6 +247,80 @@ function _M.file_size(file_name)
 end
 
 
+function _M.write(path, data, mode)
+    local oflag = bit.bor(fs_ffi.O_CREAT, fs_ffi.O_TRUNC, fs_ffi.O_WRONLY)
+    local file, err, errmsg = fs_ffi.open(path, oflag, mode)
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    local _, err, errmsg = file:write(data, {write_all=true, max_try_n=3})
+    if err ~= nil then
+        file:close()
+        return nil, err, errmsg
+    end
+
+    local _, err, errmsg = file:close()
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    return true, nil, nil
+end
+
+
+function _M.atomic_write(path, data, mode)
+    local tmp_path = string.format('%s_tmp_%d_%s', path, math.random(10000),
+                                   ngx.md5(data))
+    local _, err, errmsg = _M.write(tmp_path, data, mode)
+    if err ~= nil then
+        os.remove(tmp_path)
+        return nil, err, errmsg
+    end
+
+    local _, err = os.rename(tmp_path, path)
+    if err ~= nil then
+        os.remove(tmp_path)
+        return nil, 'RenameError', err
+    end
+
+    return true, nil, nil
+end
+
+
+function _M.read(path)
+    local bufs = {}
+
+    local file, err, errmsg = fs_ffi.open(path, fs_ffi.O_RDONLY)
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    local read_block_size = 1024 * 1024 * 10
+
+    while true do
+        local buf, err, errmsg = file:read(read_block_size)
+        if err ~= nil then
+            file:close()
+            return nil, err, errmsg
+        end
+
+        table.insert(bufs, buf)
+
+        if #buf < read_block_size then
+            break
+        end
+    end
+
+    local _, err, errmsg = file:close()
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    return table.concat(bufs), nil, nil
+end
+
+
 function _M.get_sorted_unique_fns(origin_fns)
     local prev_fn = nil
     local fns = {}

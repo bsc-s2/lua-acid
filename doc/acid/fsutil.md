@@ -15,6 +15,9 @@
   - [make_dirs](#make_dirs)
   - [remove_tree](#remove_tree)
   - [file_size](#file_size)
+  - [write](#write)
+  - [atomic_write](#atomic_write)
+  - [read](#read)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
 
@@ -200,6 +203,57 @@ return true on success or error code and error message on failure.
 
 **return**:
 return the size of file or directory.
+
+##  write
+
+**syntax**:
+`ok, err, errmsg = write(path, data, mode)`
+
+**arguments**:
+
+-   `path`:
+    the file path to wirte.
+
+-   `data`:
+    the data to write, must be a string.
+
+-   `mode`:
+    a int number to specify permission bits, such as `tonumber('0755', 8)`.
+
+**return**:
+return true on success or error code and error message on failure.
+
+##  atomic_write
+
+**syntax**:
+`ok, err, errmsg = atomic_write(path, data, mode)`
+
+**arguments**:
+
+-   `path`:
+    the file path to wirte.
+
+-   `data`:
+    the data to write, must be a string.
+
+-   `mode`:
+    a int number to specify permission bits, such as `tonumber('0755', 8)`.
+
+**return**:
+return true on success or error code and error message on failure.
+
+##  read
+
+**syntax**:
+`buf, err, errmsg = read(path)`
+
+**arguments**:
+
+-   `path`:
+    the path of the file.
+
+**return**:
+return file content on success or error code and error message on failure.
 
 #   Author
 
