@@ -52,8 +52,10 @@ function test.is_exist(t)
     t:eq(true, exist)
 
     local exist, err, errmsg = fsutil.is_exist('/not_exist_file')
-    t:eq(nil, err, errmsg)
-    t:eq(false, exist)
+    test.dd(err)
+    test.dd(errmsg)
+    t:neq(nil, err)
+    t:eq(nil, exist)
 end
 
 
@@ -69,8 +71,10 @@ function test.is_dir(t)
     t:eq(false, is_dir)
 
     local is_dir, err, errmsg = fsutil.is_dir('/not_exist_file')
-    t:eq(nil, err, errmsg)
-    t:eq(false, is_dir)
+    test.dd(err)
+    test.dd(errmsg)
+    t:neq(nil, err)
+    t:eq(nil, is_dir)
 end
 
 
@@ -86,8 +90,10 @@ function test.is_file(t)
     t:eq(true, is_file)
 
     local is_file, err, errmsg = fsutil.is_file('/not_exist_file')
-    t:eq(nil, err, errmsg)
-    t:eq(false, is_file)
+    test.dd(err)
+    test.dd(errmsg)
+    t:neq(nil, err)
+    t:eq(nil, is_file)
 end
 
 
@@ -235,12 +241,12 @@ function test.remove_tree(t)
     local _, err, errmsg = fsutil.remove_tree(test_dir .. '/sub_dir',
                                               {keep_root = true})
     t:eq(nil, err, errmsg)
-    t:eq(false, fsutil.is_exist(test_dir .. '/sub_dir/file2'))
+    t:eq(nil, fsutil.is_exist(test_dir .. '/sub_dir/file2'))
     t:eq(true, fsutil.is_exist(test_dir .. '/sub_dir'))
 
     local _, err, errmsg = fsutil.remove_tree(test_dir)
     t:eq(nil, err, errmsg)
-    t:eq(false, fsutil.is_exist(test_dir))
+    t:eq(nil, fsutil.is_exist(test_dir))
 end
 
 
@@ -260,6 +266,42 @@ function test.file_size(t)
     local size, err, errmsg = fsutil.file_size(test_dir .. '/file1')
     t:eq(nil, err, errmsg)
     t:eq(9, size)
+end
+
+
+function test.write_read(t)
+    local test_path = '/tmp/test_fsutil_path_' .. get_random_str()
+    test.dd(test_path)
+
+    for _, bytes_n, desc in t:case_iter(1, {
+        { 0                    },
+        { 1024                 },
+        { 1                    },
+        { 1024 * 1024          },
+        { 1024 * 1024 * 30     },
+        { 1024 * 1024 * 30 + 1 },
+    }) do
+        local write_str = string.rep('0', bytes_n)
+        local _, err, errmsg = fsutil.write(test_path, write_str)
+        t:eq(nil, err, errmsg)
+
+        local buf, err, errmsg = fsutil.read(test_path)
+        t:eq(nil, err, errmsg)
+        t:eq(true, write_str == buf, desc)
+    end
+
+    os.remove(test_path)
+end
+
+
+function test.atomic_write(t)
+    local test_path = '/tmp/test_fsutil_path_' .. get_random_str()
+    test.dd(test_path)
+
+    local _, err, errmsg = fsutil.atomic_write(test_path, 'foo')
+    t:eq(nil, err, errmsg)
+
+    t:eq('foo', fsutil.read(test_path))
 end
 
 

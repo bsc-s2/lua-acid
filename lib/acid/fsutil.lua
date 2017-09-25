@@ -7,40 +7,40 @@ local _M = {}
 
 
 function _M.is_exist(path)
-    local _, err, _ = fs_ffi.access(path, fs_ffi.F_OK)
+    local _, err, errmsg = fs_ffi.access(path, fs_ffi.F_OK)
     if err ~= nil then
-        return false
+        return nil, err, errmsg
     end
 
-    return true
+    return true, nil, nil
 end
 
 
 function _M.is_dir(path)
-    local file_stat, err, _ = fs_ffi.stat(path)
+    local file_stat, err, errmsg = fs_ffi.stat(path)
     if err ~= nil then
-        return false
+        return nil, err, errmsg
     end
 
     if bit.band(file_stat.st_mode, fs_ffi.S_IFDIR) ~= 0 then
-        return true
+        return true, nil, nil
     end
 
-    return false
+    return false, nil, nil
 end
 
 
 function _M.is_file(path)
-    local file_stat, err, _ = fs_ffi.stat(path)
+    local file_stat, err, errmsg = fs_ffi.stat(path)
     if err ~= nil then
-        return false
+        return nil, err, errmsg
     end
 
     if bit.band(file_stat.st_mode, fs_ffi.S_IFREG) ~= 0 then
-        return true
+        return true, nil, nil
     end
 
-    return false
+    return false, nil, nil
 end
 
 
@@ -69,6 +69,30 @@ end
 
 function _M.make_dir(path, mode, name_or_uid, name_or_gid)
     mode = mode or tonumber('755', 8)
+
+    local uid
+    local gid
+
+    if name_or_uid ~= nil then
+        local user, err, errmsg = util.get_user(name_or_uid)
+        if err ~= nil then
+            return nil, 'GetUserError', string.format(
+                    'failed to get user: %s, %s, %s',
+                    tostring(name_or_uid), err, errmsg)
+        end
+        uid = user.pw_uid
+    end
+
+    if name_or_gid ~= nil then
+        local group, err, errmsg = util.get_group(name_or_gid)
+        if err ~= nil then
+            return nil, 'GetGroupError', string.format(
+                    'failed to get group: %s, %s, %s',
+                    tostring(name_or_gid), err, errmsg)
+        end
+        gid = group.gr_gid
+    end
+
     if not _M.is_exist(path) then
         local _, err, errmsg = fs_ffi.mkdir(path, mode)
         if err ~= nil then
@@ -91,25 +115,9 @@ function _M.make_dir(path, mode, name_or_uid, name_or_gid)
         end
     end
 
-    if name_or_uid == nil or name_or_gid == nil then
+    if uid == nil or gid == nil then
         return true, nil, nil
     end
-
-    local user, err, errmsg = util.get_user(name_or_uid)
-    if err ~= nil then
-        return nil, 'GetUserError', string.format(
-                'failed to get user: %s, %s, %s',
-                tostring(name_or_uid), err, errmsg)
-    end
-    local uid = user.pw_uid
-
-    local group, err, errmsg = util.get_group(name_or_gid)
-    if err ~= nil then
-        return nil, 'GetGroupError', string.format(
-                'failed to get group: %s, %s, %s',
-                tostring(name_or_gid), err, errmsg)
-    end
-    local gid = group.gr_gid
 
     local _, err, errmsg = fs_ffi.chown(path, uid, gid)
     if err ~= nil then
@@ -236,6 +244,80 @@ function _M.file_size(file_name)
     end
 
     return file_stat.st_size, nil, nil
+end
+
+
+function _M.write(path, data, mode)
+    local oflag = bit.bor(fs_ffi.O_CREAT, fs_ffi.O_TRUNC, fs_ffi.O_WRONLY)
+    local file, err, errmsg = fs_ffi.open(path, oflag, mode)
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    local _, err, errmsg = file:write(data, {write_all=true, max_try_n=3})
+    if err ~= nil then
+        file:close()
+        return nil, err, errmsg
+    end
+
+    local _, err, errmsg = file:close()
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    return true, nil, nil
+end
+
+
+function _M.atomic_write(path, data, mode)
+    local tmp_path = string.format('%s_tmp_%d_%s', path, math.random(10000),
+                                   ngx.md5(data))
+    local _, err, errmsg = _M.write(tmp_path, data, mode)
+    if err ~= nil then
+        os.remove(tmp_path)
+        return nil, err, errmsg
+    end
+
+    local _, err = os.rename(tmp_path, path)
+    if err ~= nil then
+        os.remove(tmp_path)
+        return nil, 'RenameError', err
+    end
+
+    return true, nil, nil
+end
+
+
+function _M.read(path)
+    local bufs = {}
+
+    local file, err, errmsg = fs_ffi.open(path, fs_ffi.O_RDONLY)
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    local read_block_size = 1024 * 1024 * 10
+
+    while true do
+        local buf, err, errmsg = file:read(read_block_size)
+        if err ~= nil then
+            file:close()
+            return nil, err, errmsg
+        end
+
+        table.insert(bufs, buf)
+
+        if #buf == 0 then
+            break
+        end
+    end
+
+    local _, err, errmsg = file:close()
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    return table.concat(bufs), nil, nil
 end
 
 
