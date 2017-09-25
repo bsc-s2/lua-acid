@@ -738,7 +738,7 @@ function test.write(t)
 
     local buf = string.rep('0', 1024 * 1024 * 5)
 
-    local _, err, errmsg = file:write(buf, {write_all=true,
+    local _, err, errmsg = file:write(buf, {retry=true,
                                             max_try_n=2,
                                             retry_sleep_time=1.1})
     test.dd(err)
@@ -746,9 +746,11 @@ function test.write(t)
     t:neq(nil, err)
     t:neq(nil, errmsg)
 
-    local _, err, errmsg = file:write(buf, {write_all=true,
+    ngx.sleep(1.1)
+
+    local _, err, errmsg = file:write(buf, {retry=true,
                                             max_try_n=10,
-                                            retry_sleep_time=0.6})
+                                            retry_sleep_time=1.1})
     t:eq(nil, err, errmsg)
 
     file:close()
