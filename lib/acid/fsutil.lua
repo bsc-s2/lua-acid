@@ -307,7 +307,7 @@ function _M.read(path)
 
         table.insert(bufs, buf)
 
-        if #buf < read_block_size then
+        if #buf == 0 then
             break
         end
     end

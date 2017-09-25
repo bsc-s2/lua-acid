@@ -251,7 +251,7 @@ end
 
 function _M.write(self, data, opts)
     opts = opts or {}
-    local write_all = opts.write_all == true
+    local retry = opts.retry == true
     local max_try_n = opts.max_try_n or 3
 
     local total_size = #data
@@ -260,7 +260,7 @@ function _M.write(self, data, opts)
         local written = ffi.C.write(self.fhandle.fd, data, #data)
         written = tonumber(written)
 
-        if not write_all then
+        if not retry then
             if written < 0 then
                 return nil, 'WriteFileError', util.strerror(ffi.errno())
             end
@@ -268,15 +268,10 @@ function _M.write(self, data, opts)
         end
 
         if written < 0 then
-            ngx.log(ngx.ERR, string.format(
-                    'failed to write file: %s %s',
-                    self.fpath, util.strerror(ffi.errno())))
-            written = 0
+            return nil, 'WriteFileError', util.strerror(ffi.errno())
         end
 
-        if written > 0 then
-            data = string.sub(data, written + 1)
-        end
+        data = string.sub(data, written + 1)
 
         if #data == 0 then
             return nil, nil, nil
@@ -295,7 +290,7 @@ end
 
 function _M.pwrite(self, data, offset)
     local written = ffi.C.pwrite(self.fhandle.fd, data, #data, offset)
-    local written = tonumber(written)
+    written = tonumber(written)
 
     if written < 0 then
         return nil, 'WriteFileError', util.strerror(ffi.errno())
@@ -325,17 +320,57 @@ function _M.fdatasync(self)
 end
 
 
-function _M.read(self, size)
+function _M.read(self, size, opts)
+    opts = opts or {}
+    local retry = opts.retry == true
+    local max_try_n = opts.max_try_n or 3
+
     local buf = ffi.new("char[?]", size)
+    local bufs = {}
+    local to_read = size
+    local reached_end = false
 
-    local read = ffi.C.read(self.fhandle.fd, buf, size)
-    local read = tonumber(read)
+    for _ = 1, max_try_n do
+        local read = ffi.C.read(self.fhandle.fd, buf, to_read)
+        read = tonumber(read)
 
-    if read < 0 then
-        return nil, 'ReadFileError', util.strerror(ffi.errno())
+        if not retry then
+            if read < 0 then
+                return nil, 'ReadFileError', util.strerror(ffi.errno())
+            end
+            return ffi.string(buf, read), nil, nil
+        end
+
+        if read < 0 then
+            return nil, 'ReadFileError', util.strerror(ffi.errno())
+        end
+
+        if read == 0 then
+            reached_end = true
+            break
+        end
+
+        table.insert(bufs, ffi.string(buf, read))
+
+        to_read = to_read - read
+
+        if to_read == 0 then
+            break
+        end
+
+        if opts.retry_sleep_time ~= nil then
+            ngx.sleep(opts.retry_sleep_time)
+        end
     end
 
-    return ffi.string(buf, read), nil, nil
+    local all_read = table.concat(bufs)
+    if reached_end or #all_read == size then
+        return all_read, nil, nil
+    end
+
+    return nil, 'ReadFileError', string.format(
+            'failed to read %d bytes in %d read, remain %d bytes to read',
+            size, max_try_n, to_read)
 end
 
 
@@ -343,7 +378,7 @@ function _M.pread(self, size, offset)
     local buf = ffi.new("char[?]", size)
 
     local read = ffi.C.pread(self.fhandle.fd, buf, size, offset)
-    local read = tonumber(read)
+    read = tonumber(read)
 
     if read < 0 then
         return nil, 'ReadFileError', util.strerror(ffi.errno())
@@ -355,7 +390,7 @@ end
 
 function _M.seek(self, offset, whence)
     local off = ffi.C.lseek(self.fhandle.fd, offset, whence)
-    local off = tonumber(off)
+    off = tonumber(off)
 
     if off < 0 then
         return nil, 'SeekError', util.strerror(ffi.errno())
