@@ -307,7 +307,7 @@ function _M.fnmatch(s, ptn)
             return string.rep('[\\]', l/2) .. (fnmatch_wildcard_translate[chr] or chr)
         else
             -- odd number of back slash: an escape of following char
-            return string.rep('[\\]', (l-1)/2)..'['.. chr ..']'
+            return string.rep('[\\]', (l-1)/2) .. (special_char[chr] or chr)
         end
     end)
 

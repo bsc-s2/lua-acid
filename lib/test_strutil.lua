@@ -366,69 +366,71 @@ end
 
 function test.fnmatch(t)
 
-    local function t_match(s, ptn, ok)
-        t:eq(
-        strutil.fnmatch(s, ptn), ok,
-        s .. ' ' .. ptn .. ' ' .. tostring(ok)
-        )
+    for i, str, ptn, expected, desc in t:case_iter(3, {
+        {'',        '',      true  },
+        {'a',       '',      false },
+        {'a',       'a',     true  },
+        {'a',       'b',     false },
+        {'',        '?',     false },
+        {'?',       '?',     true  },
+        {'*',       '?',     true  },
+        {'.',       '?',     true  },
+        {'a',       '?',     true  },
+        {'',        '*',     true  },
+        {'a',       '*',     true  },
+        {'ab',      '*',     true  },
+        {'?',       '*',     true  },
+        {'??',      '*',     true  },
+        {'..',      '*',     true  },
+        {'a',       '.',     false },
+        {'.',       '*.*',   true  },
+        {'a.',      '*.*',   true  },
+        {'.b',      '*.*',   true  },
+        {'a.b',     '*.*',   true  },
+        {'a.b.c',   '*.*',   true  },
+        {'.a.b.c',  '*.*',   true  },
+        {'.a.b.c.', '*.*',   true  },
+        {'abc',     '*.*',   false },
+        {'a.b',     '.*',    false },
+        {'a.b',     '*.',    false },
+        {'a.b',     '*',     true  },
+        {'a.b.c',   '*',     true  },
+        {'',        '\\',    false },
+        {'\\',      '\\',    true  },
+        {'\\a',     '\\',    false },
+        {'*',       '\\*',   true  }, -- escaped
+        {'a',       '\\*',   false },
+        {'?',       '\\?',   true  },
+        {'a',       '\\?',   false },
+        {'ab',      '\\?',   false },
+        {'a',       '\\\\*', false }, -- non escaped
+        {'\\',      '\\\\*', true  },
+        {'\\a',     '\\\\*', true  },
+        {'\\abcd*', '\\\\*', true  },
+        {'?',       '\\\\?', false },
+        {'a',       '\\\\?', false },
+        {'\\?',     '\\\\?', true  },
+        {'\\a',     '\\\\?', true  },
+        {"^",       '\\^',   true  }, -- special char that can not be put in `[]`
+        {"$",       '\\$',   true  },
+        {"(",       '\\(',   true  },
+        {")",       '\\)',   true  },
+        {"%",       '\\%',   true  },
+        {".",       '\\.',   true  },
+        {"[",       '\\[',   true  },
+        {"]",       '\\]',   true  },
+        {"*",       '\\*',   true  },
+        {"+",       '\\+',   true  },
+        {"-",       '\\-',   true  },
+        {"?",       '\\?',   true  },
+
+    }) do
+
+        local rst = strutil.fnmatch(str, ptn)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, desc)
     end
-
-    t_match('', '', true)
-    t_match('a', '', false)
-    t_match('a', 'a', true)
-    t_match('a', 'b', false)
-
-    t_match('', '?', false)
-    t_match('?', '?', true)
-    t_match('*', '?', true)
-    t_match('.', '?', true)
-    t_match('a', '?', true)
-
-    t_match('', '*', true)
-    t_match('a', '*', true)
-    t_match('ab', '*', true)
-    t_match('?', '*', true)
-    t_match('??', '*', true)
-    t_match('..', '*', true)
-
-    t_match('a', '.', false)
-
-    t_match('.', '*.*', true)
-    t_match('a.', '*.*', true)
-    t_match('.b', '*.*', true)
-    t_match('a.b', '*.*', true)
-    t_match('a.b.c', '*.*', true)
-    t_match('.a.b.c', '*.*', true)
-    t_match('.a.b.c.', '*.*', true)
-    t_match('abc', '*.*', false)
-
-    t_match('a.b', '.*', false)
-    t_match('a.b', '*.', false)
-    t_match('a.b', '*', true)
-    t_match('a.b.c', '*', true)
-
-    t_match('', '\\', false)
-    t_match('\\', '\\', true)
-    t_match('\\a', '\\', false)
-
-    -- escaped
-    t_match('*', '\\*', true)
-    t_match('a', '\\*', false)
-
-    t_match('?', '\\?', true)
-    t_match('a', '\\?', false)
-    t_match('ab', '\\?', false)
-
-    -- non escaped
-    t_match('a', '\\\\*', false)
-    t_match('\\', '\\\\*', true)
-    t_match('\\a', '\\\\*', true)
-    t_match('\\abcd*', '\\\\*', true)
-
-    t_match('?', '\\\\?', false)
-    t_match('a', '\\\\?', false)
-    t_match('\\?', '\\\\?', true)
-    t_match('\\a', '\\\\?', true)
 end
 
 
