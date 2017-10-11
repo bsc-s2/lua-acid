@@ -8,15 +8,18 @@
 - [Synopsis](#synopsis)
 - [Methods](#methods)
   - [strutil.endswith](#strutilendswith)
+  - [strutil.fnmatch](#strutilfnmatch)
   - [strutil.fromhex](#strutilfromhex)
   - [strutil.ljust](#strutilljust)
   - [strutil.join](#strutiljoin)
   - [strutil.placeholder](#strutilplaceholder)
+  - [strutil.right_n_split](#strutilright_n_split)
   - [strutil.rjust](#strutilrjust)
   - [strutil.rsplit](#strutilrsplit)
   - [strutil.split](#strutilsplit)
   - [strutil.startswith](#strutilstartswith)
   - [strutil.strip](#strutilstrip)
+  - [strutil.to_chunks](#strutilto_chunks)
   - [strutil.to_str](#strutilto_str)
   - [strutil.tohex](#strutiltohex)
 - [Author](#author)
@@ -74,6 +77,28 @@ See also: `strutil.startswith`.
 bool
 
 
+## strutil.fnmatch
+
+**syntax**:
+`strutil.fnmatch(s, ptn)`
+
+Return `true` if string `s` matches the string `ptn`,
+`false` otherwise.
+
+**arguments**:
+
+- `s`:
+    is a string.
+
+- `ptn`:
+    is used to find the first match of `ptn` in the string `s`.
+
+    Convert escape and special chars in `ptn` to chars that Lua can recognize.
+
+**return**:
+bool.
+
+
 ##  strutil.fromhex
 
 **syntax**:
@@ -92,6 +117,7 @@ byte string.
 
 **error**:
 An error will be emitted if `str` is not a string, or it is not a valid hex.
+
 
 ##  strutil.ljust
 
@@ -161,6 +187,45 @@ or a placeholder string if `val` is `nil` or `''`.
 
 **return**:
 string.
+
+
+## strutil.right_n_split
+
+**syntax**:
+`strutil.right_n_split(str, pat, frm, plain, n)`
+
+Split string `str` from the right with a separator `pat`.
+
+Return two values:
+The offset of the end of the part that is not split in `str`,
+and following `n` parts in a table in reversed order.
+
+For example:
+
+```
+strutil.right_n_split('a/b/c/d', '/', 1, true, 2)       -- 3, {'d', 'c'}
+```
+
+**arguments**:
+
+- `str`:
+    is the string to be split.
+
+- `pat`:
+    is a separator in string.
+
+- `frm`:
+    specifies the starting position to find the `pat`.
+
+- `plain`:
+    turns off the pattern matching facilities.
+
+- `n`:
+    limits max split times.
+
+**return**:
+two values,
+a number and a table of `n` split strings.
 
 
 ##  strutil.rjust
@@ -293,6 +358,37 @@ Return a string with leading and trailing chars those matches `pth` removed.
 
 **return**:
 a string with `pth` removed from both side.
+
+
+## strutil.to_chunks
+
+**syntax**:
+`strutil.to_chunks(s, n)`
+
+Divide a string `s` into sections by length `n`.
+
+**arguments**:
+
+- `s`:
+    is a string.
+
+- `n`:
+    specifies the length of each part.
+
+    It must be greater than 0,
+    and it can be a float.
+
+    when it is a float,
+    for Example:
+    ```
+    strutil.to_chunks('abcdefgh', 1.34) -- {'a', 'b', 'cd', 'e', 'f', 'gh'}
+
+    strutil.to_chunks('abcdef', 1.5)    -- {'a', 'bc', 'd', 'ef'}
+    ```
+
+**return**:
+a table of split strings.
+
 
 ##  strutil.to_str
 

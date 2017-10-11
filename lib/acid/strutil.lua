@@ -289,13 +289,6 @@ function _M.rjust(str, n, ch)
 end
 
 
-function _M.replace(s, src, dst)
-    -- TODO no one is using this.. remove it?
-    -- TODO test
-    return table.concat(_M.split(s, src), dst)
-end
-
-
 function _M.fnmatch(s, ptn)
 
     ptn = ptn:gsub('([\\]*)(.)', function(backslashes, chr)
