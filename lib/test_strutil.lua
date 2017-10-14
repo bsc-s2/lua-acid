@@ -423,6 +423,10 @@ function test.fnmatch(t)
         {"+",       '\\+',   true  },
         {"-",       '\\-',   true  },
         {"?",       '\\?',   true  },
+        {"a-b/c",   'a-b/*', true  },
+        {"a/b",     'a/*',   true  },
+        {"a/b",     'a/?',   true  },
+        {"a/bc",    'a/?',   false },
 
     }) do
 
