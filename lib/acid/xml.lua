@@ -251,7 +251,7 @@ local function parse_tag_body(str, body_segment)
 
     local body_str = string.sub(str, body_segment.start_i,
                                 body_segment.end_i)
-    return body_str
+    return _M.xml_unescape(body_str)
 end
 
 
