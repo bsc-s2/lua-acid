@@ -4,16 +4,34 @@ local strutil = require('acid.strutil')
 
 local _M = { _VERSION = '0.1' }
 
+
 local comparable_types = {
     ['number'] = true,
     ['string'] = true,
     ['table'] = true,
 }
 
+local valid_setter_mode = {
+    keep    = true,
+    replace = true,
+}
+
+
 _M.repr = repr.repr
 _M.str = repr.str
 
+
 math.randomseed(os.time() * 1000)
+
+
+local function _get_default_value(v)
+    if type(v) == 'function' then
+        return v()
+    else
+        return v
+    end
+end
+
 
 function _M.nkeys(tbl)
     return #_M.keys(tbl)
@@ -445,6 +463,42 @@ function _M.update(tbl, src, opts, ref_table)
     end
 
     return tbl
+end
+
+
+function _M.make_setter(key, val, mode)
+
+    local func
+
+    if mode == nil then
+        mode = 'replace'
+    end
+
+    assert(valid_setter_mode[mode], 'arg "mode" is not valid: ')
+
+    if type(key) == 'table' then
+        local tbl = key
+        func = function(dst)
+            for k, v in pairs(tbl) do
+                if dst[k] == nil or mode == 'replace' then
+                    dst[k] = _get_default_value(v)
+                end
+            end
+        end
+    else
+        func = function(dst)
+            if dst[key] == nil or mode == 'replace' then
+                dst[key] = _get_default_value(val)
+            end
+        end
+    end
+
+    return func
+end
+
+
+function _M.default_setter(key, val)
+    return _M.make_setter(key, val, 'keep')
 end
 
 

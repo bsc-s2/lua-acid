@@ -7,6 +7,7 @@
 - [Description](#description)
 - [Methods](#methods)
   - [tableutil.contains](#tableutilcontains)
+  - [tableutil.default_setter](#tableutildefault_setter)
   - [tableutil.depth_iter](#tableutildepth_iter)
   - [tableutil.dup](#tableutildup)
   - [tableutil.duplist](#tableutilduplist)
@@ -19,6 +20,7 @@
   - [tableutil.is_empty](#tableutilis_empty)
   - [tableutil.iter](#tableutiliter)
   - [tableutil.keys](#tableutilkeys)
+  - [tableutil.make_setter](#tableutilmake_setter)
   - [tableutil.merge](#tableutilmerge)
   - [tableutil.nkeys](#tableutilnkeys)
   - [tableutil.random](#tableutilrandom)
@@ -176,6 +178,19 @@ Algorithm:
 
 **return**:
 `true` if `a` contains `b`. Or `false`
+
+
+##  tableutil.default_setter
+
+Same as `tableutil.make_setter`, except that the setter always keep existent
+table fields.
+
+**syntax**:
+`tableutil.default_setter(key, val)`
+
+**return**:
+a function to set table fileds in form of `function(tbl) ... end`.
+
 
 ##  tableutil.depth_iter
 
@@ -465,6 +480,63 @@ Get all keys in table `tbl`.
 
 **return**:
 a list table filled with all keys in `tbl`.
+
+
+##  tableutil.make_setter
+
+Make a table setter function to set table fields.
+Return value is a function in form of:
+
+```lua
+function(tbl)
+    -- ...
+end
+```
+
+**Synopsis**:
+
+```lua
+-- set one key
+local setter = tableutil.make_setter('a', 5, mode='keep')
+local tbl = {x=3}
+setter(tbl)
+-- tbl = {a=5, x=3}
+
+-- set multiple keys:
+local setter = tableutil.make_setter({a=5, x=6, y=7}, nil, mode='keep')
+local tbl = {x=3}
+setter(tbl)
+-- tbl = {a=5, x=3, y=7}
+
+-- value is a function
+local setter = tableutil.make_setter({a=5, x=6, y=function() return 7 end}, nil, mode='keep')
+local tbl = {x=3}
+setter(tbl)
+-- tbl = {a=5, x=3, y=7}
+```
+
+**syntax**:
+`tableutil.make_setter(key, val, mode)`
+
+**arguments**:
+
+-   `key`:
+    is a table key or a table of key-value to set.
+
+-   `val`:
+    if `key` is a table, `val` is ignored.
+    if `key` is not a table, `val` is the value to set on key `key`.
+
+-   `mode`:
+    specifies what to do if a key exists.
+    -   'replace': always replace existent key in target table.
+    -   'keep': always keep existent key in target table.
+
+    By defaul it is 'replace'.
+
+
+**return**:
+a function.
 
 ## tableutil.merge
 

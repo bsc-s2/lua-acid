@@ -1,5 +1,6 @@
 local tableutil = require("acid.tableutil")
 
+local test = _G.test
 local dd = test.dd
 
 
@@ -674,4 +675,80 @@ function test.updatedict(t)
     t:eq(b.a1, b.a1.a1, 'test loop reference')
     t:eq(b.a1, b.a2, 'two loop references should be equal')
     t:neq(a, b.a1)
+end
+
+
+function test.make_setter(t)
+
+    local function make_v()
+        return 'vv'
+    end
+
+    for _, dst, k, v, mode, expected, desc in t:case_iter(5, {
+        {{},    'x',            2,   nil,       {x=2}},
+        {{},    'x',            2,   'keep',    {x=2}},
+        {{},    'x',            2,   'replace', {x=2}},
+        {{x=1}, 'x',            2,   nil,       {x=2}},
+        {{x=1}, 'x',            2,   'keep',    {x=1}},
+        {{x=1}, 'x',            2,   'replace', {x=2}},
+        {{x=1}, {x=2,y=3},      nil, nil,       {x=2,y=3}},
+        {{x=1}, {x=2,y=3},      nil, 'keep',    {x=1,y=3}},
+        {{x=1}, {x=2,y=3},      nil, 'replace', {x=2,y=3}},
+        {{x=1}, {x=make_v,y=3}, nil, nil,       {x='vv',y=3}},
+        {{x=1}, {x=make_v,y=3}, nil, 'keep',    {x=1,y=3}},
+        {{x=1}, {x=make_v,y=3}, nil, 'replace', {x='vv',y=3}},
+    }) do
+
+        local setter = tableutil.make_setter(k, v, mode)
+        setter(dst)
+        local rst = dst
+        dd('rst: ', rst)
+
+        t:eqdict(expected, rst, desc)
+    end
+end
+
+
+function test.make_setter_invalid_arg(t)
+
+    for _, mode, expected, desc in t:case_iter(2, {
+        {nil,           true  },
+        {'replace',     true  },
+        {'keep',        true  },
+        {'foo',         false },
+        {0,             false },
+        {true,          false },
+        {function()end, false },
+        {{},            false },
+    }) do
+
+        if expected then
+            tableutil.make_setter(1, 1, mode)
+        else
+            t:err(function() tableutil.make_setter(1, 1, mode) end, desc)
+        end
+    end
+end
+
+
+function test.default_setter(t)
+
+    local function make_v()
+        return 'vv'
+    end
+
+    for _, dst, k, v, expected, desc in t:case_iter(4, {
+        {{},    'x',                 2,    {x=2}},
+        {{x=1}, 'x',                 2,    {x=1}},
+        {{x=1}, {x=2,y=3},           nil,  {x=1,y=3}},
+        {{x=1}, {x=make_v,y=make_v}, nil,  {x=1,y='vv'}},
+    }) do
+
+        local setter = tableutil.default_setter(k, v)
+        setter(dst)
+        local rst = dst
+        dd('rst: ', rst)
+
+        t:eqdict(expected, rst, desc)
+    end
 end
