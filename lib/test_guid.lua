@@ -89,8 +89,13 @@ function test.parse(t)
         {'1505375219371999999', 1505375219371, 99,  9999, nil         },
         {nil,                   nil,           nil, nil, 'NotString'  },
         {1505375219371000000,   nil,           nil, nil, 'NotString'  },
-        {'1505375219371',       nil,           nil, nil, 'InvalidGuid'},
+        {{1, 2, 3},             nil,           nil, nil, 'NotString'  },
+        {function() end,        nil,           nil, nil, 'NotString'  },
+        {true,                  nil,           nil, nil, 'NotString'  },
         {'abcdef',              nil,           nil, nil, 'InvalidGuid'},
+        {string.rep('f', 19),   nil,           nil, nil, 'InvalidGuid'},
+        {string.rep('1', 18),   nil,           nil, nil, 'InvalidGuid'},
+        {string.rep('1', 20),   nil,           nil, nil, 'InvalidGuid'},
     }) do
 
         local res, err, err_msg = obj:parse(guid_str)

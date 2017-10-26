@@ -71,7 +71,7 @@ function _M.new(shared_guid, shared_lock, len_ts, len_seq, len_mid)
         key_exptime = key_exptime,
 
         id_pattern = string.format("%%%dd%%0%dd%%0%dd", len_ts, len_seq, len_mid),
-        parse_pattern = string.format('([0-9]{%d})([0-9]{%d})([0-9]{%d})',
+        parse_pattern = string.format('^([0-9]{%d})([0-9]{%d})([0-9]{%d})$',
             len_ts, len_seq, len_mid),
     }
 
