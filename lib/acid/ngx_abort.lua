@@ -12,7 +12,17 @@ local allowed_phase = {
 }
 
 local function exec_callbacks()
-    for cb_name, cb in pairs(ngx.ctx.callback_functions or {}) do
+    local callback_functions = ngx.ctx.callback_functions or {}
+    local advance = callback_functions.advance or {}
+    local postpone = callback_functions.postpone or {}
+
+    for cb_name, cb in pairs(advance) do
+        if type(cb.func) == 'function' then
+            cb.func(unpack(cb.args or {}))
+        end
+    end
+
+    for cb_name, cb in pairs(postpone) do
         if type(cb.func) == 'function' then
             cb.func(unpack(cb.args or {}))
         end
@@ -35,12 +45,20 @@ function _M.add_callback(func, ...)
     end
 
     if ctx.callback_functions == nil then
-        ctx.callback_functions = {}
+        ctx.callback_functions = {
+            advance = {},
+            postpone = {},
+        }
     end
 
     local cb = {func=func, args={...}}
 
-    ctx.callback_functions[cb] = cb
+    local opts = ...
+    if type(opts) == 'table' and opts.postpone == true then
+        ctx.callback_functions.postpone[cb] = cb
+    else
+        ctx.callback_functions.advance[cb] = cb
+    end
 
     return cb
 end
@@ -52,7 +70,13 @@ function _M.remove_callback(cb)
         return
     end
 
-    ctx.callback_functions[cb] = nil
+    if ctx.callback_functions.advance ~= nil then
+        ctx.callback_functions.advance[cb] = nil
+    end
+
+    if ctx.callback_functions.postpone ~= nil then
+        ctx.callback_functions.postpone[cb] = nil
+    end
 end
 
 function _M.install_running()
