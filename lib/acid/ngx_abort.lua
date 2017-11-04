@@ -55,6 +55,10 @@ function _M.add_callback(func, ...)
 
     local opts = ...
     if type(opts) == 'table' and opts.postpone == true then
+        if next(ctx.callback_functions.postpone) ~= nil then
+            return nil, 'InstallOnAbortError',
+                    'only one postpone callback is allowed'
+        end
         ctx.callback_functions.postpone[cb] = cb
     else
         ctx.callback_functions.advance[cb] = cb
