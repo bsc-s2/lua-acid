@@ -2,6 +2,7 @@ local _M = { _VERSION = '1.0' }
 local strutil = require("acid.strutil")
 
 local ngx = ngx
+local max_log_entry = 128
 
 local function addfield(tbl, str, fld, sep)
     if fld ~= nil then
@@ -233,6 +234,10 @@ function _M.add_log(entry)
     if logs == nil then
         ngx.ctx.rpc_logs = {}
         logs = ngx.ctx.rpc_logs
+    end
+
+    if #logs > max_log_entry then
+        return
     end
 
     table.insert(logs, entry)
