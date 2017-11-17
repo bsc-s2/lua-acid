@@ -24,9 +24,9 @@ _M.str = repr.str
 math.randomseed(os.time() * 1000)
 
 
-local function _get_default_value(v)
+local function _get_value_to_set(v, current_val)
     if type(v) == 'function' then
-        return v()
+        return v(current_val)
     else
         return v
     end
@@ -532,14 +532,14 @@ function _M.make_setter(key, val, mode)
         func = function(dst)
             for k, v in pairs(tbl) do
                 if dst[k] == nil or mode == 'replace' then
-                    dst[k] = _get_default_value(v)
+                    dst[k] = _get_value_to_set(v, dst[k])
                 end
             end
         end
     else
         func = function(dst)
             if dst[key] == nil or mode == 'replace' then
-                dst[key] = _get_default_value(val)
+                dst[key] = _get_value_to_set(val, dst[key])
             end
         end
     end

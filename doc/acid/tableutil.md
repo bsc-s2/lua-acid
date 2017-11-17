@@ -652,22 +652,22 @@ end
 
 ```lua
 -- set one key
-local setter = tableutil.make_setter('a', 5, mode='keep')
+local setter = tableutil.make_setter('a', 5, 'keep')
 local tbl = {x=3}
 setter(tbl)
 -- tbl = {a=5, x=3}
 
 -- set multiple keys:
-local setter = tableutil.make_setter({a=5, x=6, y=7}, nil, mode='keep')
+local setter = tableutil.make_setter({a=5, x=6, y=7}, nil, 'keep')
 local tbl = {x=3}
 setter(tbl)
 -- tbl = {a=5, x=3, y=7}
 
 -- value is a function
-local setter = tableutil.make_setter({a=5, x=6, y=function() return 7 end}, nil, mode='keep')
-local tbl = {x=3}
+local setter = tableutil.make_setter({a=5, x=6, y=function(current_val) return current_value + 1 end}, nil, 'keep')
+local tbl = {x=3, y=1}
 setter(tbl)
--- tbl = {a=5, x=3, y=7}
+-- tbl = {a=5, x=3, y=2}
 ```
 
 **syntax**:
@@ -677,6 +677,11 @@ setter(tbl)
 
 -   `key`:
     is a table key or a table of key-value to set.
+
+    If `key` is a table, its table-values are actual value to set. If a
+    table-value is a function, the function will be called with one
+    argument(the current value) to make a new value.
+    This value setter function should follow the form of `function(current_value)`.
 
 -   `val`:
     if `key` is a table, `val` is ignored.

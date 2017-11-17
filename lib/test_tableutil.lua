@@ -751,8 +751,8 @@ end
 
 function test.make_setter(t)
 
-    local function make_v()
-        return 'vv'
+    local function make_v(current_val)
+        return 'made: ' .. tostring(current_val)
     end
 
     for _, dst, k, v, mode, expected, desc in t:case_iter(5, {
@@ -765,9 +765,9 @@ function test.make_setter(t)
         {{x=1}, {x=2,y=3},      nil, nil,       {x=2,y=3}},
         {{x=1}, {x=2,y=3},      nil, 'keep',    {x=1,y=3}},
         {{x=1}, {x=2,y=3},      nil, 'replace', {x=2,y=3}},
-        {{x=1}, {x=make_v,y=3}, nil, nil,       {x='vv',y=3}},
+        {{x=1}, {x=make_v,y=3}, nil, nil,       {x='made: 1',y=3}},
         {{x=1}, {x=make_v,y=3}, nil, 'keep',    {x=1,y=3}},
-        {{x=1}, {x=make_v,y=3}, nil, 'replace', {x='vv',y=3}},
+        {{x=1}, {x=make_v,y=3}, nil, 'replace', {x='made: 1',y=3}},
     }) do
 
         local setter = tableutil.make_setter(k, v, mode)
