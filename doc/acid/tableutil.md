@@ -6,6 +6,10 @@
 - [Status](#status)
 - [Description](#description)
 - [Methods](#methods)
+  - [tableutil.add](#tableutiladd)
+  - [tableutil.addto](#tableutiladdto)
+  - [tableutil.combineto](#tableutilcombineto)
+  - [tableutil.combine](#tableutilcombine)
   - [tableutil.contains](#tableutilcontains)
   - [tableutil.default_setter](#tableutildefault_setter)
   - [tableutil.depth_iter](#tableutildepth_iter)
@@ -48,6 +52,108 @@ Most of them are in python style.
 
 
 #   Methods
+
+## tableutil.add
+It is a alias as `tableutil.combine(a,b,function(x, y) return x + y end,opts)`
+See more details about at [tableutil.combine](#tableutilcombine)
+
+## tableutil.addto
+It is a alias as `tableutil.combineto(a,b,function(x, y) return x + y end,opts)`
+See more details about at [tableutil.combineto](#tableutilcombineto)
+
+##  tableutil.combineto
+
+**syntax**:
+`tableutil.combineto(a, b, operator, opts)`
+
+Combine table `b` to table `a`.
+
+If `opts.default` is a number value, key not existed in `a` but in `b` has a default value.
+If `opts.recursive` is `true`, we do combineto recursively.
+If `opts.exclude` is not nil, the key in exclude will be ignored.
+
+**Usage**
+
+```
+local a = {x={y=3,z=1}}
+local b = {x={y=3,z=1}}
+local opts = {opts.exclude={x={z=true}}}
+tableutil.combineto(a, b,function(x, y) return x + y end,opts)
+print(a)
+
+--output
+{x={y=6,z=1}}
+```
+
+**arguments**:
+
+-   `a`:
+    is a table.
+
+-   `b`:
+    is a table.
+
+-   `opts`:
+    `opts.default` can be nil or a number value.
+    Default is nil.
+    If `opts.default` is a number value,
+    then use `opts.default` as default value
+    to add when key is existed in `b` but nil in `a`.
+
+    `opts.recursive` can be true or false.
+    Default is false.
+    If `opt.recursive` is `true`, do combineto recursively.
+
+    `opts.exclude` can be nil or or a table.
+    Default is nil.
+    If `exclude = {x={y={z=true}}}`,then `b[x][y][z]` will be ignored.
+
+-   `operator`
+    `operator` is function.
+    It accept two number parameters, and return a single number value.
+
+**return**:
+Nothing.
+
+##  tableutil.combine
+
+**syntax**:
+`tableutil.combine(a, b, operator, opts)`
+
+Combine table `b` with table `a`, return a new table.
+
+If `opts.default` is a number value, key not existed in `a` but in `b` has a default value.
+If `opts.recursive` is `true`, we do combineto recursively.
+If `opts.exclude` is not nil, the key in exclude will be ignored.
+
+**arguments**:
+
+-   `a`:
+    is a table.
+
+-   `b`:
+    is a table.
+
+-   `opts`:
+    `opts.default` can be nil or a number value.
+    Default is nil.
+    If `opts.default` is a number value,
+    then use `opts.default` as default value
+    to add when key is existed in `b` but nil in `a`.
+
+    `opts.recursive` can be true or false.
+    Default is false.
+    If `opt.recursive` is `true`, do combineto recursively.
+
+    `opts.exclude` can be nil or a table.
+    If `exclude = {x={y={z=true}}}`,then `b[x][y][z]` will be ignored.
+
+-   `operator`
+    `operator` is function.
+    It accept two number parameters, and return a single number value.
+
+**return**:
+a table.
 
 ##  tableutil.contains
 

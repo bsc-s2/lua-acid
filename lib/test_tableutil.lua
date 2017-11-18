@@ -752,3 +752,69 @@ function test.default_setter(t)
         t:eqdict(expected, rst, desc)
     end
 end
+
+
+function test.combine_and_add(t)
+
+    local opts_default = nil
+
+    local opts_recursive = { recursive = true }
+    local opts_default_value = { default = 1 }
+    local opts_recursive_default_value = { recursive = true, default = 1}
+    local opts_recursive_default_value_exclude = { recursive = true, default = 1, exclude={a={b={c={d=true}}},g=true} }
+    local cases_recursive = {
+
+	 {opts_default,                  {x=1,y=true,z=3},              	{x=1,y=2,z=true},               {x=2,y=true,z=3}},
+        {opts_default,			{x=1,y=2,z=3},			{x=1,y=2,z=3},			{x=2,y=4,z=6}},
+        {opts_default,			{x=1,y=2,z=3},			{x=1,z=3},			{x=2,y=2,z=6}},
+        {opts_default,			{x=1,z=3},			{x=1,y=2,z=3},			{x=2,z=6}},
+        {opts_default,			{},				{x=1,y=2,z=3},			{}},
+        {opts_default,			{x=1,y=2,z=3},			{},				{x=1,y=2,z=3}},
+        {opts_default,			{x=1,y=2,z=3},			{x={x1=1}},			{x=1,y=2,z=3}},
+
+        {opts_recursive,		{x={y={z=1}},c=1},		{x={y={z=1}},c=1},		{x={y={z=2}},c=2}},
+        {opts_recursive,		{x={y={z=1}},c=1,z={}},		{x={y={z=1}},c=1,z=1,d=1},	{x={y={z=2}},c=2,z={}}},
+        {opts_recursive,		{x={y={z=1}},c=1,z={}},		{x={y={z=1}},c=1,z=1},		{x={y={z=2}},c=2,z={}} },
+        {opts_recursive,		{x={y=1},c=1},			{x={z=1},c=1},			{x={y=1},c=2}},
+
+
+        {opts_default_value,		{x=1,y=2,z=3},			{x=1,z=3},			{x=2,y=2,z=6}},
+        {opts_default_value,		{x=1,z=3},			{x=1,y=2,z=3},			{x=2,y=3,z=6}},
+        {opts_default_value,		{},				{x=1,y=2,z=3},			{x=2,y=3,z=4}},
+        {opts_default_value,		{x=1,y=2,z=3},			{},				{x=1,y=2,z=3}},
+        {opts_default_value,		{x=1,y=2,z=3},			{x={x1=1}},			{x=1,y=2,z=3}},
+        {opts_default_value,            {c=1},                  	{x={z=1},c=1},                  {c=2}},
+
+	 {opts_recursive_default_value,  {c=1},                  	{x={z=1},c=1},                  {x={z=2},c=2}},
+        {opts_recursive_default_value,	{x={y={z=1}},c=1},		{x={y={z=1}},c=1},		{x={y={z=2}},c=2}},
+        {opts_recursive_default_value,	{x={y={z=1}},c=1,z={}}, 	{x={y={z=1}},c=1,z=1,d=1}, 	{x={y={z=2}},c=2,z={},d=2}},
+        {opts_recursive_default_value,	{x={y={z=1}},c=1,z={}}, 	{x={y={z=1,d=1}},c=1,z=1}, 	{x={y={z=2,d=2}},c=2,z={}}},
+        {opts_recursive_default_value,	{x={y=1},c=1},			{x={z=1},c=1},			{x={y=1,z=2},c=2}},
+
+
+	 {opts_recursive_default_value_exclude,  {a={b={c={d=1},e=1}},f=1,g=1},  {a={b={c={d=1},e=1}},f=2,e=1,g=1},  {a={b={c={d=1},e=2}},f=3,e=2,g=1}},
+
+    }
+
+    for ii, case in ipairs(cases_recursive) do
+
+        local opts, a, b, expected = t:unpack(case)
+
+        local rst = tableutil.combine(a, b, function(a, b) return a + b end, opts)
+        t:eqdict(expected, rst)
+
+        local copy_a = tableutil.dup(a, true)
+
+        tableutil.combineto(copy_a, b, function(a, b) return a + b end, opts)
+        t:eqdict(expected, copy_a)
+
+        local rst = tableutil.add(a, b, opts)
+        t:eqdict(expected, rst)
+
+        local copy_a = tableutil.dup(a, true)
+
+        tableutil.addto(copy_a, b, opts)
+        t:eqdict(expected, copy_a)
+
+    end
+end
