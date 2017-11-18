@@ -501,5 +501,78 @@ function _M.default_setter(key, val)
     return _M.make_setter(key, val, 'keep')
 end
 
+local function _combine_internal(a, b, opts, copy_return, operator, exclude)
+
+    local rst = a
+
+    if copy_return then
+        rst = _M.dup(a, true)
+    end
+
+    if opts == nil then
+        opts = {}
+    end
+
+    if exclude == nil then
+        exclude = {}
+    end
+
+    for k, v in pairs(b) do
+
+        local sub_exclude = exclude[k]
+
+        if sub_exclude ~= true then
+
+            if type(v) == type(a[k]) then
+
+                if type(v) == 'number' then
+                    rst[k] = operator(a[k], v)
+                end
+
+                if type(v) == 'table' and opts.recursive == true then
+                    rst[k] = _combine_internal(a[k], v, opts, copy_return, operator, sub_exclude)
+                end
+            else
+                if a[k] == nil and opts.default ~= nil then
+                    if type(v) == 'number' then
+                        rst[k] = operator(opts.default, v)
+                    end
+                    if type(v) == 'table' and opts.recursive == true then
+                        rst[k] = _combine_internal({}, v, opts, copy_return, operator, sub_exclude)
+                    end
+                end
+            end
+        end
+    end
+
+    return rst
+end
+
+function _M.combine(a, b, operator, opts)
+    if opts == nil then
+        opts = {}
+    end
+
+    return _combine_internal(a, b, opts, true, operator, opts.exclude)
+end
+
+function _M.combineto(a, b, operator, opts)
+    if opts == nil then
+        opts = {}
+    end
+    _combine_internal(a, b, opts, false, operator, opts.exclude)
+end
+
+local function _add_function(a, b)
+    return a + b
+end
+
+function _M.add(a, b, opts)
+    return _M.combine(a, b, _add_function, opts)
+end
+
+function _M.addto(a, b, opts)
+    return _M.combineto(a, b, _add_function, opts)
+end
 
 return _M
