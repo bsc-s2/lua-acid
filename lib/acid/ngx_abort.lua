@@ -1,3 +1,6 @@
+local tableutil = require('acid.tableutil')
+
+
 local _M = {}
 
 --- NOTE:
@@ -11,77 +14,119 @@ local allowed_phase = {
     content = true,
 }
 
-local function exec_callbacks()
-    local callback_functions = ngx.ctx.callback_functions or {}
-    local advance = callback_functions.advance or {}
-    local postpone = callback_functions.postpone or {}
 
-    for cb_name, cb in pairs(advance) do
-        if type(cb.func) == 'function' then
-            cb.func(unpack(cb.args or {}))
-        end
+local function _comp_callback_index(a, b)
+    if type(a) == 'number' and type(b) == 'number' then
+        return a < b
     end
 
-    for cb_name, cb in pairs(postpone) do
-        if type(cb.func) == 'function' then
-            cb.func(unpack(cb.args or {}))
-        end
+    if b == 'last' then
+        return true
     end
+
+    if a == 'last' then
+        return false
+    end
+
+    return tostring(a) < tostring(b)
 end
 
-function _M.add_callback(func, ...)
+
+local function exec_callbacks()
+    local callbacks = ngx.ctx.callbacks
+    if callbacks == nil then
+        return
+    end
+
+    local indexes = tableutil.keys(callbacks)
+    table.sort(indexes, _comp_callback_index)
+
+    for _, index in ipairs(indexes) do
+        local cb_array = callbacks[index]
+
+        for _, cb in ipairs(cb_array) do
+            cb.func(unpack(cb.args))
+        end
+    end
+
+    return
+end
+
+
+local function register()
     local phase = ngx.get_phase()
     if allowed_phase[phase] == nil then
         return nil, 'InstallOnAbortError', phase .. ' not allowed'
     end
-    local ctx = ngx.ctx
 
-    local ok, err = ngx.on_abort( exec_callbacks )
-    if err then
+    local ok, err = ngx.on_abort(exec_callbacks)
+    if not ok then
         if err ~= 'duplicate call' then
-            ngx.log( ngx.ERR, tostring( err ), ' while install on_abort' )
+            ngx.log(ngx.ERR, tostring(err), ' while install on_abort')
             return nil, 'InstallOnAbortError', err
         end
     end
 
-    if ctx.callback_functions == nil then
-        ctx.callback_functions = {
-            advance = {},
-            postpone = {},
-        }
+    if ngx.ctx.callbacks == nil then
+        ngx.ctx.callbacks = {}
     end
 
-    local cb = {func=func, args={...}}
-
-    local opts = ...
-    if type(opts) == 'table' and opts.postpone == true then
-        if next(ctx.callback_functions.postpone) ~= nil then
-            return nil, 'InstallOnAbortError',
-                    'only one postpone callback is allowed'
-        end
-        ctx.callback_functions.postpone[cb] = cb
-    else
-        ctx.callback_functions.advance[cb] = cb
-    end
-
-    return cb
+    return true, nil, nil
 end
 
-function _M.remove_callback(cb)
-    local ctx = ngx.ctx
 
-    if cb == nil or ctx.callback_functions == nil then
+function _M.add_callback_with_opts(func, opts, ...)
+    if type(func) ~= 'function' then
+        return nil, 'InvalidCallback', string.format(
+                'argument func: %s is not function, is %s',
+                tostring(func), type(func))
+    end
+
+    local _, err, errmsg = register()
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    local callbacks = ngx.ctx.callbacks
+    local cb = {func=func, args={...}}
+
+    opts = opts or {}
+
+    local index = opts.position or 1
+
+    if callbacks[index] == nil then
+        callbacks[index] = {}
+    end
+
+    table.insert(callbacks[index], cb)
+    return cb, nil, nil
+end
+
+
+function _M.add_callback(func, ...)
+    return _M.add_callback_with_opts(func, nil, ...)
+end
+
+
+function _M.remove_callback(cb)
+    local callbacks = ngx.ctx.callbacks
+
+    if callbacks == nil then
         return
     end
 
-    if ctx.callback_functions.advance ~= nil then
-        ctx.callback_functions.advance[cb] = nil
+    for _, cb_array in pairs(callbacks) do
+        for i, _cb in ipairs(cb_array) do
+            if _cb == cb then
+                table.remove(cb_array, i)
+                return
+            end
+        end
     end
 
-    if ctx.callback_functions.postpone ~= nil then
-        ctx.callback_functions.postpone[cb] = nil
-    end
+    return
 end
+
 
 function _M.install_running()
     local running = true
@@ -94,7 +139,7 @@ function _M.install_running()
         running = false
     end
 
-    local rst, err, errmes = _M.add_callback(abort_cb)
+    local _, err, errmes = _M.add_callback(abort_cb)
 
     return is_running, err, errmes
 end
