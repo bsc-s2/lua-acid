@@ -636,6 +636,77 @@ function test.get(t)
 end
 
 
+function test.set(t)
+    for _, tbl, keys, value, opts, exp_r, exp_err, desc in t:case_iter(6, {
+        {
+            nil, nil, 'foo', nil,
+            nil, 'NotTable',
+        },
+        {
+            nil, '', 'foo', {},
+            nil, 'NotTable',
+        },
+        {
+            nil, 'foo.bar', 123, nil,
+            nil, 'NotTable',
+        },
+        {
+            'foo', 'foo.bar', 123, nil,
+            nil, 'NotTable',
+        },
+        {
+            {}, 'foo', 123, nil,
+            {foo=123}, nil,
+        },
+        {
+            {}, 'foo.bar', 123, nil,
+            {foo={bar=123}}, nil,
+        },
+        {
+            {foo='abc'}, 'foo.bar', 123, nil,
+            nil, 'NotTable',
+        },
+        {
+            {foo='abc'}, 'foo.bar', 123, {override=true},
+            {foo={bar=123}}, nil,
+        },
+        {
+            {foo={foo=123}}, 'foo.bar', 123, {override=true},
+            {foo={foo=123, bar=123}}, nil,
+        },
+        {
+            {a={b={c=1}}}, 'a.b.c', 123, {override=true},
+            {a={b={c=123}}}, nil,
+        },
+        {
+            {a={b={c=1}}}, 'a.b.c', 123, {},
+            nil, 'KeyPathExist',
+        },
+        {
+            {a={b={c=1}}}, 'a.b.c.d', 123, {override=true},
+            {a={b={c={d=123}}}}, nil,
+        },
+        {
+            {a={b={c=1}}}, 'a.b.c.d', 123, {},
+            nil, 'NotTable',
+        },
+        {
+            {a={b={c=1}}}, 'a.b.c.d', {e=123}, {override=true},
+            {a={b={c={d={e=123}}}}}, nil,
+        },
+        {
+            {a={b={c=1}}}, 'a.b.e.f', {g=123}, {},
+            {a={b={c=1, e={f={g=123}}}}}, nil,
+        },
+    }) do
+
+        local r, err, errmsg = tableutil.set(tbl, keys, value, opts)
+        t:eqdict(exp_r, r, string.format('%s %s %s', desc, err, errmsg))
+        t:eq(exp_err, err, desc)
+    end
+end
+
+
 function test.updatedict(t)
 
     local cases = {

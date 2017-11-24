@@ -18,6 +18,7 @@
   - [tabelutil.eq](#tabelutileq)
   - [tableutil.extends](#tableutilextends)
   - [tableutil.get](#tableutilget)
+  - [tableutil.set](#tableutilset)
   - [tableutil.get_len](#tableutilget_len)
   - [tableutil.has](#tableutilhas)
   - [tableutil.intersection](#tableutilintersection)
@@ -450,6 +451,55 @@ print(tableutil.get(tbl, keys))
 
 **return**:
 the value `keys` access to if found in `tbl`. Or nil and error message.
+
+##  tableutil.set
+
+**syntax**:
+`tableutil.set(tbl, keys, value, opts)`
+
+Set the value **by key path** `keys` in table `tbl`.
+See more detail about **key path** at [tableutil.contains](#tableutilcontains).
+
+**Usage**
+
+```
+print(tableutil.set({}, 'x.y', 123))
+print(tableutil.set({x=1}, 'x.y', 123, {override=true}))
+print(tableutil.set({x={y=1}}, 'x.y', 123, {override=true}))
+print(tableutil.set({x={y=1}}, 'x.y', {z=123}, {override=true}))
+
+--output
+
+{x={y=123}}
+{x={y=123}}
+{x={y=123}}
+{x={y={z={123}}}
+```
+
+**arguments**:
+
+-   `tbl`:
+    is a table.
+
+-   `keys`:
+    is a string **key path** of table `tbl` to set.
+
+-   `value`:
+    is the value to set.
+
+-   `opts`:
+    `opts.override` can be `true` or `false`.
+    Default is `false`.
+    If the **key path** exits in `tbl`, if `opts.override` is `true`,
+    the existed value of the **key path** will be changed to `value`,
+    if `opts.override` is not `true`, this function will return error.
+    If any prefix of **key path** exits in `tbl`, and it's value is not a
+    table, if `opts.override` is `ture`, then it's value will be set to a
+    table, the old value will lost, if `opts.override` is not `ture`, this
+    function will return error.
+
+**return**:
+The `tbl`. Or nil and error message.
 
 ##  tableutil.get_len
 

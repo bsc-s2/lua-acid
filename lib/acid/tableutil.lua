@@ -424,6 +424,54 @@ function _M.get(tbl, keys)
 end
 
 
+function _M.set(tbl, keys, value, opts)
+    if type(tbl) ~= 'table' then
+        return nil, 'NotTable', 'tbl is not a table, is type: ' .. type(tbl)
+    end
+
+    opts = opts or {}
+    local node = tbl
+
+    local prefix = ''
+
+    local ks = strutil.split(keys, '[.]')
+    local ks_n = #ks
+
+    for i = 1, ks_n do
+        if i == ks_n then
+            local last_k = ks[ks_n]
+
+            if node[last_k] == nil or opts.override then
+                node[last_k] = value
+                return tbl, nil, nil
+            else
+                return nil, 'KeyPathExist', string.format(
+                        'key path: %s.%s already exist', prefix, last_k)
+            end
+        end
+
+        local k = ks[i]
+        prefix = prefix .. '.' .. k
+
+        if node[k] == nil then
+            node[k] = {}
+        end
+
+        if type(node[k]) ~= 'table' then
+            if opts.override then
+                node[k] = {}
+            else
+                return nil, 'NotTable', 'found non-table field: ' .. prefix
+            end
+        end
+
+        node = node[k]
+    end
+
+    return tbl, nil, nil
+end
+
+
 local function get_updated_v(tbl, k, v, opts, ref_table)
     if tbl[k] ~= nil and opts.force == false then
         return tbl[k]
