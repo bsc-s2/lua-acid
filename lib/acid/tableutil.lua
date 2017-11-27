@@ -424,7 +424,7 @@ function _M.get(tbl, keys)
 end
 
 
-function _M.set(tbl, keys, value, opts)
+function _M.set(tbl, key_path, value, opts)
     if type(tbl) ~= 'table' then
         return nil, 'NotTable', 'tbl is not a table, is type: ' .. type(tbl)
     end
@@ -434,7 +434,7 @@ function _M.set(tbl, keys, value, opts)
 
     local prefix = ''
 
-    local ks = strutil.split(keys, '[.]')
+    local ks = strutil.split(key_path, '[.]')
     local ks_n = #ks
 
     for i = 1, ks_n do
