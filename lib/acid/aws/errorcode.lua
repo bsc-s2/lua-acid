@@ -81,6 +81,7 @@ local _M = {
     UserForbidden                        =  http_status.Forbidden,
     UserKeyMustBeSpecified               =  http_status.BadRequest,
     UserNotFound                         =  http_status.Forbidden,
+    TooManyRequests                      =  http_status.TooManyRequests,
 }
 
 return _M
