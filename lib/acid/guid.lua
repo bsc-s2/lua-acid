@@ -121,7 +121,7 @@ function _M.parse(self, guid)
         return nil, 'NotString', 'the guid is not a string: ' .. type(guid)
     end
 
-    local guid_tb = ngx.re.match(guid, self.parse_pattern)
+    local guid_tb = ngx.re.match(guid, self.parse_pattern, 'o')
 
     if guid_tb == nil then
         return nil, 'InvalidGuid', string.format(
