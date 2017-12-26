@@ -243,3 +243,21 @@ function test.build_query(t)
         t:eq(expected, query_string, desc)
     end
 end
+
+function test.normalize_uri(t)
+
+    for _, str, expected, desc in t:case_iter(2, {
+        {'',                            '/'          },
+        {'///',                         '/'          },
+        {'//..',                        '/'          },
+        {'/../../',                     '/'          },
+        {'//../a',                      '/a'         },
+        {'/../a/../.',                  '/'          },
+        {'/../a/b/c/.././d/./',         '/a/b/d'     },
+        {'/../a/..?ab=///ab',           '/?ab=///ab' },
+    }) do
+        local normal_uri = urlutil.normalize_uri(str)
+        t:eq(expected, normal_uri)
+    end
+
+end
