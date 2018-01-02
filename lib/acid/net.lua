@@ -1,3 +1,4 @@
+local bit = require('bit')
 local strutil = require('acid.strutil')
 local tableutil = require('acid.tableutil')
 
@@ -19,6 +20,16 @@ local _intra_patterns = {
     '^10[.]',
     '^192[.]168[.]',
 }
+
+local binary_masks = {}
+local reverse_binary_masks = {}
+
+for i = 0, 32 do
+    binary_masks[i] = bit.lshift(2 ^ i - 1, 32 - i)
+    reverse_binary_masks[i] = bit.bnot(binary_masks[i])
+end
+
+local signed_range = 2 ^ 32
 
 local _M = { _VERSION = "0.1" }
 
@@ -206,5 +217,79 @@ function _M.choose_by_regex(ips, ip_regexs)
     return rst
 end
 
+local function unsign(binary)
+    if binary < 0 then
+        return signed_range + binary
+    end
+    return binary
+end
+
+function _M.ip_to_binary(ip)
+
+    if _M.is_ip4(ip) == false then
+        return nil
+    end
+
+    local elts = strutil.split(ip, '.', true)
+    local ip_binary = 0
+
+    for _, elt_str in ipairs(elts) do
+        local elt = tonumber(elt_str)
+        ip_binary = bit.bor(bit.lshift(ip_binary, 8), elt)
+    end
+
+    return unsign(ip_binary)
+end
+
+function _M.binary_to_ip(ip_binary)
+    local ip = {}
+    for i = 1, 4 do
+        table.insert(ip, 1, tostring(bit.band(ip_binary, 255)))
+        ip_binary = bit.rshift(ip_binary, 8)
+    end
+    return table.concat(ip, '.')
+end
+
+function _M.ip_in_cidr(ip, cidrs)
+
+    for _, cidr in ipairs(cidrs) do
+
+        local min, max = _M.parse_cidr(cidr)
+
+        if min ~= nil then
+            local binary_ip = _M.ip_to_binary(ip)
+            if binary_ip ~= nil and binary_ip >= min and binary_ip <= max then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+function _M.parse_cidr(cidr)
+
+    local net_mask = strutil.split(cidr, '/', 1)
+
+    local net = net_mask[1]
+    local mask = tonumber(net_mask[2]) or 32
+
+    if _M.is_ip4(net) == false then
+        return nil, 'invalid net', string.format('invalid net value: %s', net)
+    end
+
+    if mask > 32 or mask < 0 then
+        return nil, 'invalid mask', string.format('invalid mask value: %s', mask)
+    end
+
+    local binary_mask = binary_masks[mask]
+    local reverse_binary_mask = reverse_binary_masks[mask]
+    local binary_net = _M.ip_to_binary(net)
+
+    local min_binary_ip = unsign(bit.band(binary_net, binary_mask))
+    local max_binary_ip = unsign(bit.bor(min_binary_ip, reverse_binary_mask))
+
+    return min_binary_ip, max_binary_ip, unsign(binary_mask)
+end
 
 return _M
