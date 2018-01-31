@@ -382,17 +382,17 @@ function _M.reverse(tbl, opts)
     end
 
     local reversed = {}
-    local array_part = {}
 
-    for _, elt in ipairs(tbl) do
-        if opts.keep_hash_part == true then
-            array_part[elt] = true
-        end
+    local array_len = #tbl
+
+    for i = 1, array_len do
+        local reversed_index = array_len - i + 1
+        local elt = tbl[i]
 
         if type(elt) == 'table' and opts.recursive == true then
             elt = _M.reverse(elt, opts)
         end
-        table.insert(reversed, 1, elt)
+        reversed[reversed_index] = elt
     end
 
     if opts.keep_hash_part ~= true then
@@ -400,7 +400,7 @@ function _M.reverse(tbl, opts)
     end
 
     for k, v in pairs(tbl) do
-        if array_part[v] ~= true then
+        if type(k) ~= 'number' or k > array_len then
             if type(v) == 'table' and opts.hash_immutable ~= true
                     and opts.recursive == true then
                 v = _M.reverse(v, opts)

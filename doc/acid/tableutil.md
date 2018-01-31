@@ -767,7 +767,7 @@ reverse the array part of `tbl`.
 -   `opts`:
     set `opts.recursive` to `true` if you want to reverse recursively,
     default is `false`.
-    set `opts.keep_hash_part` to `true` if `tbl` have hash part,
+    set `opts.keep_hash_part` to `true` if `tbl` has hash part,
     and you want to keep it, default is `false`.
     set `opts.hash_immutable` to `true` if do not need to reverse the
     table value of a hash key, default is `false`.
