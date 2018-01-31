@@ -376,6 +376,44 @@ function _M.random(tbl, n)
 end
 
 
+function _M.reverse(tbl, opts)
+    if opts == nil then
+        opts = {}
+    end
+
+    local reversed = {}
+
+    local array_len = #tbl
+
+    for i = array_len, 1, -1 do
+        local reversed_index = array_len - i + 1
+        local elt = tbl[i]
+
+        if type(elt) == 'table' and opts.recursive == true then
+            elt = _M.reverse(elt, opts)
+        end
+        reversed[reversed_index] = elt
+    end
+
+    if opts.keep_hash_part ~= true then
+        return reversed
+    end
+
+    for k, v in pairs(tbl) do
+        if type(k) ~= 'number' or k > array_len then
+            if type(v) == 'table' and opts.hash_immutable ~= true
+                    and opts.recursive == true then
+                v = _M.reverse(v, opts)
+            end
+
+            reversed[k] = v
+        end
+    end
+
+    return reversed
+end
+
+
 function _M.extends(tbl, tvals)
 
     if type(tbl) ~= 'table' or tvals == nil then
