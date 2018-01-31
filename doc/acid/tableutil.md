@@ -29,6 +29,7 @@
   - [tableutil.merge](#tableutilmerge)
   - [tableutil.nkeys](#tableutilnkeys)
   - [tableutil.random](#tableutilrandom)
+  - [tableutil.reverse](#tableutilreverse)
   - [tableutil.remove_all](#tableutilremove_all)
   - [tableutil.remove_value](#tableutilremove_value)
   - [tableutil.union](#tableutilunion)
@@ -750,6 +751,29 @@ If `n` is greater than length of `tbl` or is `nil` then cut all `tbl`.
 
 **return**:
 a list table.
+
+##  tableutil.reverse
+
+**syntax**:
+`tableutil.reverse(tbl, opts)`
+
+reverse the array part of `tbl`.
+
+**arguments**:
+
+-   `tbl`:
+    is a table.
+
+-   `opts`:
+    set `opts.recursive` to `true` if you want to reverse recursively,
+    default is `false`.
+    set `opts.keep_hash_part` to `true` if `tbl` have hash part,
+    and you want to keep it, default is `false`.
+    set `opts.hash_immutable` to `true` if do not need to reverse the
+    table value of a hash key, default is `false`.
+
+**return**:
+the reversed table.
 
 ##  tableutil.remove_all
 
