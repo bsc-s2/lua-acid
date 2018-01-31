@@ -546,6 +546,66 @@ function test.get_random_elements(t)
 end
 
 
+function test.test_reverse(t)
+    for _, tbl, opts, expected, desc in t:case_iter(3, {
+        {
+            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
+            nil,
+            {{4, 5}, 3, '2', 1},
+        },
+        {
+            {1, '2', 3, {4, 5}, foo={1, 2, 3}, bar='bar'},
+            {recursive=true, keep_hash_part=true},
+            {{5, 4}, 3, '2', 1, foo={3, 2, 1}, bar='bar'},
+        },
+        {
+            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
+            {recursive=true, keep_hash_part=true, hash_immutable=true},
+            {{5, 4}, 3, '2', 1, foo={1, 2, 3}},
+        },
+        {
+            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
+            {recursive=false, keep_hash_part=true, hash_immutable=false},
+            {{4, 5}, 3, '2', 1, foo={1, 2, 3}},
+        },
+        {
+            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
+            {recursive=true, keep_hash_part=false},
+            {{5, 4}, 3, '2', 1},
+        },
+        {
+            {},
+            nil,
+            {},
+        },
+        {
+            {1, 2, 3, nil, 5},
+            nil,
+            {3, 2, 1},
+        },
+        {
+            {a={b={c={d={1, 2, 3}}}}},
+            {recursive=true},
+            {},
+        },
+        {
+            {a={b={c={d={1, 2, 3}}}}},
+            {recursive=true, keep_hash_part=true},
+            {a={b={c={d={3, 2, 1}}}}},
+        },
+        {
+            {a={b={1, 2, c={d={1, 2, 3}}}}},
+            {recursive=true, keep_hash_part=true},
+            {a={b={2, 1, c={d={3, 2, 1}}}}},
+        },
+    }) do
+
+        local r = tableutil.reverse(tbl, opts)
+        t:eqdict(expected, r, desc)
+    end
+end
+
+
 function test.extends(t)
 
     for _, a, b, desc in t:case_iter(2, {
