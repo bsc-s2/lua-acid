@@ -547,7 +547,7 @@ function test.get_random_elements(t)
 end
 
 
-function test.array_len(t)
+function test.list_len(t)
     for _, tbl, kind, expected, desc in t:case_iter(3, {
         {
             {1, 2, 3, 4, {5, 6}, foo={1, 2, 3}}, nil,
@@ -606,7 +606,7 @@ function test.array_len(t)
             4,
         },
     }) do
-        local r = tableutil.array_len(tbl, kind)
+        local r = tableutil.list_len(tbl, kind)
         t:eq(expected, r, desc)
    end
 end
