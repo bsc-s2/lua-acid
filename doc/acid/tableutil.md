@@ -753,10 +753,10 @@ If `n` is greater than length of `tbl` or is `nil` then cut all `tbl`.
 **return**:
 a list table.
 
-##  tableutil.array_len
+##  tableutil.list_len
 
 **syntax**:
-`tableutil.array_len(tbl, kind)`
+`tableutil.list_len(tbl, kind)`
 
 Return the length of the array part of `tbl`.
 
@@ -793,7 +793,7 @@ reverse the array part of `tbl`.
 
     - `array_len_kind`: this argument will determine whether an integer key
     belongs to array part or hash part. It can be set to 'size', 'max_index',
-    'end_by_nil' or `nil`, more details at [tableutil.array_len](#tableutilarray_len).
+    'end_by_nil' or `nil`, more details at [tableutil.list_len](#tableutillist_len).
     This argument determine the length of the array part, key that is
     not an interger or not between 1 and length of the array part will be
     considered as a hash key.

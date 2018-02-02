@@ -376,7 +376,7 @@ function _M.random(tbl, n)
 end
 
 
-function _M.array_len(tbl, kind)
+function _M.list_len(tbl, kind)
     local len = 0
 
     if kind == 'max_index' then
@@ -408,7 +408,7 @@ function _M.reverse(tbl, opts)
         opts = {}
     end
 
-    local array_len = _M.array_len(tbl, opts.array_len_kind)
+    local array_len = _M.list_len(tbl, opts.array_len_kind)
 
     local reversed = {}
 
