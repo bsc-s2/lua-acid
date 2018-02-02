@@ -29,7 +29,7 @@
   - [tableutil.merge](#tableutilmerge)
   - [tableutil.nkeys](#tableutilnkeys)
   - [tableutil.random](#tableutilrandom)
-  - [tableutil.array_len](#tableutilarray_len)
+  - [tableutil.list_len](#tableutillist_len)
   - [tableutil.reverse](#tableutilreverse)
   - [tableutil.remove_all](#tableutilremove_all)
   - [tableutil.remove_value](#tableutilremove_value)
