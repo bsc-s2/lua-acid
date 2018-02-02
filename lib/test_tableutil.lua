@@ -1,4 +1,5 @@
 local tableutil = require("acid.tableutil")
+local time = require('acid.time')
 
 local test = _G.test
 local dd = test.dd
@@ -546,63 +547,169 @@ function test.get_random_elements(t)
 end
 
 
+function test.array_len(t)
+    for _, tbl, kind, expected, desc in t:case_iter(3, {
+        {
+            {1, 2, 3, 4, {5, 6}, foo={1, 2, 3}}, nil,
+            5,
+        },
+        {
+            {1, 2, 3, 4, {5, 6}, foo={1, 2, 3}}, 'max_index',
+            5,
+        },
+        {
+            {1, 2, 3, 4, {5, 6}, foo={1, 2, 3}}, 'size',
+            5,
+        },
+        {
+            {1, 2, 3, 4, {5, 6}, foo={1, 2, 3}}, 'end_by_nil',
+            5,
+        },
+        {
+            {nil, 2, 3, [999]=999, ['1000']=1000}, 'end_by_nil',
+            0,
+        },
+        {
+            {nil, 2, 3, [999]=999, ['1000']=1000}, nil,
+            0,
+        },
+        {
+            {nil, 2, 3, [998]=998, [999]=999, ['1000']=1000}, 'size',
+            3,
+        },
+        {
+            {nil, 2, 3, [998]=998, [999]=999, ['1000']=1000}, 'max_index',
+            999,
+        },
+        {
+            {1, {}, '2', nil, [998]=998, ['1000']=1000}, nil,
+            3,
+        },
+        {
+            {1, {}, '2', nil, [998]=998, ['1000']=1000}, 'size',
+            3,
+        },
+        {
+            {1, {}, '2', nil, [998]=998, ['1000']=1000}, 'max_index',
+            998,
+        },
+        {
+            {1, 2, 3, 4, nil, 6}, 'end_by_nil',
+            4,
+        },
+        {
+            {1, 2, 3, 4, nil, 6}, 'size',
+            6,
+        },
+        {
+            {1, 2, 3, 4, nil, nil}, 'size',
+            4,
+        },
+    }) do
+        local r = tableutil.array_len(tbl, kind)
+        t:eq(expected, r, desc)
+   end
+end
+
+
 function test.test_reverse(t)
     for _, tbl, opts, expected, desc in t:case_iter(3, {
         {
-            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
+            {1, '2', 3, nil, {5, 6}, [8]=8, foo={1, 2, 3}},
             nil,
-            {{4, 5}, 3, '2', 1},
+            {3, '2', 1},
         },
         {
-            {1, '2', 3, {4, 5}, foo={1, 2, 3}, bar='bar'},
-            {recursive=true, keep_hash_part=true},
-            {{5, 4}, 3, '2', 1, foo={3, 2, 1}, bar='bar'},
+            {1, '2', 3, nil, {5, 6}, [8]=8, foo={1, 2, 3}},
+            {array_len_kind='max_index'},
+            {8, nil, nil, {5, 6}, nil, 3, '2', 1},
         },
         {
-            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
-            {recursive=true, keep_hash_part=true, hash_immutable=true},
-            {{5, 4}, 3, '2', 1, foo={1, 2, 3}},
+            {1, '2', 3, nil, {5, 6}, [8]=8, foo={1, 2, 3}},
+            {array_len_kind='max_index', recursive='array'},
+            {8, nil, nil, {6, 5}, nil, 3, '2', 1},
         },
         {
-            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
-            {recursive=false, keep_hash_part=true, hash_immutable=false},
-            {{4, 5}, 3, '2', 1, foo={1, 2, 3}},
+            {1, '2', 3, nil, {5, 6}, [8]=8, foo={1, 2, 3}},
+            {array_len_kind='max_index', recursive='hash'},
+            {8, nil, nil, {5, 6}, nil, 3, '2', 1},
         },
         {
-            {1, '2', 3, {4, 5}, foo={1, 2, 3}},
-            {recursive=true, keep_hash_part=false},
-            {{5, 4}, 3, '2', 1},
+            {1, '2', 3, nil, {5, 6}, [8]=8, foo={1, 2, 3}},
+            {array_len_kind='max_index', recursive='hash', hash='keep'},
+            {8, nil, nil, {5, 6}, nil, 3, '2', 1, foo={3, 2, 1}},
+        },
+        {
+            {1, '2', 3, nil, {5, 6}, [8]=8, foo={1, 2, 3}},
+            {array_len_kind='max_index', recursive='array', hash='keep'},
+            {8, nil, nil, {6, 5}, nil, 3, '2', 1, foo={1, 2, 3}},
+        },
+        {
+            {1, 2, {3, 4, foo={1, 2}}, foo={1, 2, {3, 4}, bar={1, 2}}},
+            nil,
+            {{3, 4, foo={1, 2}}, 2, 1},
+        },
+        {
+            {1, 2, {3, 4, foo={1, 2}}, foo={1, 2, {3, 4}, bar={1, 2}}},
+            {hash='keep'},
+            {{3, 4, foo={1, 2}}, 2, 1, foo={1, 2, {3, 4}, bar={1, 2}}},
+        },
+        {
+            {1, 2, {3, 4, foo={1, 2}}, foo={1, 2, {3, 4}, bar={1, 2}}},
+            {hash='keep', recursive='array'},
+            {{4, 3, foo={1, 2}}, 2, 1, foo={1, 2, {3, 4}, bar={1, 2}}},
+        },
+        {
+            {1, 2, {3, 4, foo={1, 2}}, foo={1, 2, {3, 4}, bar={1, 2}}},
+            {hash='keep', recursive='hash'},
+            {{3, 4, foo={1, 2}}, 2, 1, foo={{3, 4}, 2, 1, bar={2, 1}}},
+        },
+        {
+            {1, 2, {3, 4, foo={1, 2}}, foo={1, 2, {3, 4}, bar={1, 2}}},
+            {hash='keep', recursive='all'},
+            {{4, 3, foo={2, 1}}, 2, 1, foo={{4, 3}, 2, 1, bar={2, 1}}},
+        },
+        {
+            {1, 2, 3, 4, foo={bar={}}},
+            {hash='keep'},
+            {4, 3, 2, 1, foo={bar={}}},
+        },
+        {
+            {1, 2, 3, 4, foo={bar={}}},
+            {hash='discard'},
+            {4, 3, 2, 1},
         },
         {
             {},
-            nil,
+            {hash='keep', recursive='all', array_len_kind='max_index'},
             {},
         },
         {
-            {1, 2, 3, nil, 5},
-            nil,
-            {3, 2, 1},
-        },
-        {
-            {a={b={c={d={1, 2, 3}}}}},
-            {recursive=true},
-            {},
-        },
-        {
-            {a={b={c={d={1, 2, 3}}}}},
-            {recursive=true, keep_hash_part=true},
-            {a={b={c={d={3, 2, 1}}}}},
-        },
-        {
-            {a={b={1, 2, c={d={1, 2, 3}}}}},
-            {recursive=true, keep_hash_part=true},
-            {a={b={2, 1, c={d={3, 2, 1}}}}},
+            {[1001]=1001, [1005]=1005},
+            {hash='keep', recursive='all', array_len_kind='max_index'},
+            {1005, nil, nil, nil, 1001},
         },
     }) do
 
         local r = tableutil.reverse(tbl, opts)
         t:eqdict(expected, r, desc)
     end
+end
+
+
+function test.test_reverse_time(t)
+    local large_index = 1024 * 1024 * 1024
+    local tbl = {[large_index] = 'foo', [large_index + 1]='bar'}
+
+    local start_ms = time.get_ms()
+
+    local r = tableutil.reverse(tbl, {array_len_kind='max_index'})
+    local time_used = time.get_ms() - start_ms
+
+    t:eqdict({'bar', 'foo'}, r)
+    test.dd(string.format('reverse with large index time_used: %d ms',
+                          time_used))
+    t:eq(true, time_used < 10)
 end
 
 
