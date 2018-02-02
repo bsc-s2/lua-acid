@@ -376,6 +376,81 @@ function _M.random(tbl, n)
 end
 
 
+function _M.list_len(tbl, kind)
+    local len = 0
+
+    if kind == 'max_index' then
+        for i, _ in pairs(tbl) do
+            if type(i) == 'number' and i % 1 == 0 and i > len then
+                len = i
+            end
+        end
+        return len
+
+    elseif kind == 'size' then
+        return #tbl
+    else
+        for i = 1, #tbl do
+            if tbl[i] ~= nil then
+                len = i
+            else
+                break
+            end
+        end
+
+        return len
+    end
+end
+
+
+function _M.reverse(tbl, opts)
+    if opts == nil then
+        opts = {}
+    end
+
+    local array_len = _M.list_len(tbl, opts.array_len_kind)
+
+    local reversed = {}
+
+    if opts.hash ~= 'keep' and opts.array_len_kind ~= 'max_index' then
+        for i = array_len, 1, -1 do
+            local key = array_len - i + 1
+            local elt = tbl[i]
+
+            if type(elt) == 'table' and (opts.recursive == 'array' or
+                                         opts.recursive == 'all') then
+                elt = _M.reverse(elt, opts)
+            end
+            reversed[key] = elt
+        end
+
+        return reversed
+    end
+
+    for k, v in pairs(tbl) do
+        if type(k) == 'number' and k % 1 == 0 and
+                k >= 1 and k <= array_len then
+
+            k = array_len - k + 1
+            if type(v) == 'table' and (opts.recursive == 'array' or
+                                       opts.recursive == 'all') then
+                v = _M.reverse(v, opts)
+            end
+            reversed[k] = v
+
+        elseif opts.hash == 'keep' then
+            if type(v) == 'table' and (opts.recursive == 'hash' or
+                                       opts.recursive == 'all') then
+                v = _M.reverse(v, opts)
+            end
+            reversed[k] = v
+        end
+    end
+
+    return reversed
+end
+
+
 function _M.extends(tbl, tvals)
 
     if type(tbl) ~= 'table' or tvals == nil then

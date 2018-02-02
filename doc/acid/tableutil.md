@@ -29,6 +29,8 @@
   - [tableutil.merge](#tableutilmerge)
   - [tableutil.nkeys](#tableutilnkeys)
   - [tableutil.random](#tableutilrandom)
+  - [tableutil.list_len](#tableutillist_len)
+  - [tableutil.reverse](#tableutilreverse)
   - [tableutil.remove_all](#tableutilremove_all)
   - [tableutil.remove_value](#tableutilremove_value)
   - [tableutil.union](#tableutilunion)
@@ -750,6 +752,59 @@ If `n` is greater than length of `tbl` or is `nil` then cut all `tbl`.
 
 **return**:
 a list table.
+
+##  tableutil.list_len
+
+**syntax**:
+`tableutil.list_len(tbl, kind)`
+
+Return the length of the array part of `tbl`.
+
+**arguments**:
+
+-   `tbl`:
+    is a table.
+
+-   `kind`:
+    If set to 'size', the length equal to `#tbl`.
+    If set to 'max_index', the length is the max integer key.
+    If set to 'end_by_nil' or `nil`, the length equal to the
+    max index returned by `ipairs(tbl)`.
+
+**return**:
+the length of the array part according to `kind`.
+
+##  tableutil.reverse
+
+**syntax**:
+`tableutil.reverse(tbl, opts)`
+
+reverse the array part of `tbl`.
+
+**arguments**:
+
+-   `tbl`:
+    is a table.
+
+-   `opts`:
+    is a table contains any of the following fields.
+
+    - `hash`: if not set to 'keep', the hash part of `tbl` will be discard.
+
+    - `array_len_kind`: this argument will determine whether an integer key
+    belongs to array part or hash part. It can be set to 'size', 'max_index',
+    'end_by_nil' or `nil`, more details at [tableutil.list_len](#tableutillist_len).
+    This argument determine the length of the array part, key that is
+    not an interger or not between 1 and length of the array part will be
+    considered as a hash key.
+
+    - `recursive`: if set to 'array', then only array part of `tbl` will be
+    reversed recursively, if set to 'hash', then hash part of `tbl` will be
+    reversed recursively, set to 'all' to reverse both part recursively,
+    set to 'no' or `nil` means not to work recursively.
+
+**return**:
+the reversed table.
 
 ##  tableutil.remove_all
 
