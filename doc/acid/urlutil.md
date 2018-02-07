@@ -7,11 +7,12 @@
 - [Description](#description)
 - [Synopsis](#synopsis)
 - [Methods](#methods)
-  - [urlutil.url_escape](#url-escape)
-  - [urlutil.url_escape_plus](#url-escape-plus)
-  - [urlutil.url_unescape](#url-unescape)
-  - [urlutil.url_unescape_plus](#url-unescape-plus)
-  - [urlutil.url_parse](#url-parse)
+  - [urlutil.url-escape](#urlutilurl-escape)
+  - [urlutil.url-escape-plus](#urlutilurl-escape-plus)
+  - [urlutil.url-unescape](#urlutilurl-unescape)
+  - [urlutil.url-unescape-plus](#urlutilurl-unescape-plus)
+  - [urlutil.url-parse](#urlutilurl-parse)
+  - [urlutil.normalize_uri](#urlutilnormalize_uri)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
 
@@ -71,7 +72,7 @@ end
 
 #   Methods
 
-##  url-escape
+##  urlutil.url_escape
 
 **syntax**:
 `escaped_str, err, errmsg = url_escape(str, safe)`
@@ -91,7 +92,7 @@ underscore and hyphen.
 **return**:
 The url escaped string.
 
-##  url-escape-plus
+##  urlutil.url_escape_plus
 
 **syntax**:
 `escaped_str, err, errmsg = url_escape_plus(str, safe)`
@@ -110,7 +111,7 @@ Same as url_escape, except that encode space to '+' instead of '%20'.
 **return**:
 The url escaped string.
 
-##  url-unescape
+##  urlutil.url_unescape
 
 **syntax**:
 `unescaped_str, err, errmsg = url_unescape(str)`
@@ -123,7 +124,7 @@ The url escaped string.
 **return**:
 The unescaped string.
 
-##  url-unescape-plus
+##  urlutil.url_unescape_plus
 
 **syntax**:
 `unescaped_str, err, errmsg = url_unescape_plus(str)`
@@ -136,7 +137,7 @@ The unescaped string.
 **return**:
 The unescaped string.
 
-##  url-parse
+##  urlutil.url_parse
 
 **syntax**:
 `r, err, errmsg = url_parse(url)`
@@ -151,6 +152,24 @@ A table contains fields: 'scheme', 'user', 'password', 'host', 'port',
 'path', 'params', 'query', 'fragment', all of then are string type.
 If the corresponding component does not exists, the corresponding
 field is an empty string.
+
+
+##  urlutil.normalize_uri
+
+**syntax**:
+`normalize_uri(uri)`
+
+This function do two things:
+Remove redundant trailing slash.
+Resolve references to relative path components “.” and “..”.
+**arguments**:
+
+-   `uri`:
+    it should be like '/a/b/c'.
+
+**return**:
+The uri normalized string.
+
 
 #   Author
 

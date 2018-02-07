@@ -109,5 +109,40 @@ function _M.build_query(args)
     return query_string
 end
 
+function _M.normalize_uri(uri)
+
+    local path_query = strutil.split(uri, '?', { plain = true, maxsplit = 1 })
+
+    local segments = strutil.split(path_query[1], '/')
+
+    local valid_segements = { '' }
+
+    for _, segment in ipairs(segments) do
+
+        if segment == '' then
+        elseif segment == '.' then
+        elseif segment == '..' then
+            if #valid_segements > 1 then
+                table.remove(valid_segements, #valid_segements)
+            end
+        else
+            table.insert(valid_segements,segment)
+        end
+    end
+
+    if #valid_segements == 1 then
+        table.insert(valid_segements,'')
+    end
+
+    local query = path_query[2]
+
+    if query ~= nil then
+        query = '?' .. query
+    else
+        query = ''
+    end
+
+    return table.concat(valid_segements, '/') .. query
+end
 
 return _M
