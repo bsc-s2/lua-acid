@@ -391,8 +391,8 @@ function test.sync_flag(t)
     end
 
     test.dd(times)
-    t:eq(true, times.no_integrity < times.file_integrity / 10)
-    t:eq(true, times.no_integrity < times.data_integrity / 10)
+    t:eq(true, times.no_integrity < times.file_integrity / 2)
+    t:eq(true, times.no_integrity < times.data_integrity / 2)
 end
 
 
@@ -545,7 +545,7 @@ function test.fdatasync(t)
     test.dd(sync_time)
     t:eq(nil, err, errmsg)
 
-    t:eq(true, sync_time > write_time * 10)
+    t:eq(true, sync_time > write_time * 2)
 
     os.remove(test_path)
 end
