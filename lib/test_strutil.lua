@@ -307,6 +307,85 @@ function test.endswith(t)
 end
 
 
+function test.contains(t)
+    for _, str, sub_str, opts, expected, desc in t:case_iter(4, {
+        { '',   '',                nil, true,  },
+        { 'a',  '',                nil, true,  },
+        { 'a',  'b',               nil, false, },
+        { 'ab', 'b',               nil, true,  },
+        { 'ab', 'ab',              nil, true,  },
+        { 'ab', 'bc',              nil, false, },
+        { 'xab', {'12','ab','cd'}, nil, true,  },
+        { 'xab', {'12','AB','cd'}, nil, false, },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            nil,
+            true,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {'12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\'},
+            {logic='and'},
+            true,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {'12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\'},
+            {logic='or'},
+            true,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {'12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\', 'foo'},
+            {logic='or'},
+            true,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {'12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\', 'foo'},
+            {logic='and'},
+            false,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            '$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {start_index=2, end_index=300},
+            true,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            '$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {start_index=10, end_index=300},
+            false,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            'foo$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {},
+            false,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {'\\', '+-='},
+            {logic='and', start_index=1, end_index=100 },
+            true,
+        },
+        {
+            '12ab!@#$%^&*()_+-=~`?.,<>:;"[]{}\'\\',
+            {'\'', '\\', '[]{}', '<>:', '()_+-=~`'},
+            {logic='and'},
+            true,
+        },
+    }) do
+
+        local rst = strutil.contains(str, sub_str, opts)
+
+        t:eq(expected, rst, desc)
+    end
+end
+
+
 function test.to_str(t)
 
     -- simplified test. underlaying repr.str() has been tested in test_repr.lua

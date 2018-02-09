@@ -248,6 +248,38 @@ function _M.endswith(str, suffix)
 end
 
 
+function _M.contains(str, sub_str, opts)
+    if opts == nil then
+        opts = {}
+    end
+
+    if type(sub_str) == 'string' then
+        sub_str = {sub_str}
+    end
+
+    local start_index = opts.start_index or 1
+    local end_index = opts.end_index or #str
+
+    str = string.sub(str, start_index, end_index)
+
+    if opts.logic == 'and' then
+        for _, sub_string in ipairs(sub_str) do
+            if string.find(str, sub_string, 1, true) == nil then
+                return false
+            end
+        end
+        return true
+    else
+        for _, sub_string in ipairs(sub_str) do
+            if string.find(str, sub_string, 1, true) ~= nil then
+                return true
+            end
+        end
+        return false
+    end
+end
+
+
 function _M.to_str(...)
 
     local argsv = {...}
