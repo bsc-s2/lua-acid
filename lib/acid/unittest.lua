@@ -389,7 +389,10 @@ function _M.ngx_test_modules(module_names, opts)
 
     _M.debug = opts.debug or false
 
-    pcall(_test_modules, module_names)
+    local ok, err = pcall(_test_modules, module_names)
+    if not ok then
+        _M.output('failed to run _test_modules: ' .. err)
+    end
 end
 
 
