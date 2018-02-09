@@ -391,8 +391,7 @@ function _M.ngx_test_modules(module_names, opts)
 
     local ok, err = pcall(_test_modules, module_names)
     if not ok then
-        local errmsg = 'failed to run _test_modules: ' .. err
-        _M.output(errmsg)
+        _M.output('failed to run _test_modules: ' .. err)
     end
 end
 
