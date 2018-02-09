@@ -248,6 +248,52 @@ function _M.endswith(str, suffix)
 end
 
 
+local function _contains(str, sub_str)
+    local str_hex = _M.tohex(str)
+    local sub_str_hex = _M.tohex(sub_str)
+
+    local mathed = string.match(str_hex, sub_str_hex)
+
+    if mathed == sub_str_hex then
+        return true
+    end
+
+    return false
+end
+
+
+function _M.contains(str, sub_str, opts)
+    if opts == nil then
+        opts = {}
+    end
+
+    if type(sub_str) == 'string' then
+        sub_str = {sub_str}
+    end
+
+    local start_index = opts.start_index or 1
+    local end_index = opts.end_index or #str
+
+    str = string.sub(str, start_index, end_index)
+
+    if opts.logic == 'and' then
+        for _, sub_string in ipairs(sub_str) do
+            if not _contains(str, sub_string) then
+                return false
+            end
+        end
+        return true
+    else
+        for _, sub_string in ipairs(sub_str) do
+            if _contains(str, sub_string) then
+                return true
+            end
+        end
+        return false
+    end
+end
+
+
 function _M.to_str(...)
 
     local argsv = {...}

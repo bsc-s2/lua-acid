@@ -18,6 +18,7 @@
   - [strutil.rsplit](#strutilrsplit)
   - [strutil.split](#strutilsplit)
   - [strutil.startswith](#strutilstartswith)
+  - [strutil.contains](#strutilcontains)
   - [strutil.strip](#strutilstrip)
   - [strutil.to_chunks](#strutilto_chunks)
   - [strutil.to_str](#strutilto_str)
@@ -337,6 +338,44 @@ See also: `strutil.endswith`.
 **return**:
 bool
 
+##  strutil.contains
+
+**syntax**:
+`strutil.contains(str, sub_str, opts)`
+
+Return `true` if `str` contains `sub_str`,
+`false` otherwise.
+
+**arguments**:
+
+-   `str`:
+    is a string.
+
+-   `sub_str`:
+     sub string or a table of sub strings to try.
+
+-   `opts`:
+    is a table contains any of the following fields.
+
+    - `logic`:
+        when `sub_str` is a table, set `logic` to 'and' means
+        that only return `true` if `str` contains all items in table
+        `sub_str`, set to 'or' means that return `true` if `str`
+        contains any item in table `sub_str`. If `sub_str` is not a
+        table, value of `logic` is ignored.
+
+    - `start_index`:
+        is the position to start test.
+
+        By default it is 1: to test from the first char.
+
+    - `end_index`:
+        is the position to end test.
+
+        By default it is the length of `str`.
+
+**return**:
+bool
 
 ##  strutil.strip
 
