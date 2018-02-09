@@ -392,11 +392,7 @@ function _M.ngx_test_modules(module_names, opts)
     local ok, err = pcall(_test_modules, module_names)
     if not ok then
         local errmsg = 'failed to run _test_modules: ' .. err
-        if ngx ~= nil then
-            ngx.log(ngx.ERR, errmsg)
-        else
-            print(errmsg)
-        end
+        _M.output(errmsg)
     end
 end
 
