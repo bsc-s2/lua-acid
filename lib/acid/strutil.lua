@@ -249,16 +249,12 @@ end
 
 
 local function _contains(str, sub_str)
-    local str_hex = _M.tohex(str)
-    local sub_str_hex = _M.tohex(sub_str)
-
-    local mathed = string.match(str_hex, sub_str_hex)
-
-    if mathed == sub_str_hex then
-        return true
+    local start = string.find(str, sub_str, 1, true)
+    if start == nil then
+        return false
     end
 
-    return false
+    return true
 end
 
 
