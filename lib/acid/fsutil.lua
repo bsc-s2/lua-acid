@@ -254,7 +254,7 @@ function _M.write(path, data, mode)
         return nil, err, errmsg
     end
 
-    local _, err, errmsg = file:write(data, {write_all=true, max_try_n=3})
+    local _, err, errmsg = file:write(data, {retry=true, max_try_n=3})
     if err ~= nil then
         file:close()
         return nil, err, errmsg

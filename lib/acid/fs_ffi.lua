@@ -274,7 +274,7 @@ function _M.write(self, data, opts)
         data = string.sub(data, written + 1)
 
         if #data == 0 then
-            return nil, nil, nil
+            return total_size, nil, nil
         end
 
         if opts.retry_sleep_time ~= nil then
