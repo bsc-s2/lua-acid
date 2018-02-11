@@ -248,16 +248,6 @@ function _M.endswith(str, suffix)
 end
 
 
-local function _contains(str, sub_str)
-    local start = string.find(str, sub_str, 1, true)
-    if start == nil then
-        return false
-    end
-
-    return true
-end
-
-
 function _M.contains(str, sub_str, opts)
     if opts == nil then
         opts = {}
@@ -274,14 +264,14 @@ function _M.contains(str, sub_str, opts)
 
     if opts.logic == 'and' then
         for _, sub_string in ipairs(sub_str) do
-            if not _contains(str, sub_string) then
+            if string.find(str, sub_string, 1, true) == nil then
                 return false
             end
         end
         return true
     else
         for _, sub_string in ipairs(sub_str) do
-            if _contains(str, sub_string) then
+            if string.find(str, sub_string, 1, true) ~= nil then
                 return true
             end
         end
