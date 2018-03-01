@@ -81,7 +81,7 @@ function test.t02_missing_async_fetch(t)
 end
 
 
-function test.t03_expire_time(t)
+function test.t03_expire_time_sync(t)
     local update_handler = {
         get_latest = function(_, _) return {value='foo'} end,
     }
@@ -103,7 +103,32 @@ function test.t03_expire_time(t)
     ngx.sleep(3.2)
     local cache_value, _, _ = cache:get(cache_key)
     t:eq('foo', cache_value.value, 'value is not foo')
-    t:eq('too_stale', cache_value.status, 'status is not to_stale')
+    t:eq('hit', cache_value.status, 'status is not hit')
+end
+
+function test.t03_expire_time_async(t)
+    local update_handler = {
+        get_latest = function(_, _) return {value='foo'} end,
+    }
+    local cache = async_cache.new('test_shared', 'shared_dict_lock',
+                                  'test_service', update_handler,
+                                  {cache_expire_time=1, max_stale_time=1, async_fetch=true})
+
+    local cache_key = get_random_string()
+
+    local cache_value, _, _ = cache:get(cache_key)
+    t:eq(nil, cache_value.value, 'value is not nil')
+    t:eq('missing', cache_value.status, 'status is not missing')
+
+    ngx.sleep(1.2)
+    local cache_value, _, _ = cache:get(cache_key)
+    t:eq('foo', cache_value.value, 'value is not foo')
+    t:eq('stale', cache_value.status, 'status is not stale')
+
+    ngx.sleep(3.2)
+    local cache_value, _, _ = cache:get(cache_key)
+    t:eq('foo', cache_value.value, 'value is not foo')
+    t:eq('too_stale', cache_value.status, 'status is not too_stale')
 end
 
 

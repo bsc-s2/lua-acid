@@ -280,7 +280,7 @@ function _M.get(self, key)
             'async_cache: need to update key: %s, for status is: %s',
             key, cache_value.status))
 
-    if cache_value.status == 'missing' and self.async_fetch ~= true then
+    if (cache_value.status == 'missing' or cache_value.status == 'too_stale') and self.async_fetch ~= true then
         local value_info, err, errmsg = self:update_value_with_lock(key)
         if err ~= nil then
             return nil, err, errmsg

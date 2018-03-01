@@ -101,14 +101,27 @@ http {
 -   `opts`:
     The options table accepts the following options:
 
-    -   `cache_expire_time`: Set expire time, the default is 1200 seconds, if the value
+    -   `cache_expire_time`:
+        Set expire time, the default is 1200 seconds, if the value
         is expired, the `status` will be "stale".
 
-    -   `max_stale_time`: If the value not updated in max_stale_time after expire, the
+    -   `max_stale_time`:
+
+        Default is 120 seconds.
+
+        If the value not updated in max_stale_time after expire, the
         `status` will be "too_stale".
 
-    -   `async_fetch`: If set to true, when cache missing, return {value=nil, status='missing'}
-        immidiatly, and add a asynchronous task to fetch and cache the value.
+    -   `async_fetch`:
+
+        Default is false.
+
+        If set to true, when cache not hit, return immediately,
+        and add a asynchronous task to fetch and cache the value.
+
+        If set to false, when cache status is "too_stale" or "missing",
+        async_cache will synchronous call `get_last` and return.
+
 
 **return**:
 The cache object, In case of failure, return nil and error code and error message.
