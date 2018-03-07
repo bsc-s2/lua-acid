@@ -134,7 +134,7 @@ end
 local function serialize_sample(sample)
 
     local string_char = function(val)
-        if val == 0 then
+        if val <= 0 then
             return nil
         end
         return string.char(val)
@@ -221,7 +221,7 @@ function test.cdata_to_tbl(t)
             },
             nil,
             'OutOfRange',
-            'c error:101 was out of range'
+            'c 101 convert err, desc:101 was out of range'
         },
 
         {
@@ -238,7 +238,7 @@ function test.cdata_to_tbl(t)
             },
             nil,
             'OutOfRange',
-            'e.1.y error:101 was out of range'
+            'e.1.y 101 convert err, desc:101 was out of range'
         },
     }
 
@@ -256,6 +256,63 @@ function test.cdata_to_tbl(t)
         t:eq(errmsg_expected, errmsg)
     end
 
+    local completed_data = ffi.new('SIMPLE_123', {
+        a = 1,
+        b = ffi.new("char[10]", 'adccccc'),
+        c = 1.5,
+        d = ffiutil.str_to_clong('18446744073709551615', 'u'),
+        e = {
+            {
+                x = 10,
+                y = 10,
+                z = ffiutil.str_to_clong('18446744073709551615', 'u'),
+                f = ffiutil.tbl_to_carray("int[2]", { 1, 2 }),
+            }
+        }
+    })
+
+    local bad_schema_cases = {
+        {
+            { f = tonumber },
+            nil,
+            'UnknownError',
+        },
+
+        {
+            {
+                e = {
+                    {
+                        d = tonumber
+                    }
+                }
+            },
+
+            nil,
+            'UnknownError',
+        },
+
+        {
+            {
+                e = {
+                    d = tonumber
+                }
+            },
+
+            nil,
+            'UnknownError',
+        },
+    }
+
+    for _, case in ipairs(bad_schema_cases) do
+
+        local schema, rst_expected, err_expected = unpack(case)
+
+        local rst, err, errmsg = ffiutil.cdata_to_tbl(completed_data, schema)
+
+        t:eq(rst, rst_expected)
+        t:eq(err_expected, err)
+    end
+
 end
 
 
@@ -263,9 +320,21 @@ function test.tbl_to_cdata(t)
 
 
     local schema_tbl_to_cdata = {
+        a = tonumber,
         b = function(val) return ffiutil.tbl_to_carray('char[10]', strutil.split(val, ''), string.byte) end,
+        c = tonumber,
         d = function(val) return ffiutil.str_to_clong(val, 'u') end,
-        e = {{ z = function(val) return ffiutil.str_to_clong(val, 'u') end }},
+        e = {
+                {
+                    x = tonumber,
+                    y = tonumber,
+                    z = function(val) return ffiutil.str_to_clong(val, 'u') end,
+                    f = {
+                        tonumber,
+                        tonumber,
+                    },
+                }
+        },
     }
 
     local cases = {
@@ -298,7 +367,7 @@ function test.tbl_to_cdata(t)
             },
             nil,
             'InvalidArgument',
-            'd error:184a46744073709551615 was not a valid number string'
+            'd 184a46744073709551615 convert err, desc:184a46744073709551615 was not a valid number string'
         },
 
         {
@@ -311,7 +380,40 @@ function test.tbl_to_cdata(t)
             },
             nil,
             'InvalidArgument',
-            'e.1.z error:1a00 was not a valid number string'
+            'e.1.z 1a00 convert err, desc:1a00 was not a valid number string'
+        },
+
+        {
+            {},
+            nil,
+            'KeyError',
+            'schema required key:a not in tbl'
+        },
+
+        {
+            {
+                a = 1,
+                b = 'adccccc',
+                c = 1.5,
+                d = '18446744073709551615',
+                e = {}
+            },
+            nil,
+            'KeyError',
+            'schema required key:e.1.f.1 not in tbl'
+        },
+
+        {
+            {
+                a = 1,
+                b = 'adccccc',
+                c = 1.5,
+                d = '18446744073709551615',
+                e = {{f={1}}}
+            },
+            nil,
+            'KeyError',
+            'schema required key:e.1.f.2 not in tbl'
         },
 
     }
@@ -321,7 +423,7 @@ function test.tbl_to_cdata(t)
         local inp, rst_expected, err_expected, errmsg_expected = t:unpack(case)
         local rst, err, errmsg = ffiutil.tbl_to_cdata("SIMPLE_123", inp, schema_tbl_to_cdata)
         if rst ~=nil then
-            t:eqdict(rst_expected,serialize_sample(rst))
+            t:eqdict(rst_expected, serialize_sample(rst))
         else
             t:eq(rst_expected,rst)
         end

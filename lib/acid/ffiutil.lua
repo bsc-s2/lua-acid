@@ -81,63 +81,87 @@ function _M.tbl_to_carray(ctype, tbl, converter)
     return ffi.new(ctype, new_tbl), nil, nil
 end
 
-function _M.cdata_to_tbl(cdata, schema)
+local function _idx_lua_to_c(ks)
+    local cdata_ks = tableutil.dup(ks)
+    for k, v in ipairs(ks) do
+        if type(v) == 'number' then
+            cdata_ks[k] = v - 1
+        end
+    end
+    return cdata_ks
+end
+
+local function _cdata_get(cdata, ks)
+    local node = cdata
+    for _, v in ipairs(ks) do
+        node = node[v]
+    end
+    return node
+end
+
+local function _cdata_to_tbl(cdata, schema)
 
     local tbl = {}
 
-    for k, v in pairs(schema) do
+    for ks, v in tableutil.depth_iter(schema) do
 
-        local index = k
+        local cdata_ks = _idx_lua_to_c(ks)
+        local cdata_v = _cdata_get(cdata, cdata_ks)
 
-        if type(k) == 'number' then
-            index = k - 1
-        end
+        local str_key_path = table.concat(ks, '.')
 
-        if type(v) == 'table' then
-
-            local rst, err, errmsg = _M.cdata_to_tbl(cdata[index], v)
-            if err ~= nil then
-                return nil, err, string.format('%s.%s', k, errmsg)
-            end
-            tbl[k] = rst
-
+        if type(v) == 'number' or type(v) == 'boolean' or type(v) == 'string' then
+            tableutil.set(tbl, ks, v)
         elseif type(v) == 'function' then
-
-            local rst, err, errmsg = v(cdata[index])
+            local rst, err, errmsg = v(cdata_v)
             if err ~= nil then
-                return nil, err, string.format('%s error:%s', k, errmsg)
+                return nil, err, string.format('%s %s convert err, desc:%s', str_key_path, tostring(cdata_v), errmsg)
             end
-            tbl[k] = rst
-
-        elseif type(v) == 'number' or type(v) == 'boolean' or type(v) == 'string' then
-            tbl[k] = v
+            tableutil.set(tbl, ks, rst)
+        else
+            return nil, 'UnsupportedType', string.format('%s type %s is unsupported', str_key_path, type(v))
         end
     end
 
     return tbl, nil, nil
 end
 
+function _M.cdata_to_tbl(cdata, schema)
+
+    local ok, err_or_rst, err, errmsg = pcall(_cdata_to_tbl, cdata, schema)
+
+    if not ok then
+        return nil, 'UnknownError', err_or_rst
+    end
+
+    return err_or_rst, err, errmsg
+end
+
 local function _translate_tbl(tbl, schema)
 
-    local new_tbl = tableutil.dup(tbl, true)
+    local new_tbl = {}
 
-    for k, v in pairs(schema) do
-        if type(v) == 'table' then
-            local rst, err, errmsg = _translate_tbl(new_tbl[k], v)
+    for ks, v in tableutil.depth_iter(schema) do
+        local tbl_v = tableutil.get(tbl, ks)
+
+        local str_key_path = table.concat(ks, '.')
+
+        if tbl_v == nil then
+            return nil, 'KeyError', string.format('schema required key:%s not in tbl', str_key_path)
+        end
+
+        if type(v) == 'function' then
+
+            local rst, err, errmsg = v(tbl_v)
             if err ~= nil then
-                return nil, err, string.format('%s.%s', k, errmsg)
+                return nil, err, string.format('%s %s convert err, desc:%s', str_key_path, tostring(tbl_v), errmsg)
             end
-            new_tbl[k] = rst
-        elseif type(v) == 'function' then
-            local rst, err, errmsg = v(new_tbl[k])
-            if err ~= nil then
-                return nil, err, string.format('%s error:%s', k, errmsg)
-            end
-            new_tbl[k] = rst
+            tableutil.set(new_tbl, ks, rst)
+
         elseif type(v) == 'number' or type(v) == 'boolean' or type(v) == 'string' then
-            new_tbl[k] = v
+            tableutil.set(new_tbl, ks, v)
         else
-            new_tbl[k] = new_tbl[k]
+            return nil, 'UnsupportedType', string.format('%s type %s is unsupported', str_key_path, type(v))
         end
     end
 
