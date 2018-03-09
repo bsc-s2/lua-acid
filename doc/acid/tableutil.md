@@ -423,9 +423,9 @@ the first argument `tbl` itself.
 ##  tableutil.get
 
 **syntax**:
-`tableutil.get(tbl, keys)`
+`tableutil.get(tbl, key_path)`
 
-Get the value **by key path** `keys` in table `tbl` if found.
+Get the value **by key path** `key_path` in table `tbl` if found.
 Or return `nil` and error message.
 See more detail about **key path** at [tableutil.contains](#tableutilcontains).
 
@@ -446,20 +446,19 @@ print(tableutil.get(tbl, keys))
 -   `tbl`:
     is a table.
 
--   `keys`:
-    is a string **key path** of table `tbl`.
-    For example, there is a table `a = {x={y=3}}`, key path `x.y` is used
-    to access `3`.
+-   `key_path`:
+    can be string or table.
+    Example: `'foo.bar'` or `{'foo','bar'}` is same as `tbl["foo"]["bar"]`.
 
 **return**:
-the value `keys` access to if found in `tbl`. Or nil and error message.
+the value `key_path` access to if found in `tbl`. Or nil and error message.
 
 ##  tableutil.set
 
 **syntax**:
-`tableutil.set(tbl, keys, value, opts)`
+`tableutil.set(tbl, key_path, value, opts)`
 
-Set the value **by key path** `keys` in table `tbl`.
+Set the value **by key path** `key_path` in table `tbl`.
 See more detail about **key path** at [tableutil.contains](#tableutilcontains).
 
 **Usage**
@@ -483,8 +482,9 @@ print(tableutil.set({x={y=1}}, 'x.y', {z=123}, {override=true}))
 -   `tbl`:
     is a table.
 
--   `keys`:
-    is a string **key path** of table `tbl` to set.
+-   `key_path`:
+    can be string or table.
+    Example: `'foo.bar'` or `{'foo','bar'}` is same as `tbl["foo"]["bar"]`.
 
 -   `value`:
     is the value to set.

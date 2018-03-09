@@ -475,12 +475,16 @@ function _M.is_empty(tbl)
 end
 
 
-function _M.get(tbl, keys)
+function _M.get(tbl, key_path)
 
     local node = tbl
     local prefix = ''
 
-    local ks = strutil.split(keys, '[.]')
+    local ks = key_path
+
+    if type(key_path) == 'string' then
+        ks = strutil.split(key_path, '[.]')
+    end
 
     for _, k in ipairs(ks) do
 
@@ -492,7 +496,7 @@ function _M.get(tbl, keys)
             return nil, 'NotTable', 'found non-table field: ' .. prefix
         end
         node = node[k]
-        prefix = prefix .. '.' .. k
+        prefix = prefix .. '.' .. strutil.to_str(k)
     end
 
     return node, nil, nil
@@ -512,7 +516,12 @@ function _M.set(tbl, key_path, value, opts)
 
     local prefix = ''
 
-    local ks = strutil.split(key_path, '[.]')
+    local ks = key_path
+
+    if type(key_path) == 'string' then
+        ks = strutil.split(key_path, '[.]')
+    end
+
     local ks_n = #ks
 
     for i = 1, ks_n do
@@ -524,12 +533,12 @@ function _M.set(tbl, key_path, value, opts)
                 return tbl, nil, nil
             else
                 return nil, 'KeyPathExist', string.format(
-                        'key path: %s.%s already exist', prefix, last_k)
+                        'key path: %s.%s already exist', prefix, strutil.to_str(last_k))
             end
         end
 
         local k = ks[i]
-        prefix = prefix .. '.' .. k
+        prefix = prefix .. '.' .. strutil.to_str(k)
 
         if node[k] == nil then
             node[k] = {}

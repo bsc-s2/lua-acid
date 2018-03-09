@@ -267,18 +267,18 @@ local testfuncs = {
         local bkeys = _keys( b )
 
         for _, k in ipairs( akeys ) do
-            self:ass( b[k] ~= nil, '["' .. k .. '"] in right but not. '.. mes )
+            self:ass( b[k] ~= nil, '["' .. to_str(k) .. '"] in right but not. '.. mes )
         end
         for _, k in ipairs( bkeys ) do
-            self:ass( a[k] ~= nil, '["' .. k .. '"] in left but not. '.. mes )
+            self:ass( a[k] ~= nil, '["' .. to_str(k) .. '"] in left but not. '.. mes )
         end
         for _, k in ipairs( akeys ) do
             local av, bv = a[k], b[k]
             if type( av ) == 'table' and type( bv ) == 'table' then
-                self:eqdict( av, bv, k .. '<' .. mes )
+                self:eqdict( av, bv, to_str(k) .. '<' .. mes )
             else
                 self:ass( a[k] == b[k],
-                '["' .. k .. '"] to be ' .. to_str(a[k]) .. ' but is ' .. to_str(b[k]), mes )
+                '["' .. to_str(k) .. '"] to be ' .. to_str(a[k]) .. ' but is ' .. to_str(b[k]), mes )
             end
         end
 
