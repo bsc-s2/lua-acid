@@ -1,11 +1,17 @@
 local bisect = require('acid.bisect')
-local conf_util = require('acid.dbagent.conf_util')
+local dbagent_conf = require('dbagent_conf')
 local tableutil = require('acid.tableutil')
+local upstream_conf = require('acid.dbagent.upstream_conf')
 
 local repr = tableutil.repr
 
 local _M = {}
 
+local upstream_config, err, errmsg = upstream_conf.new(
+        dbagent_conf.fetch_upstream_conf)
+
+assert(err == nil, string.format('failed to new upstream conf: %s, %s',
+                                 err, errmsg))
 
 local function cmp_shard(shard_fields_value, shard)
     return tableutil.cmp_list(shard_fields_value, shard.from)
@@ -44,15 +50,7 @@ function _M.get_upstream(api_ctx)
         table.insert(shard_fields_value, api_ctx.args[field_name])
     end
 
-    if conf_util.conf == nil then
-        ngx.log(ngx.INFO, 'conf ##: conf not inited, init conf first')
-        local _, err, errmsg = conf_util.init_conf()
-        if err ~= nil then
-            return nil, err, errmsg
-        end
-    end
-
-    api_ctx.conf = conf_util.conf.value
+    api_ctx.conf = upstream_config.conf.value
 
     local shard, err, errmsg = get_shard(api_ctx.conf, api_ctx.subject,
                                          shard_fields_value)

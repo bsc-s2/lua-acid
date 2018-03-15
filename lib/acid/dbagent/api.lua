@@ -2,7 +2,7 @@ local api_util = require('acid.dbagent.api_util')
 local arg_util = require('acid.dbagent.arg_util')
 local convertor = require('acid.dbagent.convertor')
 local json = require('acid.json')
-local model_module = require('acid.dbagent.model_module')
+local model_util = require('acid.dbagent.model_util')
 local mysql_util = require('acid.dbagent.mysql_util')
 local sql_util = require('acid.dbagent.sql_util')
 local tableutil = require('acid.tableutil')
@@ -26,7 +26,7 @@ local function _do_api(api_ctx)
                 'failed to extract request info: %s, %s', err, errmsg)
     end
 
-    local _, err, errmsg = model_module.pick_model(api_ctx)
+    local _, err, errmsg = model_util.pick_model(api_ctx)
     if err ~= nil then
         return nil, 'PickModelError', string.format(
                 'failed to pick model: %s, %s', err, errmsg)
