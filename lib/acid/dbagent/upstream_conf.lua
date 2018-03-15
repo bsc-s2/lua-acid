@@ -36,7 +36,7 @@ function _M.fetch_conf_safe(self)
 end
 
 
-function new(fetch_conf)
+function _M.new(fetch_conf)
     local self = {
         fetch_conf = fetch_conf,
         conf = nil,
