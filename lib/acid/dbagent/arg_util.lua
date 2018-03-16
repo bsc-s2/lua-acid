@@ -174,8 +174,8 @@ end
 local function shape_check(args, action_model)
     local args_copy = tableutil.dup(args, true)
 
-    for _, params in pairs(action_model.valid_param) do
-        for param_name, required in pairs(params) do
+    for _, allowed_params in pairs(action_model.param) do
+        for param_name, required in pairs(allowed_params) do
             if required and args_copy[param_name] == nil then
                 return nil, 'LackArgumet',
                         'lack argument: ' .. param_name
