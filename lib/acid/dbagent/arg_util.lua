@@ -134,25 +134,36 @@ function _M.set_default(api_ctx)
 end
 
 
-local function schema_check(args, subject_model)
+local function _schema_check(args, subject_model)
     for arg_name, arg_value in pairs(args) do
-        local name = arg_name
-        if strutil.startswith(arg_name, '-') then
-            name = string.sub(arg_name, 2)
-        end
+        local param_model = subject_model.fields[arg_name]
 
-        local param_model = subject_model.fields[name]
-        if param_model == nil then
-            return true, nil, nil
+        if param_model ~= nil then
+            local _, err, errmsg = arg_schema_checker.do_check(
+                    arg_value, param_model.checker)
+            if err ~= nil then
+                return nil, 'InvalidArgument', string.format(
+                        'failed to check schema of: %s, %s, %s, %s, %s',
+                        arg_name, tostring(arg_value),
+                        to_str(param_model.checker), err, errmsg)
+            end
         end
+    end
 
-        local _, err, errmsg = arg_schema_checker.do_check(
-                arg_value, param_model.checker)
+    return true, nil, nil
+end
+
+
+local function schema_check(args, subject_model)
+    local _, err, errmsg = _schema_check(args, subject_model)
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    if args.match ~= nil then
+        local _, err, errmsg = _schema_check(args.match, subject_model)
         if err ~= nil then
-            return nil, 'InvalidArgument', string.format(
-                    'failed to check schema of: %s, %s, %s, %s, %s',
-                    arg_name, tostring(arg_value),
-                    to_str(param_model.checker), err, errmsg)
+            return nil, err, errmsg
         end
     end
 
