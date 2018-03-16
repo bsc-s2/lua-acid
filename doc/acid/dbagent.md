@@ -6,57 +6,62 @@
 - [Status](#status)
 - [Description](#description)
 - [Synopsis](#synopsis)
+- [dbagent_conf module](#dbagent_conf-module)
+  - [dbagent_conf.get_upstream_conf](#dbagent_confget_upstream_conf)
+    - [tables](#tables)
+      - [tables[table_name][n].from](#tablestable_namenfrom)
+      - [tables[table_name][n].db](#tablestable_namendb)
+    - [dbs](#dbs)
+      - [dbs[db_name].r](#dbsdb_namer)
+      - [dbs[db_name].w](#dbsdb_namew)
+    - [connections](#connections)
+      - [connections[access_point].database](#connectionsaccess_pointdatabase)
+      - [connections[access_point].host](#connectionsaccess_pointhost)
+      - [connections[access_point].port](#connectionsaccess_pointport)
+      - [connections[access_point].user](#connectionsaccess_pointuser)
+      - [connections[access_point].password](#connectionsaccess_pointpassword)
+  - [dbagent_conf.models](#dbagent_confmodels)
+    - [fields](#fields)
+      - [field_type](#field_type)
+      - [m](#m)
+      - [use_hex](#use_hex)
+      - [use_string](#use_string)
+      - [extra_check](#extra_check)
+      - [range](#range)
+      - [convert_method](#convert_method)
+        - [json_general](#json_general)
+        - [json_null_to_table](#json_null_to_table)
+        - [json_null_or_empty_to_null](#json_null_or_empty_to_null)
+        - [json_null_or_empty_to_table](#json_null_or_empty_to_table)
+        - [json_acl](#json_acl)
+    - [shard_fields](#shard_fields)
+    - [actions](#actions)
+      - [param](#param)
+      - [param.set_field](#paramset_field)
+      - [param.ident](#paramident)
+      - [param.index_field](#paramindex_field)
+      - [param.range](#paramrange)
+      - [param.extra](#paramextra)
+      - [param.extra.match](#paramextramatch)
+        - [param.extra.leftopen](#paramextraleftopen)
+        - [param.extra.rightopen](#paramextrarightopen)
+        - [param.extra.nlimit](#paramextranlimit)
+        - [param.extra.order_by](#paramextraorder_by)
+        - [param.extra.group_by](#paramextragroup_by)
+        - [param.extra.group_by_asc](#paramextragroup_by_asc)
+        - [param.extra.group_by_desc](#paramextragroup_by_desc)
+      - [rw](#rw)
+      - [indexes](#indexes)
+      - [default](#default)
+      - [select_field](#select_field)
+      - [query_opts](#query_opts)
 - [Methods](#methods)
-  - [init.init](#initinit)
   - [api.do_api](#apido_api)
-- [Model](#model)
-  - [fields](#fields)
-    - [field_type](#field_type)
-    - [m](#m)
-    - [no_hex](#no_hex)
-    - [no_string](#no_string)
-    - [extra_check](#extra_check)
-    - [range](#range)
-    - [convert_method](#convert_method)
-      - [json_general](#json_general)
-      - [json_null_to_table](#json_null_to_table)
-      - [json_null_or_empty_to_null](#json_null_or_empty_to_null)
-      - [json_null_or_empty_to_table](#json_null_or_empty_to_table)
-      - [json_acl](#json_acl)
-  - [shard_fields](#shard_fields)
-  - [actions](#actions)
-    - [valid_param](#valid_param)
-      - [valid_param.column](#valid_paramcolumn)
-      - [valid_param.ident](#valid_paramident)
-      - [valid_para.match](#valid_paramatch)
-      - [valid_param.index_columns](#valid_paramindex_columns)
-      - [valid_param.range](#valid_paramrange)
-      - [valid_param.extra](#valid_paramextra)
-        - [valid_param.extra.leftopen](#valid_paramextraleftopen)
-        - [valid_param.extra.rightopen](#valid_paramextrarightopen)
-        - [valid_param.extra.nlimit](#valid_paramextranlimit)
-        - [valid_param.extra.order_by](#valid_paramextraorder_by)
-        - [valid_param.extra.group_by](#valid_paramextragroup_by)
-        - [valid_param.extra.group_by_asc](#valid_paramextragroup_by_asc)
-        - [valid_param.extra.group_by_desc](#valid_paramextragroup_by_desc)
-    - [rw](#rw)
-    - [indexes](#indexes)
-    - [default](#default)
-    - [select_column](#select_column)
-    - [query_opts](#query_opts)
-- [Conf](#conf)
-  - [tables](#tables)
-  - [dbs](#dbs)
-  - [connections](#connections)
-      - [database](#database)
-      - [host](#host)
-      - [port](#port)
-      - [user](#user)
-      - [password](#password)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 #   Name
 
@@ -83,33 +88,37 @@ function _M.get_upstream_conf(curr_conf)
     end
 
     local value = {
-        connections = {
-            ['3500-1'] = {
-                database = 'test-database',
-                host = '127.0.0.1',
-                port = 3500,
-                user = 'user_name',
-                password = '123456'
-            },
-        },
-
         tables = {
-            key = {
+            employee = {
                 {
-                    from = {'1000000000000000000', '', ''},
-                    db = '3500',
+                    from = {'0000000000000000000'},
+                    db = 'my_db_0',
+                },
+                {
+                    from = {'1000000000000000000'},
+                    db = 'my_db_1',
                 },
             },
         },
 
         dbs = {
-            ['3500'] = {
+            ['my_db_0'] = {
                 r = {
-                    '3500-1',
+                    'my_db_0_slave',
                 },
                 w = {
-                    '3500-1',
+                    'my_db_0_master',
                 },
+            },
+            ...
+        },
+        connections = {
+            ['my_db_0_master'] = {
+                database = 'test-database',
+                host = '127.0.0.1',
+                port = 3500,
+                user = 'user_name',
+                password = '123456'
             },
         },
     }
@@ -125,7 +134,7 @@ end
 _M.models = {
     employee = {
         fields = {
-            id = {
+            employee_id = {
                 field_type = 'bigint',
                 m = 20,
             },
@@ -133,105 +142,42 @@ _M.models = {
                 field_type = 'varchar',
                 m = 64,
             },
-            age = {
-                field_type = 'tinyint',
-                m = 4,
-            },
-            salary = {
-                field_type = 'bigint',
-                m = 20,
-                no_string = ture,
-            },
             department = {
                 field_type = 'varchar',
                 m = 64,
             },
         },
 
-        shard_fields = {},
+        shard_fields = {'employee_id'},
 
         actions = {
-            add = {
-                rw = 'w',
-                sql_type = 'add',
-                valid_param = {
-                    column = {
-                        id = true,
-                        name = true,
-                        age = true,
-                        salary = false,
-                        department = false,
-                    },
-                },
-                default = {salary = 10000000},
-            },
             set = {
                 rw = 'w',
                 sql_type = 'set',
-                valid_param = {
-                    column = {
-                        age = false,
-                        salary = false,
-                        department = false,
+                param = {
+                    set_field = {
+                        department = true,
                     },
                     ident = {
-                        id = true,
+                        employee_id = true,
                     },
-                    match = {
-                        _department = false,
-                    },
-                },
-            },
-            remove = {
-                rw = 'w',
-                sql_type = 'remove',
-                valid_param = {
-                    ident = {
-                        id = true,
-                    },
-                    match = {
-                        _name = false,
-                        _department = false,
+                    extra = {
+                        match = false,
                     },
                 },
             },
             get = {
                 rw = 'r',
                 sql_type = 'get',
-                valid_param = {
+                param = {
                     ident = {
                         id = true,
-                        name = false,
                     },
                     select_column = {
-                        'name', 'age', 'salary', 'department',
+                        'name', 'department',
                     },
                 },
                 unpack_list = true,
-            },
-            ls = {
-                rw = 'r',
-                sql_type = 'indexed_ls',
-                indexes = {
-                    idx_id = {'id'},
-                },
-                valid_param = {
-                    index_columns = {
-                        id = true,
-                    },
-                    match = {
-                        _age = false,
-                        _name = false,
-                    },
-                },
-                extra = {
-                    leftopen = false,
-                    nlimit = false,
-                },
-                query_opts = {
-                    timeout = 3000, -- 3s
-                },
-                select_column = {'name', 'age'},
             },
         },
     },
@@ -254,24 +200,19 @@ rewrite_by_lua_block {
         ngx.log(ngx.ERR, string.format('%s:%s', error_code, error_messge))
     end
 
-    local function before_query_db(sql)
-        ngx.log(ngx.INFO, 'about to query: ' .. sql)
-    end
-
-    local function after_query_db(query_result)
-        ngx.log(ngx.INFO, 'query result: ' .. tostring(query_result))
-    end
-
     local callbacks = {
         before_connect_db = before_connect_db,
         connect_db_error = on_error,
-        before_query_db = before_query_db,
-        after_query_db = after_query_db,
-        query_db_error = on_error,
     }
 
     dbagent_api.do_api({callbacks=callbacks})
 }
+
+-- request example
+
+-- curl 'http://<ip>:<port>/api/employee/set' -X POST -d '{"employee_id":"1000000000000000123", "department":"foo"}'
+
+-- curl 'http://<ip>:<port>/api/employee/get' -X POST -d '{"employee_id":"1000000000000000123"}'
 ```
 
 #   dbagent_conf module
@@ -298,27 +239,19 @@ The upstream configuration must contains following attributes:
 Is a lua table contains sharding infomation of each database table.
 
 ```lua
-shard_fields = {'age', 'id'}
+shard_fields = {'employee_id'}
 tables = {
     employee = {
         {
-            from = {0, '0'},
-            db = 'db_0_0',
+            from = {'0000000000000000000'},
+            db = 'my_db_0',
         },
         {
-            from = {0, '1000000000'},
-            db = 'db_0_1',
+            from = {'1000000000000000000'},
+            db = 'my_db_1',
         },
-        {
-            from = {20, '0'},
-            db = 'db_1_0',
-        },
-        {
-            from = {20, '1000000000'},
-            db = 'db_1_1',
-        },
-    }
-},
+    },
+}
 
 ```
 
@@ -334,14 +267,14 @@ Specify which db this shard will locate.
 
 Specify all possible access points for each db.
 
-```
+```lua
 dbs = {
-    ['db_0_0'] = {
+    ['my_db_0'] = {
         r = {
-            'db_0_0-1', 'db_0_0-2',
+            'my_db_0_slave',
         },
         w = {
-            'db_0_0-1'
+            'my_db_0_master',
         },
     },
     ...
@@ -363,7 +296,7 @@ port, password, and so on.
 
 ```
 connections = {
-    ['db_0_0-1'] = {
+    ['my_db_0_master'] = {
         database = 'test-database',
         host = '127.0.0.1',
         port = 3500,
@@ -415,15 +348,15 @@ see [MySQL Data Tyeps](
 The length or display width of the field, used to check the input argument.
 Required.
 
-####   no_hex
+####   use_hex
 
 By default, 'varbinary' and 'binary' fields will be set and read in
-hex format, if this is not expected, set `no_hex` to `true`. Optional.
+hex format, if this is not expected, set `use_hex` to `false`. Optional.
 
-####   no_string
+####   use_string
 
 By default, 'bigint' fields will be set and read in
-string format, if this is not expected, set `no_string` to `true`.
+string format, if this is not expected, set `use_string` to `false`.
 Optional.
 
 ####   extra_check
@@ -480,70 +413,67 @@ need to do table sharding. Required.
 The supported operations on the database table. Required.
 You can define the behaviour of each operation by set following attributes:
 
-####   valid_param
+####   param
 
-The valid fields in the request. Value `true` means must be
+The allowed fields in the request. Value `true` means must be
 present in request arguments, `false` means it is optional. Required.
 
-####   valid_param.column
+####   param.set_field
 
-The fields to set, the argument value in request is the new value of
-that field.
+The fields to set or increase, the argument value in request is the new
+value or the increment of that field.
 
-####   valid_param.ident
+####   param.ident
 
 The fields that are used to identify the records that interested in.
 
-####   valid_para.match
-
-Fields used to restrict the operation, only records with field values
-equal to values specified in request are operated on or returned.
-As `valid_param.column` and `valid_param.match` may contain same field,
-so we prefix field name with a underline if this field is used to identify
-a raw and is not used to set the field value.
-
-####   valid_param.index_columns
+####   param.index_field
 
 Index fields that can be used to choose index.
 
-####   valid_param.range
+####   param.range
 
 Fields that can specify a range value in request.
 
-####   valid_param.extra
+####   param.extra
 
-Some extra parameters, such as 'leftopen', 'rightopen', 'nlimit'.
+Some extra parameters, such as 'match', 'leftopen', 'rightopen', 'nlimit'.
 
-#####   valid_param.extra.leftopen
+####   param.extra.match
+
+Specify field value to restrict the operation, only rows with field values
+equal to values specified in `match` are operated on or returned.
+
+#####   param.extra.leftopen
 
 Set to 1 corresponding to use '>', set to 0 coresponding to use '>=',
 default is 0.
 
-#####   valid_param.extra.rightopen
+#####   param.extra.rightopen
 
 Set to 1 corresponding to use '<', set to 0 coresponding to use '<=',
 default is 0.
 
-#####   valid_param.extra.nlimit
+#####   param.extra.nlimit
 
 Set number of rows to fetch.
 
-#####   valid_param.extra.order_by
+#####   param.extra.order_by
 
 Used to sort the records in result set. You can order result by several
 fields, you can also specify 'ASC' or 'DESC' for each field. Such as
 'user_age DESC, user_name ASC' means first sort in descending order by
 field 'user_age', then sort in ascending order by 'user_name'.
 
-#####   valid_param.extra.group_by
+#####   param.extra.group_by
 
 Used to group the results by one column, and return the count of each group.
 
-#####   valid_param.extra.group_by_asc
+#####   param.extra.group_by_asc
 
 If is not `nil`, then sort count in ascending order.
 
-#####   valid_param.extra.group_by_desc
+#####   param.extra.group_by_desc
 
 If is not `nil`, then sort count in descending order.
 
@@ -560,9 +490,9 @@ Specify the indexes can be used. Only required in `ls` action.
 
 Specify default value for some fields. Optional.
 
-####   select_column
+####   select_field
 
-Specify the clomuns to return if the the atction is a read operation.
+Specify the fields to return if the the atction is a read operation.
 Only required in read operation.
 
 ####   query_opts
