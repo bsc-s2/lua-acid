@@ -5,13 +5,52 @@ local upstream_conf = require('acid.dbagent.upstream_conf')
 
 local repr = tableutil.repr
 
-local _M = {}
+local _M = {
+    upstream_config = nil,
+    locked = 0,
+}
 
-local upstream_config, err, errmsg = upstream_conf.new(
-        dbagent_conf.fetch_upstream_conf)
 
-assert(err == nil, string.format('failed to new upstream conf: %s, %s',
-                                 err, errmsg))
+function _M.init_upstream_config()
+    if _M.upstream_config ~= nil then
+        return _M.upstream_config, nil, nil
+    end
+
+    for _ = 1, 100 do
+        if _M.locked == 1 then
+            ngx.sleep(0.02)
+        else
+            break
+        end
+    end
+
+    if _M.locked == 0 then
+        _M.locked = 1
+    else
+        ngx.log(ngx.ERR, 'conf ##: failed to get lock in 2 seconds')
+        return nil, 'GetLockError', 'failed to get lock'
+    end
+
+    if _M.upstream_config ~= nil then
+        _M.locked = 0
+        return _M.upstream_config, nil, nil
+    end
+
+    ngx.log(ngx.INFO, 'conf ##: init upstream config with lock')
+
+	local upstream_config, err, errmsg = upstream_conf.new(
+			dbagent_conf.fetch_upstream_conf)
+    if err ~= nil then
+        _M.locked = 0
+        return nil, err, errmsg
+    end
+
+    _M.locked = 0
+    _M.upstream_config = upstream_config
+
+    return _M.upstream_config, nil, nil
+end
+
 
 local function cmp_shard(shard_fields_value, shard)
     return tableutil.cmp_list(shard_fields_value, shard.from)
@@ -50,7 +89,12 @@ function _M.get_upstream(api_ctx)
         table.insert(shard_fields_value, api_ctx.args[field_name])
     end
 
-    api_ctx.conf = upstream_config.conf.value
+    local _, err, errmsg = _M.init_upstream_config()
+    if err ~= nil then
+        return nil, err, errmsg
+    end
+
+    api_ctx.conf = _M.upstream_config.conf.value
 
     local shard, err, errmsg = get_shard(api_ctx.conf, api_ctx.subject,
                                          shard_fields_value)

@@ -171,7 +171,7 @@ function _M.convert_result(api_ctx)
     for _, field_name in ipairs(select_column) do
         local convert_method = fields[field_name].convert_method
         if convert_method ~= nil then
-            local convert_model = convert_methods[convert_method].encode
+            local convert_model = convert_methods[convert_method]
             if convert_model == nil then
                 return nil, 'InvalidConvertMethod', string.format(
                         'convert method: %s is not supported', convert_method)
