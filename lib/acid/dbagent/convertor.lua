@@ -162,13 +162,13 @@ end
 function _M.convert_result(api_ctx)
     local query_result = api_ctx.query_result
     local fields = api_ctx.subject_model.fields
-    local select_column = api_ctx.action_model.select_column
+    local select_field = api_ctx.action_model.select_field
 
-    if select_column == nil then
+    if select_field == nil then
         return true, nil, nil
     end
 
-    for _, field_name in ipairs(select_column) do
+    for _, field_name in ipairs(select_field) do
         local convert_method = fields[field_name].convert_method
         if convert_method ~= nil then
             local convert_model = convert_methods[convert_method]
