@@ -36,7 +36,7 @@ function _M.one_work(delay, func, ...)
 end
 
 
-function _M.loop_work(interval, func, ...)
+function _M.loop(interval, func, ...)
     local opts = {
         loop_interval = interval,
         allow_premature = true,

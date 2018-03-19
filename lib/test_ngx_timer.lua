@@ -17,13 +17,13 @@ function test.one_work(t)
 end
 
 
-function test.loop_work(t)
+function test.loop(t)
     local r = {}
     local func = function(v)
         table.insert(r, v)
     end
 
-    local _, err, errmsg = ngx_timer.loop_work(0.2, func, 3)
+    local _, err, errmsg = ngx_timer.loop(0.2, func, 3)
     t:eq(nil, err, errmsg)
 
     ngx.sleep(0.5)

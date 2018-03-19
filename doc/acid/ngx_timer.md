@@ -8,7 +8,7 @@
 - [Synopsis](#synopsis)
 - [Methods](#methods)
   - [ngx_timer.one_work](#ngx_timerone_work)
-  - [ngx_timer.loop_work](#ngx_timerloop_work)
+  - [ngx_timer.loop](#ngx_timerloop)
 - [Author](#author)
 - [Copyright and License](#copyright-and-license)
 
@@ -42,7 +42,7 @@ if err ~= nil then
             'failed to setup timer: %s, %s', err, errmsg))
 end
 
-local _, err, errmsg = ngx_timer.loop_work(0.5, do_sum, 1, 2)
+local _, err, errmsg = ngx_timer.loop(0.5, do_sum, 1, 2)
 if err ~= nil then
     ngx.log(ngx.ERR, string.format(
             'failed to setup timer: %s, %s', err, errmsg))
@@ -71,10 +71,10 @@ has not expired.
 If failed to setup the timer, `nil` is returned, following error code
 and error message.
 
-##   ngx_timer.loop_work
+##   ngx_timer.loop
 
 **syntax**:
-`_, err, errmsg = ngx_timer.loop_work(interval, func, ...)`
+`_, err, errmsg = ngx_timer.loop(interval, func, ...)`
 
 Setup a timer, which will run `func` with all following arguments
 every `interval` seconds.
