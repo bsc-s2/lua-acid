@@ -190,7 +190,7 @@ return _M
 rewrite_by_lua_block {
     local dbagent_api = require('acid.dbagent.api')
 
-    local function before_connect_db(connection_info)
+    local function before_connect(connection_info)
         ngx.log(ngx.INFO, string.format('about to connect to %s:%d',
                                         connection_info.host,
                                         connection_info.port))
@@ -201,8 +201,8 @@ rewrite_by_lua_block {
     end
 
     local callbacks = {
-        before_connect_db = before_connect_db,
-        connect_db_error = on_error,
+        before_connect = before_connect,
+        connect_error = on_error,
     }
 
     dbagent_api.do_api({callbacks=callbacks})
@@ -505,7 +505,8 @@ Optional.
 ##  api.do_api
 
 Processing client request, query datebase according to the model
-of each datebase table, and return query result.
+of each datebase table, and return query result. If falied to query
+database, it will retry 2 times.
 
 **syntax**:
 `do_api(opts)`
@@ -518,24 +519,24 @@ of each datebase table, and return query result.
     -   `callbacks`: a table contains any of following callback functions.
         Optional.
 
-        - `before_connect_db`: called just before connecting mysql,
+        - `before_connect`: called just before connecting mysql,
            the argument is a table contains 'host' and 'port' of the
            database about to connect.
 
-        - `after_connect_db`: called when connected database,
-           the argument is the same as `before_connect_db`.
+        - `after_connect`: called when connected database,
+           the argument is the same as `before_connect`.
 
-        - `connect_db_error`: called when failed to connect database,
+        - `connect_error`: called when failed to connect database,
            the argument is the error code and the error messge.
 
-        - `before_query_db`: called just before querying,
+        - `before_query`: called just before querying,
            the argument is the sql about to query.
 
-        - `after_query_db`: called when finished to query,
+        - `after_query`: called when finished to query,
            the argument is the query result returned by `ngx.mysql`.
 
-        - `query_db_error`: called when failed to do query,
-           the argument is the same as `connect_db_error`.
+        - `query_error`: called when failed to do query,
+           the argument is the same as `connect_error`.
 
 **return**:
 this function do not return.
