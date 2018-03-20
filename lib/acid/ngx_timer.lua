@@ -23,7 +23,7 @@ local function callback(premature, opts, func, ...)
 end
 
 
-function _M.one_work(delay, func, ...)
+function _M.at(delay, func, ...)
     local opts = {
         allow_premature = true,
     }
@@ -36,7 +36,7 @@ function _M.one_work(delay, func, ...)
 end
 
 
-function _M.loop(interval, func, ...)
+function _M.every(interval, func, ...)
     local opts = {
         loop_interval = interval,
         allow_premature = true,
@@ -48,5 +48,6 @@ function _M.loop(interval, func, ...)
 
     return true, nil, nil
 end
+
 
 return _M

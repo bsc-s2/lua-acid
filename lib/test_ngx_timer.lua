@@ -1,7 +1,7 @@
 local ngx_timer = require('acid.ngx_timer')
 
 
-function test.one_work(t)
+function test.at(t)
     local r = {}
     local func = function(a, b, c)
         table.insert(r, a)
@@ -9,7 +9,7 @@ function test.one_work(t)
         table.insert(r, c)
     end
 
-    local _, err, errmsg = ngx_timer.one_work(0.1, func, 1, 2, 3)
+    local _, err, errmsg = ngx_timer.at(0.1, func, 1, 2, 3)
     t:eq(nil, err, errmsg)
 
     ngx.sleep(0.5)
@@ -17,13 +17,13 @@ function test.one_work(t)
 end
 
 
-function test.loop(t)
+function test.every(t)
     local r = {}
     local func = function(v)
         table.insert(r, v)
     end
 
-    local _, err, errmsg = ngx_timer.loop(0.2, func, 3)
+    local _, err, errmsg = ngx_timer.every(0.2, func, 3)
     t:eq(nil, err, errmsg)
 
     ngx.sleep(0.5)
