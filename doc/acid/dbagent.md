@@ -22,8 +22,7 @@
       - [connections[access_point].password](#connectionsaccess_pointpassword)
   - [dbagent_conf.models](#dbagent_confmodels)
     - [fields](#fields)
-      - [field_type](#field_type)
-      - [m](#m)
+      - [data_type](#data_type)
       - [use_hex](#use_hex)
       - [use_string](#use_string)
       - [extra_check](#extra_check)
@@ -37,7 +36,7 @@
     - [shard_fields](#shard_fields)
     - [actions](#actions)
       - [param](#param)
-      - [param.set_field](#paramset_field)
+      - [param.allowed_field](#paramallowed_field)
       - [param.ident](#paramident)
       - [param.index_field](#paramindex_field)
       - [param.range](#paramrange)
@@ -136,15 +135,12 @@ _M.models = {
         fields = {
             employee_id = {
                 field_type = 'bigint',
-                m = 20,
             },
             name = {
                 field_type = 'varchar',
-                m = 64,
             },
             department = {
                 field_type = 'varchar',
-                m = 64,
             },
         },
 
@@ -309,23 +305,23 @@ connections = {
 
 ####   connections[access_point].database
 
-The database name.
+The MySQL database name.
 
 ####   connections[access_point].host
 
-The ip address of the database access point.
+The host name for the MySQL server.
 
 ####   connections[access_point].port
 
-The port of the database access point.
+The port that the MySQL server is listening on.
 
 ####   connections[access_point].user
 
-The user name used to access the database.
+MySQL account name for login.
 
 ####   connections[access_point].password
 
-The password used to access the database.
+MySQL account password for login (in clear text).
 
 ##   dbagent_conf.models
 
@@ -337,41 +333,32 @@ a model module for each database table.
 Set the attributes of each field in a database table.
 Following is all attributes you can set.
 
-####   field_type
+####   data_type
 
-Set the type of the field, such as 'bigint', 'varbinary' and so on. Required.
+Set the data type of the field, such as 'bigint', 'varbinary' and so on. Required.
 see [MySQL Data Tyeps](
 'https://dev.mysql.com/doc/refman/5.7/en/data-types.html')
 
-####   m
-
-The length or display width of the field, used to check the input argument.
-Required.
-
 ####   use_hex
 
-By default, 'varbinary' and 'binary' fields will be set and read in
-hex format, if this is not expected, set `use_hex` to `false`. Optional.
+A boolean to specify whether the field should be set and read in
+hex format when the date type is 'binary' or 'varbinary'. Default to `true`.
 
 ####   use_string
 
-By default, 'bigint' fields will be set and read in
-string format, if this is not expected, set `use_string` to `false`.
-Optional.
+A boolean to specify whether the field should be set and read in
+string format when the data type is 'bigint'. Default to `true`.
 
 ####   extra_check
 
 By default we will do some general check of the field value according
-to `field_type` of the field, you can specify more specific check
+to `data_type` of the field, you can specify more specific check
 by `extra_check`. Optional.
 
 ####   range
 
 Set to `true` if this field can be used to specify range value in a
-request, the range value is a string, contains two normal field value,
-seprated by a comma. For example, if field value of 'd' in request is
-'1000,2000', then, '`d` >= 1000 AND `d` <= 2000' will be added to the
-select sql. Optional.
+request. Default to `false`.
 
 ####   convert_method
 
@@ -418,10 +405,10 @@ You can define the behaviour of each operation by set following attributes:
 The allowed fields in the request. Value `true` means must be
 present in request arguments, `false` means it is optional. Required.
 
-####   param.set_field
+####   param.allowed_field
 
-The fields to set or increase, the argument value in request is the new
-value or the increment of that field.
+The fields to insert or to set or to increase, the argument value in
+request is the new value or the increment of that field.
 
 ####   param.ident
 
@@ -441,8 +428,8 @@ Some extra parameters, such as 'match', 'leftopen', 'rightopen', 'nlimit'.
 
 ####   param.extra.match
 
-Specify field value to restrict the operation, only rows with field values
-equal to values specified in `match` are operated on or returned.
+Specify field value to restrict the operation, only rows with fields value
+equal to fields value specified in `match` are operated on or returned.
 
 #####   param.extra.leftopen
 
@@ -456,26 +443,25 @@ default is 0.
 
 #####   param.extra.nlimit
 
-Set number of rows to fetch.
+Set limit of the number of rows that will be affected or fetched.
 
 #####   param.extra.order_by
 
-Used to sort the records in result set. You can order result by several
-fields, you can also specify 'ASC' or 'DESC' for each field. Such as
-'user_age DESC, user_name ASC' means first sort in descending order by
-field 'user_age', then sort in ascending order by 'user_name'.
+A lua table used to specify a list of fields to order by, each list
+element contains two elements, field name and order type('ASC' or 'DESC').
+Optional. It is used to produce SQL ORDER BY clause.
 
 #####   param.extra.group_by
 
-Used to group the results by one column, and return the count of each group.
+Used to specify the name of field to group by.
 
 #####   param.extra.group_by_asc
 
-If is not `nil`, then sort count in ascending order.
+If is not `nil`, then sort rows in ascending order.
 
 #####   param.extra.group_by_desc
 
-If is not `nil`, then sort count in descending order.
+If is not `nil`, then sort rows in descending order.
 
 ####   rw
 
@@ -484,7 +470,7 @@ Required.
 
 ####   indexes
 
-Specify the indexes can be used. Only required in `ls` action.
+Specify the indexes can be used. Optional.
 
 ####   default
 
