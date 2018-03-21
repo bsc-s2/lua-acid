@@ -68,7 +68,7 @@ local function get_shard(conf, subject, shard_fields_value)
     local _, index = bisect.search(shards, shard_fields_value,
                                    {cmp=cmp_shard})
 
-    if index < 1 or index > #shards then
+    if index < 1 then
         return nil, 'ShardIndexErrr', string.format(
                 'get invalid shard index: %d, with: %s',
                 index, repr({shards, shard_fields_value}))

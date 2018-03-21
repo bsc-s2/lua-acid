@@ -1,21 +1,21 @@
 local api_util = require('acid.dbagent.api_util')
 local arg_util = require('acid.dbagent.arg_util')
 local convertor = require('acid.dbagent.convertor')
+local dbagent_conf = require('dbagent_conf')
 local json = require('acid.json')
 local model_util = require('acid.dbagent.model_util')
 local mysql_util = require('acid.dbagent.mysql_util')
 local sql_util = require('acid.dbagent.sql_util')
-local tableutil = require('acid.tableutil')
 local upstream_util = require('acid.dbagent.upstream_util')
-local util = require('acid.dbagent.util')
 
 
 local _M = {}
 
 
 local function set_shard_header(api_ctx)
-    ngx.header[ 'X-S2-shard-current' ] = json.enc(api_ctx.curr_shard.from)
-    ngx.header[ 'X-S2-shard-next' ] = json.enc((api_ctx.next_shard or {}).from)
+    local prefix = dbagent_conf.shard_header_prefix or 'x-acid-'
+    ngx.header[prefix .. 'shard-current'] = json.enc(api_ctx.curr_shard.from)
+    ngx.header[prefix .. 'shard-next'] = json.enc((api_ctx.next_shard or {}).from)
 end
 
 
@@ -26,10 +26,10 @@ local function _do_api(api_ctx)
                 'failed to extract request info: %s, %s', err, errmsg)
     end
 
-    local _, err, errmsg = model_util.pick_model(api_ctx)
+    local _, err, errmsg = model_util.choose_model(api_ctx)
     if err ~= nil then
         return nil, 'PickModelError', string.format(
-                'failed to pick model: %s, %s', err, errmsg)
+                'failed to choose model: %s, %s', err, errmsg)
     end
 
     local _, err, errmsg = arg_util.set_default(api_ctx)
