@@ -22,9 +22,6 @@ local function build_string_schema(field)
     local schema = {
         ['type'] = 'string',
     }
-    if field.m ~= nil then
-        schema.max_length = field.m
-    end
 
     return {schema}
 end
@@ -66,7 +63,6 @@ local function build_binary_schema(field)
 
     local schema = {
         ['type'] = 'string',
-        fixed_length = field.m * 2,
     }
 
     return {schema}
@@ -80,7 +76,6 @@ local function build_varbinary_schema(field)
 
     local schema = {
         ['type'] = 'string',
-        max_length = field.m * 2,
     }
 
     return {schema}
