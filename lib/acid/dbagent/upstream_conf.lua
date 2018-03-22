@@ -1,4 +1,4 @@
-local ngx_timer = require('ngx_timer')
+local ngx_timer = require('acid.ngx_timer')
 
 local _M = {}
 
@@ -49,7 +49,7 @@ function _M.new(fetch_conf)
         return nil, err, errmsg
     end
 
-    local _, err, errmsg = ngx_timer.loop_work(
+    local _, err, errmsg = ngx_timer.every(
             0.5, self.fetch_conf_safe, self)
     if err ~= nil then
         ngx.log(ngx.ERR, 'conf ##: failed to init ngx timer')
