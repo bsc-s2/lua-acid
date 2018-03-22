@@ -44,7 +44,7 @@
       - [param.extra.match](#paramextramatch)
         - [param.extra.leftopen](#paramextraleftopen)
         - [param.extra.rightopen](#paramextrarightopen)
-        - [param.extra.nlimit](#paramextranlimit)
+        - [param.extra.limit](#paramextralimit)
         - [param.extra.order_by](#paramextraorder_by)
         - [param.extra.group_by](#paramextragroup_by)
         - [param.extra.group_by_asc](#paramextragroup_by_asc)
@@ -424,7 +424,7 @@ Fields that can specify a range value in request.
 
 ####   param.extra
 
-Some extra parameters, such as 'match', 'leftopen', 'rightopen', 'nlimit'.
+Some extra parameters, such as 'match', 'leftopen', 'rightopen', 'limit'.
 
 ####   param.extra.match
 
@@ -441,7 +441,7 @@ default is 0.
 Set to 1 corresponding to use '<', set to 0 coresponding to use '<=',
 default is 0.
 
-#####   param.extra.nlimit
+#####   param.extra.limit
 
 Set limit of the number of rows that will be affected or fetched.
 
