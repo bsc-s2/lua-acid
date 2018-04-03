@@ -1,12 +1,12 @@
 local api_util = require('acid.dbagent.api_util')
 local arg_util = require('acid.dbagent.arg_util')
 local convertor = require('acid.dbagent.convertor')
-local dbagent_conf = require('dbagent_conf')
-local json = require('acid.json')
 local model_util = require('acid.dbagent.model_util')
 local mysql_util = require('acid.dbagent.mysql_util')
 local sql_util = require('acid.dbagent.sql_util')
 local upstream_util = require('acid.dbagent.upstream_util')
+local json = require('acid.json')
+local dbagent_conf = require('dbagent_conf')
 
 
 local _M = {}

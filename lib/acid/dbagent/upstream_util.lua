@@ -1,7 +1,7 @@
 local bisect = require('acid.bisect')
-local dbagent_conf = require('dbagent_conf')
-local tableutil = require('acid.tableutil')
 local upstream_conf = require('acid.dbagent.upstream_conf')
+local tableutil = require('acid.tableutil')
+local dbagent_conf = require('dbagent_conf')
 
 local repr = tableutil.repr
 

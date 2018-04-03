@@ -1,7 +1,7 @@
 local arg_util = require('acid.dbagent.arg_util')
-local dbagent_conf = require('dbagent_conf')
-local sql_constructor = require('acid.sql_constructor')
 local sql_util = require('acid.dbagent.sql_util')
+local sql_constructor = require('acid.sql_constructor')
+local dbagent_conf = require('dbagent_conf')
 
 
 local _M = {}

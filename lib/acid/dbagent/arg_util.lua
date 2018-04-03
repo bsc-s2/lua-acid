@@ -1,6 +1,6 @@
+local arg_schema_checker = require('acid.arg_schema_checker')
 local strutil = require('acid.strutil')
 local tableutil = require('acid.tableutil')
-local arg_schema_checker = require('acid.arg_schema_checker')
 
 local to_str = strutil.to_str
 
