@@ -21,9 +21,9 @@ function _M.extract_request_info(api_ctx)
     local path = strutil.split(api_ctx.uri, '?')[1]
     local parts = strutil.split(path, '/')
 
-    -- /api/bucket/ls
-    api_ctx.subject = parts[3] or ''
-    api_ctx.action = parts[4] or ''
+    -- /api/v1/bucket/ls
+    api_ctx.subject = parts[4] or ''
+    api_ctx.action = parts[5] or ''
 
     if method == 'GET' then
         api_ctx.args = api_ctx.query_args

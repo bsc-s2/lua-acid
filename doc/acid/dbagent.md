@@ -206,9 +206,9 @@ rewrite_by_lua_block {
 
 -- request example
 
--- curl 'http://<ip>:<port>/api/employee/set' -X POST -d '{"employee_id":"1000000000000000123", "department":"foo"}'
+-- curl 'http://<ip>:<port>/api/v1/employee/set' -X POST -d '{"employee_id":"1000000000000000123", "department":"foo"}'
 
--- curl 'http://<ip>:<port>/api/employee/get' -X POST -d '{"employee_id":"1000000000000000123"}'
+-- curl 'http://<ip>:<port>/api/v1/employee/get' -X POST -d '{"employee_id":"1000000000000000123"}'
 ```
 
 #   dbagent_conf module
