@@ -125,7 +125,7 @@ function _M.convert_arg(api_ctx)
         local convert_method = (fields[arg_name] or {}).convert_method
 
         if convert_method ~= nil then
-            local convert_model = convert_methods[convert_method].encode
+            local convert_model = convert_methods[convert_method]
             if convert_model == nil then
                 return nil, 'InvalidConvertMethod', string.format(
                         'convert method: %s is not supported', convert_method)

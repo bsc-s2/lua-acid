@@ -7,7 +7,9 @@ local dbagent_conf = require('dbagent_conf')
 local _M = {}
 
 
-local function setup_models(models)
+function _M.setup_models()
+    local models = dbagent_conf.models
+
     for _, subject_model in pairs(models) do
         local raw_fields = subject_model.fields
 
@@ -27,9 +29,6 @@ local function setup_models(models)
 
     return true, nil, nil
 end
-
-
-setup_models(dbagent_conf.models)
 
 
 function _M.choose_model(api_ctx)

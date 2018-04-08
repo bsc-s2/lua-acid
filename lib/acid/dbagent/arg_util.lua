@@ -99,10 +99,10 @@ function _M.build_field_schema(field)
         return
     end
 
-    local builder = schema_builder[field.field_type]
+    local builder = schema_builder[field.data_type]
 
     if builder == nil then
-        ngx.log(ngx.ERR, 'no schema builder for: ' .. field.field_type)
+        ngx.log(ngx.ERR, 'no schema builder for: ' .. field.data_type)
         return
     end
 
