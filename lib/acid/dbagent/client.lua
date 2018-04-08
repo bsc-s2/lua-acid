@@ -21,7 +21,12 @@ function _M.new(dbagent_ips, port, access_key, secret_key, opts)
 
     local api_version = opts.api_version or 'v1'
     local shard_header_prefix = opts.shard_header_prefix or 'x-acid-'
+
     local timeout = opts.timeout or 1000
+    if type(timeout) ~= 'table' then
+        timeout = {timeout, timeout, timeout}
+    end
+
     local timeout_ratio = opts.timeout_ratio or 1.5
     local retry_sleep = opts.retry_sleep or 0.01
     local user_agent = opts.user_agent or 'unknown-user-agent'
@@ -51,29 +56,16 @@ end
 
 
 function _M.raw_request(opts)
-    if opts == nil then
-        opts = {}
-    end
-
-    local timeout = opts.timeout or 1000
-    local uri = opts.uri or string.format('/api/v1/%s/%s',
-                                          opts.subject, opts.action)
-    local headers = opts.headers or {}
-    local body = opts.body or ''
-
-    local ip = opts.ip or '127.0.0.1'
-    local port = opts.port or 8011
-
-    local http = httpclient:new(ip, port, timeout,
+    local http = httpclient:new(opts.ip, opts.port, opts.timeout,
                                 {service_key = 'dbagent'})
 
-    local _, err, errmsg = http:request(uri,
+    local _, err, errmsg = http:request(opts.uri,
                                         {method = 'POST',
-                                         headers = headers,
-                                         body = body})
+                                         headers = opts.headers,
+                                         body = opts.body})
     if err ~= nil then
         return nil, 'HttpRequestError', string.format(
-                'failed to request ip: %s, %s, %s', ip, err, errmsg)
+                'failed to request ip: %s, %s, %s', opts.ip, err, errmsg)
     end
 
     local bufs = {}
@@ -96,7 +88,7 @@ function _M.raw_request(opts)
     if http.status ~= 200 then
         return nil, 'InvalidResponse',
                 string.format('response from %s is invalid: %s, %s',
-                              ip, tostring(http.status), resp_body)
+                              opts.ip, tostring(http.status), resp_body)
     end
 
     if http.headers['connection'] == 'keep-alive' then
@@ -157,8 +149,8 @@ function _M.do_request(self, dbagent_request)
             ngx.sleep(self.retry_sleep)
         end
 
-        if timeout ~= nil then
-            timeout = timeout * timeout_ratio
+        for i = 1, 3 do
+            timeout[i] = timeout[i] * timeout_ratio
         end
     end
 
@@ -183,7 +175,7 @@ local function parse_response_body(response_body, ignore)
         return result, nil, nil
     end
 
-    if result.affected_rows == 0 and ignore == false then
+    if result.affected_rows == 0 and ignore ~= true then
         return nil, 'WriteIgnored', response_body
     end
 
@@ -237,7 +229,11 @@ function _M.req(self, subject, action, args, opts)
                 'failed to request dbagent: %s, %s', err, errmsg)
     end
 
-    local ignore = opts.ignore or self.ignore
+    local ignore = opts.ignore
+    if ignore == nil then
+        ignore = self.ignore
+    end
+
     local result, err, errmsg = parse_response_body(resp.body, ignore)
     if err ~= nil then
         return nil, 'ParseResponseBodyError', string.format(
