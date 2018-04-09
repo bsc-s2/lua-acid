@@ -186,9 +186,11 @@ end
 local function load_shard(self, headers)
     local header_current = self.shard_header_prefix .. 'shard-current'
     local header_next = self.shard_header_prefix .. 'shard-next'
+    local header_fields = self.shard_header_prefix .. 'shard-fields'
     local shard = {
-        ['shard-current'] = headers[header_current],
-        ['shard-next'] = headers[header_next],
+        shard_current = headers[header_current],
+        shard_next = headers[header_next],
+        shard_fields = headers[header_fields],
     }
 
     for name, str_value in pairs(shard) do
