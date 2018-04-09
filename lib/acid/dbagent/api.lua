@@ -14,8 +14,12 @@ local _M = {}
 
 local function set_shard_header(api_ctx)
     local prefix = dbagent_conf.shard_header_prefix or 'x-acid-'
-    ngx.header[prefix .. 'shard-current'] = json.enc(api_ctx.curr_shard.from)
-    ngx.header[prefix .. 'shard-next'] = json.enc((api_ctx.next_shard or {}).from)
+    ngx.header[prefix .. 'shard-current'] = json.enc(
+            api_ctx.curr_shard.from, {is_array = true})
+    ngx.header[prefix .. 'shard-next'] = json.enc(
+            (api_ctx.next_shard or {}).from, {is_array = true})
+    ngx.header[prefix .. 'shard-fields'] = json.enc(
+            api_ctx.subject_model.shard_fields, {is_array = true})
 end
 
 
