@@ -12,10 +12,10 @@ local _M = { _VERSION = '0.0.1' }
 local mt = { __index = _M }
 
 
-function _M.new(dbagent_ips, port, access_key, secret_key, opts)
-    if type(dbagent_ips) ~= 'table' or type(dbagent_ips[1]) ~= 'string' then
-        return nil, 'InvaliddbgentIps', string.format(
-                'invalid dbagent ips: %s', to_str(dbagent_ips))
+function _M.new(ips, port, access_key, secret_key, opts)
+    if type(ips) ~= 'table' or type(ips[1]) ~= 'string' then
+        return nil, 'InvalidDbagentIps', string.format(
+                'invalid dbagent ips: %s', to_str(ips))
     end
     opts = opts or {}
 
@@ -39,7 +39,7 @@ function _M.new(dbagent_ips, port, access_key, secret_key, opts)
     end
 
     return setmetatable({
-        dbagent_ips = dbagent_ips,
+        ips = ips,
         port = port,
         ignore = ignore,
         signer = signer,
@@ -99,24 +99,24 @@ function _M.raw_request(opts)
 end
 
 
-function _M.request_one_ip(self, dbagent_ip, port, timeout, dbagent_request)
-    local dbagent_request_copy = tableutil.dup(dbagent_request, true)
-    dbagent_request_copy.headers.Host = dbagent_ip
+function _M.request_one_ip(self, ip, port, timeout, request)
+    local request_copy = tableutil.dup(request, true)
+    request_copy.headers.Host = ip
 
     local _, err, errmsg = self.signer:add_auth_v4(
-            dbagent_request_copy, {sign_payload = true})
+            request_copy, {sign_payload = true})
     if err ~= nil then
         return nil, 'AddAuthError', string.format(
                 'failed to add auth v4: %s, %s', err, errmsg)
     end
 
     local opts = {
-        ip = dbagent_ip,
+        ip = ip,
         port = port,
         timeout = timeout,
-        uri = dbagent_request_copy.uri,
-        headers = dbagent_request_copy.headers,
-        body = dbagent_request_copy.body
+        uri = request_copy.uri,
+        headers = request_copy.headers,
+        body = request_copy.body
     }
     local resp, err, errmsg = _M.raw_request(opts)
     if err ~= nil then
@@ -127,23 +127,23 @@ function _M.request_one_ip(self, dbagent_ip, port, timeout, dbagent_request)
 end
 
 
-function _M.do_request(self, dbagent_request)
+function _M.do_request(self, request)
     local resp, err, msg
 
     local port = self.port
     local timeout = self.timeout
     local timeout_ratio = self.timeout_ratio
 
-    for _, dbagent_ip in ipairs(self.dbagent_ips) do
-        resp, err, msg = self:request_one_ip(dbagent_ip, port, timeout,
-                                             dbagent_request)
+    for _, ip in ipairs(self.ips) do
+        resp, err, msg = self:request_one_ip(ip, port, timeout,
+                                             request)
         if err == nil then
             return resp, nil, nil
         end
 
         ngx.log(ngx.WARN, string.format(
                 'failed to request dbagent ip %s: %s, %s',
-                dbagent_ip, err, msg))
+                ip, err, msg))
 
         if self.retry_sleep > 0 then
             ngx.sleep(self.retry_sleep)
@@ -209,7 +209,7 @@ end
 function _M.req(self, subject, action, args, opts)
     opts = opts or {}
 
-    local dbagent_request = {
+    local request = {
         verb = 'POST',
         uri = string.format('/api/%s/%s/%s',
                             self.api_version, subject, action),
@@ -222,10 +222,10 @@ function _M.req(self, subject, action, args, opts)
         body = '',
     }
 
-    dbagent_request.body = acid_json.enc(args)
-    dbagent_request.headers['Content-Length'] = #dbagent_request.body
+    request.body = acid_json.enc(args)
+    request.headers['Content-Length'] = #request.body
 
-    local resp, err, errmsg = self:do_request(dbagent_request)
+    local resp, err, errmsg = self:do_request(request)
     if err ~= nil then
         return nil, 'DoRequestError', string.format(
                 'failed to request dbagent: %s, %s', err, errmsg)
