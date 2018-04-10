@@ -38,8 +38,8 @@ function _M.init_upstream_config()
 
     ngx.log(ngx.INFO, 'conf ##: init upstream config with lock')
 
-	local upstream_config, err, errmsg = upstream_conf.new(
-			dbagent_conf.fetch_upstream_conf)
+    local upstream_config, err, errmsg = upstream_conf.new(
+            dbagent_conf.fetch_upstream_conf)
     if err ~= nil then
         _M.locked = 0
         return nil, err, errmsg
