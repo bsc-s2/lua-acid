@@ -1119,35 +1119,35 @@ function test.combine_and_add(t)
     local opts_recursive_default_value_exclude = { recursive = true, default = 1, exclude={a={b={c={d=true}}},g=true} }
     local cases_recursive = {
 
-	 {opts_default,                  {x=1,y=true,z=3},              	{x=1,y=2,z=true},               {x=2,y=true,z=3}},
-        {opts_default,			{x=1,y=2,z=3},			{x=1,y=2,z=3},			{x=2,y=4,z=6}},
-        {opts_default,			{x=1,y=2,z=3},			{x=1,z=3},			{x=2,y=2,z=6}},
-        {opts_default,			{x=1,z=3},			{x=1,y=2,z=3},			{x=2,z=6}},
-        {opts_default,			{},				{x=1,y=2,z=3},			{}},
-        {opts_default,			{x=1,y=2,z=3},			{},				{x=1,y=2,z=3}},
-        {opts_default,			{x=1,y=2,z=3},			{x={x1=1}},			{x=1,y=2,z=3}},
+        {opts_default,                  {x=1,y=true,z=3},               {x=1,y=2,z=true},               {x=2,y=true,z=3}},
+        {opts_default,                  {x=1,y=2,z=3},                  {x=1,y=2,z=3},                  {x=2,y=4,z=6}},
+        {opts_default,                  {x=1,y=2,z=3},                  {x=1,z=3},                      {x=2,y=2,z=6}},
+        {opts_default,                  {x=1,z=3},                      {x=1,y=2,z=3},                  {x=2,z=6}},
+        {opts_default,                  {},                             {x=1,y=2,z=3},                  {}},
+        {opts_default,                  {x=1,y=2,z=3},                  {},                             {x=1,y=2,z=3}},
+        {opts_default,                  {x=1,y=2,z=3},                  {x={x1=1}},                     {x=1,y=2,z=3}},
 
-        {opts_recursive,		{x={y={z=1}},c=1},		{x={y={z=1}},c=1},		{x={y={z=2}},c=2}},
-        {opts_recursive,		{x={y={z=1}},c=1,z={}},		{x={y={z=1}},c=1,z=1,d=1},	{x={y={z=2}},c=2,z={}}},
-        {opts_recursive,		{x={y={z=1}},c=1,z={}},		{x={y={z=1}},c=1,z=1},		{x={y={z=2}},c=2,z={}} },
-        {opts_recursive,		{x={y=1},c=1},			{x={z=1},c=1},			{x={y=1},c=2}},
-
-
-        {opts_default_value,		{x=1,y=2,z=3},			{x=1,z=3},			{x=2,y=2,z=6}},
-        {opts_default_value,		{x=1,z=3},			{x=1,y=2,z=3},			{x=2,y=3,z=6}},
-        {opts_default_value,		{},				{x=1,y=2,z=3},			{x=2,y=3,z=4}},
-        {opts_default_value,		{x=1,y=2,z=3},			{},				{x=1,y=2,z=3}},
-        {opts_default_value,		{x=1,y=2,z=3},			{x={x1=1}},			{x=1,y=2,z=3}},
-        {opts_default_value,            {c=1},                  	{x={z=1},c=1},                  {c=2}},
-
-	 {opts_recursive_default_value,  {c=1},                  	{x={z=1},c=1},                  {x={z=2},c=2}},
-        {opts_recursive_default_value,	{x={y={z=1}},c=1},		{x={y={z=1}},c=1},		{x={y={z=2}},c=2}},
-        {opts_recursive_default_value,	{x={y={z=1}},c=1,z={}}, 	{x={y={z=1}},c=1,z=1,d=1}, 	{x={y={z=2}},c=2,z={},d=2}},
-        {opts_recursive_default_value,	{x={y={z=1}},c=1,z={}}, 	{x={y={z=1,d=1}},c=1,z=1}, 	{x={y={z=2,d=2}},c=2,z={}}},
-        {opts_recursive_default_value,	{x={y=1},c=1},			{x={z=1},c=1},			{x={y=1,z=2},c=2}},
+        {opts_recursive,                {x={y={z=1}},c=1},              {x={y={z=1}},c=1},              {x={y={z=2}},c=2}},
+        {opts_recursive,                {x={y={z=1}},c=1,z={}},         {x={y={z=1}},c=1,z=1,d=1},      {x={y={z=2}},c=2,z={}}},
+        {opts_recursive,                {x={y={z=1}},c=1,z={}},         {x={y={z=1}},c=1,z=1},          {x={y={z=2}},c=2,z={}} },
+        {opts_recursive,                {x={y=1},c=1},                  {x={z=1},c=1},                  {x={y=1},c=2}},
 
 
-	 {opts_recursive_default_value_exclude,  {a={b={c={d=1},e=1}},f=1,g=1},  {a={b={c={d=1},e=1}},f=2,e=1,g=1},  {a={b={c={d=1},e=2}},f=3,e=2,g=1}},
+        {opts_default_value,            {x=1,y=2,z=3},                  {x=1,z=3},                      {x=2,y=2,z=6}},
+        {opts_default_value,            {x=1,z=3},                      {x=1,y=2,z=3},                  {x=2,y=3,z=6}},
+        {opts_default_value,            {},                             {x=1,y=2,z=3},                  {x=2,y=3,z=4}},
+        {opts_default_value,            {x=1,y=2,z=3},                  {},                             {x=1,y=2,z=3}},
+        {opts_default_value,            {x=1,y=2,z=3},                  {x={x1=1}},                     {x=1,y=2,z=3}},
+        {opts_default_value,            {c=1},                          {x={z=1},c=1},                  {c=2}},
+
+        {opts_recursive_default_value,  {c=1},                          {x={z=1},c=1},                  {x={z=2},c=2}},
+        {opts_recursive_default_value,  {x={y={z=1}},c=1},              {x={y={z=1}},c=1},              {x={y={z=2}},c=2}},
+        {opts_recursive_default_value,  {x={y={z=1}},c=1,z={}},         {x={y={z=1}},c=1,z=1,d=1},      {x={y={z=2}},c=2,z={},d=2}},
+        {opts_recursive_default_value,  {x={y={z=1}},c=1,z={}},         {x={y={z=1,d=1}},c=1,z=1},      {x={y={z=2,d=2}},c=2,z={}}},
+        {opts_recursive_default_value,  {x={y=1},c=1},                  {x={z=1},c=1},                  {x={y=1,z=2},c=2}},
+
+
+        {opts_recursive_default_value_exclude,  {a={b={c={d=1},e=1}},f=1,g=1},  {a={b={c={d=1},e=1}},f=2,e=1,g=1},  {a={b={c={d=1},e=2}},f=3,e=2,g=1}},
 
     }
 
