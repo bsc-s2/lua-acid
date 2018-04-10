@@ -134,13 +134,13 @@ _M.models = {
     employee = {
         fields = {
             employee_id = {
-                field_type = 'bigint',
+                data_type = 'bigint',
             },
             name = {
-                field_type = 'varchar',
+                data_type = 'varchar',
             },
             department = {
-                field_type = 'varchar',
+                data_type = 'varchar',
             },
         },
 
@@ -151,7 +151,7 @@ _M.models = {
                 rw = 'w',
                 sql_type = 'set',
                 param = {
-                    set_field = {
+                    allowed_field = {
                         department = true,
                     },
                     ident = {
@@ -182,6 +182,12 @@ _M.models = {
 return _M
 
 -- nginx conf
+
+init_by_lua_block {
+    local dbagent_init = require('acid.dbagent.init')
+    local r, err, errmsg = dbagent_init.init()
+    assert(r, err .. ', ' .. errmsg)
+}
 
 rewrite_by_lua_block {
     local dbagent_api = require('acid.dbagent.api')
@@ -487,6 +493,22 @@ Specify options used when query msyql database, such as 'timeout'.
 Optional.
 
 #   Methods
+
+##  init.init
+
+Setup static attributes and schema for each field, init a timer to
+update upstream configuration periodically.
+
+**syntax**:
+`init()`
+
+**arguments**:
+
+No arguments.
+
+**return**:
+In case of success, returns `true`, otherwise returns `nil` and
+error code and error message.
 
 ##  api.do_api
 

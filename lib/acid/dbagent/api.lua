@@ -33,7 +33,7 @@ local function _do_api(api_ctx)
 
     local _, err, errmsg = model_util.choose_model(api_ctx)
     if err ~= nil then
-        return nil, 'PickModelError', string_format(
+        return nil, 'ChooseModelError', string_format(
                 'failed to choose model: %s, %s', err, errmsg)
     end
 
