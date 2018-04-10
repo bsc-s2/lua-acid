@@ -12,6 +12,7 @@ function _M.init()
     if err ~= nil then
         ngx.log(ngx.ERR, string_format(
                 'failed to setup models: %s, %s', err, errmsg))
+        return nil, err, errmsg
     end
 
     local _, err, errmsg = ngx_timer.at(
@@ -19,7 +20,10 @@ function _M.init()
     if err ~= nil then
         ngx.log(ngx.ERR, string_format(
                 'conf ##: failed to init ngx timer: %s, %s', err, errmsg))
+        return nil, err, errmsg
     end
+
+    return true, nil, nil
 end
 
 
