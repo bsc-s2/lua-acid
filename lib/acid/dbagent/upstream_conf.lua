@@ -1,5 +1,7 @@
 local ngx_timer = require('acid.ngx_timer')
 
+local string_format = string.format
+
 local _M = {}
 
 local _mt = {__index = _M}
@@ -8,25 +10,25 @@ local _mt = {__index = _M}
 function _M.fetch_conf_safe(self)
     local curr_version = (self.conf or {}).version
 
-    ngx.log(ngx.INFO, string.format(
+    ngx.log(ngx.INFO, string_format(
             'conf ##: worker %d start to get conf with current version: %s',
             ngx.worker.id(), tostring(curr_version)))
 
     local curr_conf = self.conf
     local ok, err_or_conf, err, errmsg = pcall(self.fetch_conf, curr_conf)
     if not ok then
-        ngx.log(ngx.ERR, string.format(
+        ngx.log(ngx.ERR, string_format(
                 'conf ##: failed to run fetch_conf: %s', err_or_conf))
         return nil, 'FetchConfError', 'failed to run fetch_conf'
     end
 
     if err ~= nil then
-        ngx.log(ngx.ERR, string.format(
+        ngx.log(ngx.ERR, string_format(
                 'conf ##: fetch_conf return error: %s, %s', err, errmsg))
         return nil, 'FetchConfError', 'fetch_conf return error'
     end
 
-    ngx.log(ngx.INFO, string.format(
+    ngx.log(ngx.INFO, string_format(
             'conf ##: worker %d current conf version: %s',
             ngx.worker.id(), tostring(err_or_conf.version)))
 

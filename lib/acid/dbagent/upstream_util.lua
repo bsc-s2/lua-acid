@@ -4,6 +4,9 @@ local tableutil = require('acid.tableutil')
 local dbagent_conf = require('dbagent_conf')
 
 local repr = tableutil.repr
+local string_format = string.format
+local table_insert = table.insert
+local table_concat = table.concat
 
 local _M = {
     upstream_config = nil,
@@ -61,7 +64,7 @@ local function get_shard(conf, subject, shard_fields_value)
     local shards = conf.tables[subject]
 
     if shards == nil then
-        return nil, 'NotShardError', string.format(
+        return nil, 'NotShardError', string_format(
                 'shard not found in conf for subject: %s', subject)
     end
 
@@ -69,7 +72,7 @@ local function get_shard(conf, subject, shard_fields_value)
                                    {cmp=cmp_shard})
 
     if index < 1 then
-        return nil, 'ShardIndexErrr', string.format(
+        return nil, 'ShardIndexErrr', string_format(
                 'get invalid shard index: %d, with: %s',
                 index, repr({shards, shard_fields_value}))
     end
@@ -86,7 +89,7 @@ function _M.get_upstream(api_ctx)
 
     local shard_fields_value = {}
     for _, field_name in ipairs(shard_fields) do
-        table.insert(shard_fields_value, api_ctx.args[field_name])
+        table_insert(shard_fields_value, api_ctx.args[field_name])
     end
 
     local _, err, errmsg = _M.init_upstream_config()
@@ -107,8 +110,8 @@ function _M.get_upstream(api_ctx)
 
     local table_name = api_ctx.subject
     if next(api_ctx.curr_shard.from) ~= nil then
-        table_name = string.format('%s_%s', table_name,
-                                   table.concat(api_ctx.curr_shard.from, '_'))
+        table_name = string_format('%s_%s', table_name,
+                                   table_concat(api_ctx.curr_shard.from, '_'))
     end
 
     local upstream = {

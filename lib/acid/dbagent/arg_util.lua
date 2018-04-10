@@ -3,13 +3,12 @@ local strutil = require('acid.strutil')
 local tableutil = require('acid.tableutil')
 
 local to_str = strutil.to_str
+local string_format = string.format
 
 local _M = {}
 
 
-local function build_any_schema(field)
-    local _ = field
-
+local function build_any_schema()
     local schema = {
         ['type'] = 'any',
     }
@@ -27,8 +26,7 @@ local function build_string_schema(field)
 end
 
 
-local function build_string_number_schema(field)
-    local _ = field
+local function build_string_number_schema()
     local schema = {
         ['type'] = 'string_number',
     }
@@ -37,8 +35,7 @@ local function build_string_number_schema(field)
 end
 
 
-local function build_integer_schema(field)
-    local _ = field
+local function build_integer_schema()
     local schema = {
         ['type'] = 'integer',
     }
@@ -47,11 +44,10 @@ local function build_integer_schema(field)
 end
 
 
-local function build_integer_or_string_number_schema(field)
-    local _ = field
+local function build_integer_or_string_number_schema()
     local schemas = {}
-    tableutil.extends(schemas, build_integer_schema(field))
-    tableutil.extends(schemas, build_string_number_schema(field))
+    tableutil.extends(schemas, build_integer_schema())
+    tableutil.extends(schemas, build_string_number_schema())
     return schemas
 end
 
@@ -95,7 +91,7 @@ local schema_builder = {
 
 function _M.build_field_schema(field)
     if field.convert_method ~= nil or field.range == true then
-        field.checker = build_any_schema(field)
+        field.checker = build_any_schema()
         return
     end
 
@@ -137,7 +133,7 @@ local function _schema_check(args, subject_model)
             local _, err, errmsg = arg_schema_checker.do_check(
                     arg_value, param_model.checker)
             if err ~= nil then
-                return nil, 'InvalidArgument', string.format(
+                return nil, 'InvalidArgument', string_format(
                         'failed to check schema of: %s, %s, %s, %s, %s',
                         arg_name, tostring(arg_value),
                         to_str(param_model.checker), err, errmsg)

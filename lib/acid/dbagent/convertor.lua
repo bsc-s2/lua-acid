@@ -1,5 +1,6 @@
 local json = require('acid.json')
 
+local string_format = string.format
 
 local _M = {}
 
@@ -19,7 +20,7 @@ local function general_json_decode(data, opts)
 
     local value, err = json.dec(data)
     if err ~= nil then
-        return nil, 'JsonDecodeError', string.format(
+        return nil, 'JsonDecodeError', string_format(
                 'failed to json decode: %s, %s', tostring(data), err)
     end
 
@@ -49,14 +50,14 @@ end
 
 local function acl_json_encode(acl)
     if type(acl) ~= 'table' then
-        return nil, 'InvalidAcl', string.format(
+        return nil, 'InvalidAcl', string_format(
                 'acl: %s, is not a table, is type: %s',
                 tostring(acl), type(acl))
     end
 
     for _, perms in pairs(acl) do
         if type(perms) ~= 'table' then
-            return nil, 'InvalidAclPermissions', string.format(
+            return nil, 'InvalidAclPermissions', string_format(
                     'permissions: %s, is not a table, is type: %s',
                     tostring(perms), type(perms))
         end
@@ -74,7 +75,7 @@ local function acl_json_decode(acl_text)
 
     local acl, err = json.dec(acl_text)
     if err ~= nil then
-        return nil, 'JsonDecodeError', string.format(
+        return nil, 'JsonDecodeError', string_format(
                 'failed to json decode acl text: %s, %s',
                 acl_text, err)
     end
@@ -127,7 +128,7 @@ function _M.convert_arg(api_ctx)
         if convert_method ~= nil then
             local convert_model = convert_methods[convert_method]
             if convert_model == nil then
-                return nil, 'InvalidConvertMethod', string.format(
+                return nil, 'InvalidConvertMethod', string_format(
                         'convert method: %s is not supported', convert_method)
             end
             local converted_value, err, errmsg = convert_model.encode(arg_value)
@@ -148,7 +149,7 @@ local function decode_all_record(records, field_name, decode_func)
 
         local decoded_value, err, errmsg = decode_func(origin_value)
         if err ~= nil then
-            return nil, 'ConvertResultError', string.format(
+            return nil, 'ConvertResultError', string_format(
                     'failed to decode field: %s, with value: %s, %s, %s',
                     field_name, tostring(origin_value), err, errmsg)
         end
@@ -173,7 +174,7 @@ function _M.convert_result(api_ctx)
         if convert_method ~= nil then
             local convert_model = convert_methods[convert_method]
             if convert_model == nil then
-                return nil, 'InvalidConvertMethod', string.format(
+                return nil, 'InvalidConvertMethod', string_format(
                         'convert method: %s is not supported', convert_method)
             end
 
