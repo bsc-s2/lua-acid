@@ -64,7 +64,7 @@ local function get_shard(conf, subject, shard_fields_value)
     local shards = conf.tables[subject]
 
     if shards == nil then
-        return nil, 'NotShardError', string_format(
+        return nil, 'NoShardError', string_format(
                 'shard not found in conf for subject: %s', subject)
     end
 
