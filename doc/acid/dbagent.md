@@ -414,7 +414,8 @@ present in request arguments, `false` means it is optional. Required.
 ####   param.allowed_field
 
 The fields to insert or to set or to increase, the argument value in
-request is the new value or the increment of that field.
+request is the new value or the increment of that field. If not
+specified, all fields are allowed to present in request arguments.
 
 ####   param.ident
 
@@ -484,7 +485,7 @@ Specify default value for some fields. Optional.
 
 ####   select_field
 
-Specify the fields to return if the the atction is a read operation.
+Specify the fields to return if the atction is a read operation.
 Only required in read operation.
 
 ####   query_opts
@@ -512,8 +513,8 @@ error code and error message.
 
 ##  api.do_api
 
-Processing client request, query datebase according to the model
-of each datebase table, and return query result. If falied to query
+Processing client request, query database according to the model
+of each database table, and return query result. If failed to query
 database, it will retry 2 times.
 
 **syntax**:

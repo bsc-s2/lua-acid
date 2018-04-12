@@ -17,7 +17,7 @@ local function build_any_schema()
 end
 
 
-local function build_string_schema(field)
+local function build_string_schema()
     local schema = {
         ['type'] = 'string',
     }
@@ -52,35 +52,9 @@ local function build_integer_or_string_number_schema()
 end
 
 
-local function build_binary_schema(field)
-    if field.no_hex then
-        return build_string_schema(field)
-    end
-
-    local schema = {
-        ['type'] = 'string',
-    }
-
-    return {schema}
-end
-
-
-local function build_varbinary_schema(field)
-    if field.no_hex then
-        return build_string_schema(field)
-    end
-
-    local schema = {
-        ['type'] = 'string',
-    }
-
-    return {schema}
-end
-
-
 local schema_builder = {
-    binary = build_binary_schema,
-    varbinary = build_varbinary_schema,
+    binary = build_string_schema,
+    varbinary = build_string_schema,
     varchar = build_string_schema,
     text = build_string_schema,
     tinyint = build_integer_or_string_number_schema,
@@ -102,7 +76,7 @@ function _M.build_field_schema(field)
         return
     end
 
-    field.checker = builder(field)
+    field.checker = builder()
 
     for _, check in ipairs(field.checker) do
         tableutil.update(check, field.extra_check or {})
@@ -162,7 +136,7 @@ local function schema_check(args, subject_model)
 end
 
 
-local function shape_check(args, action_model)
+local function shape_check(args, subject_model, action_model)
     local args_copy = tableutil.dup(args, true)
 
     for _, allowed_params in pairs(action_model.param) do
@@ -176,10 +150,16 @@ local function shape_check(args, action_model)
         end
     end
 
-    local remain_arg = next(args_copy)
-    if remain_arg ~= nil then
-        return nil, 'ExtraArgument',
-                'extra argument: ' .. tostring(remain_arg)
+    for arg_name, _ in pairs(args_copy) do
+        if action_model.param.allowed_field == nil then
+            if subject_model.fields[arg_name] == nil then
+                return nil, 'ExtraArgument',
+                        'extra argument: ' .. tostring(arg_name)
+            end
+        else
+            return nil, 'ExtraArgument',
+                    'extra argument: ' .. tostring(arg_name)
+        end
     end
 
     return true, nil, nil
@@ -196,7 +176,7 @@ function _M.check(api_ctx)
         return nil, err, errmsg
     end
 
-    local _, err, errmsg = shape_check(args, action_model)
+    local _, err, errmsg = shape_check(args, subject_model, action_model)
     if err ~= nil then
         return nil, err, errmsg
     end
