@@ -71,7 +71,6 @@ class Client(object):
             'api_version': self.api_version,
             'shard_header_prefix': self.shard_header_prefix,
             'user_agent': self.user_agent,
-            'subject_name': subject_name,
             'timeout': self.timeout,
             'timeout_ratio': self.timeout_ratio,
             'retry_sleep': self.retry_sleep,
@@ -80,7 +79,7 @@ class Client(object):
             'to_convert': (self.to_convert or {}).get(subject_name),
         }
 
-        subject_object = Subject(subject_name, ips, port, **kwargs)
+        subject_object = Subject(subject_name, self.ips, self.port, **kwargs)
         setattr(self, subject_name, subject_object)
 
         return subject_object
@@ -94,7 +93,7 @@ class Subject(object):
                  user_agent='unknown', to_convert=None):
 
         self.api_version = api_version
-        self.shard_header_prefix =shard_header_prefix
+        self.shard_header_prefix = shard_header_prefix
         self.user_agent = user_agent
         self.subject = subject_name
         self.ips = ips
