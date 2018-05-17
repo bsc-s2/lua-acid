@@ -4,13 +4,13 @@ local rpc_logging = require("acid.rpc_logging")
 
 local to_str = strutil.to_str
 
-local _M = {}
+local _M = { _VERSION = "0.1" }
 local mt = { __index = _M }
 
 local function get_redis_cli(self)
     local redis_cli, err_msg = resty_redis:new()
     if redis_cli == nil then
-        return nil, nil, 'NewRedisError', err_msg
+        return nil, 'NewRedisError', err_msg
     end
 
     redis_cli:set_timeout(self.timeout)
@@ -99,19 +99,19 @@ function _M.transaction(self, cmds)
         local cmd, cmd_args = unpack(cmd_and_args)
         local rst, err_code, err_msg = self[cmd](self, unpack(cmd_args or {}))
         if err_code ~= nil then
-            self['discard'](self)
+            self:discard()
             return nil, err_code, err_msg
         end
 
         if rst ~= 'QUEUED' then
-            self['discard'](self)
+            self:discard()
             return nil, 'RunRedisCMDError', cmd .. ' no reply with the string QUEUED'
         end
     end
 
-    local multi_rst, err_code, err_msg = self['exec'](self)
+    local multi_rst, err_code, err_msg = self:exec()
     if err_code ~= nil then
-        self['discard'](self)
+        self:discard()
         return nil, err_code, err_msg
     end
 
