@@ -1,10 +1,11 @@
 local acid_json = require("acid.json")
+local acid_nwr = require("acid.nwr")
 local strutil = require("acid.strutil")
 local tableutil = require("acid.tableutil")
 local redis_chash = require("acid.redis_chash")
 local aws_authenticator = require("resty.awsauth.aws_authenticator")
 
-local _M = {}
+local _M = { _VERSION = "0.1" }
 local mt = { __index = _M }
 
 local to_str = strutil.to_str
@@ -124,11 +125,10 @@ local function read_cmd_value()
 end
 
 local function get_cmd_args()
-    --local uri_ptr = '^/redisproxy/v\\d+/(\\S+)/(\\S+)$'
-    local uri_ptr = '^/redisproxy/v\\d+/(\\S+?)/(\\S+)$'
-    local urilist = ngx.re.match(ngx.var.uri, uri_ptr, 'o')
+    local uri_regex = '^/redisproxy/v\\d+/(\\S+?)/(\\S+)$'
+    local urilist = ngx.re.match(ngx.var.uri, uri_regex, 'o')
     if urilist == nil then
-        return nil, 'InvalidRequest', 'uri must like:'.. uri_ptr
+        return nil, 'InvalidRequest', 'uri must like:'.. uri_regex
     end
 
     local cmd = urilist[1]
@@ -165,9 +165,11 @@ local function get_cmd_args()
         cmd = cmd,
         cmd_args = cmd_args,
         expire = tonumber(qs.expire),
-        n = tonumber(qs.n) or 1,
-        w = tonumber(qs.w) or 1,
-        r = tonumber(qs.r) or 1,
+        nwr = {
+            tonumber(qs.n) or 1,
+            tonumber(qs.w) or 1,
+            tonumber(qs.r) or 1,
+        },
     }
 end
 
@@ -194,18 +196,18 @@ function _M.proxy(self)
         return output(nil, err_code, err_msg)
     end
 
-    local cmd, cmd_args, expire = args.cmd, args.cmd_args, args.expire
-    local n, w, r = args.n, args.w, args.r
+    local cmd, cmd_args, nwr, expire =
+        args.cmd, args.cmd_args, args.nwr, args.expire
 
-    local rst, err_code, err_msg
-    if cmd == 'hget' then
-        rst, err_code, err_msg = self.redis_chash:hget(cmd_args, n, r)
-    elseif cmd == 'hset' then
-        rst, err_code, err_msg = self.redis_chash:hset(cmd_args, n, w, expire)
-    elseif cmd == 'get' then
-        rst, err_code, err_msg = self.redis_chash:get(cmd_args, n, r)
-    elseif cmd == 'set' then
-        rst, err_code, err_msg = self.redis_chash:set(cmd_args, n, w, expire)
+    local nok, rst, err_code, err_msg
+    if cmd == 'set' or cmd == 'hset' then
+        nok, err_code, err_msg =
+            self.redis_chash[cmd](self.redis_chash, cmd_args, nwr[1], expire)
+        if err_code == nil then
+            _, err_code, err_msg = acid_nwr.assert_w_ok(nwr, nok)
+        end
+    else
+        rst, err_code, err_msg = self.redis_chash[cmd](self.redis_chash, cmd_args, nwr[3])
     end
 
     return output(rst, err_code, err_msg)
