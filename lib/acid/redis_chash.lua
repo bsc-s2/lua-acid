@@ -8,7 +8,7 @@ local semaphore = require("ngx.semaphore")
 local to_str = strutil.to_str
 local str_split = strutil.split
 
-local _M = {}
+local _M = { _VERSION = "0.1" }
 local mt = { __index = _M }
 
 --redis_conf = {
@@ -86,11 +86,7 @@ local function get_chash(self)
     return nil
 end
 
-local function optimize_choose_servers(addrs, least)
-    return addrs
-end
-
-local function get_redis_addrs(self, k, n, least)
+local function get_redis_addrs(self, k, n)
     local chash = get_chash(self)
     if chash == nil then
         return {}
@@ -101,7 +97,11 @@ local function get_redis_addrs(self, k, n, least)
         return nil, err_code, err_msg
     end
 
-    return self.conf.optimize_choose_servers(addrs, least)
+    if self.conf.optimize_choose_servers ~= nil then
+        return self.conf.optimize_choose_servers(addrs)
+    end
+
+    return addrs
 end
 
 local function run_cmd_on_redis(ip, port, cmd, cmd_args, pexpire)
@@ -128,7 +128,8 @@ local function run_cmd_on_redis(ip, port, cmd, cmd_args, pexpire)
 
         if (tonumber(multi_rst[1]) ~= 1 or tonumber(multi_rst[1]) ~= 0)
             and tonumber(multi_rst[2]) ~= 1 then
-            return nil, 'RunRedisCMDError', 'transaction HSET error'
+            ngx.log(ngx.INFO, to_str('transaction runs hset cmd result: ', multi_rst))
+            return nil, 'RunRedisCMDError', 'transaction runs hset cmd result error'
         end
 
         return
@@ -143,13 +144,13 @@ local function run_cmd_on_redis(ip, port, cmd, cmd_args, pexpire)
     return redis_cli[cmd](redis_cli, unpack(cmd_args))
 end
 
-local function run_xget_cmd(self, cmd, cmd_args, n, r)
-    local addrs, err_code, err_msg = get_redis_addrs(self, cmd_args[1], n, r)
+local function run_xget_cmd(self, cmd, cmd_args, n)
+    local addrs, err_code, err_msg = get_redis_addrs(self, cmd_args[1], n)
     if err_code ~= nil then
         return nil, err_code, err_msg
     end
 
-    for nread, addr in ipairs(addrs) do
+    for _, addr in ipairs(addrs) do
         local ipport = str_split(addr, ':')
 
         local val, err_code, err_msg = run_cmd_on_redis(ipport[1], ipport[2], cmd, cmd_args)
@@ -161,17 +162,13 @@ local function run_xget_cmd(self, cmd, cmd_args, n, r)
         if val ~= nil and val ~= ngx.null then
             return {value=val, addr=addr}
         end
-
-        if nread > r then
-            break
-        end
     end
 
     return nil, 'NotFound', to_str('cmd=', cmd, ', args=', cmd_args)
 end
 
-local function run_xset_cmd(self, cmd, cmd_args, n, w, pexpire)
-    local addrs, err_code, err_msg = get_redis_addrs(self, cmd_args[1], n, w)
+local function run_xset_cmd(self, cmd, cmd_args, n, pexpire)
+    local addrs, err_code, err_msg = get_redis_addrs(self, cmd_args[1], n)
     if err_code ~= nil then
         return nil, err_code, err_msg
     end
@@ -190,25 +187,23 @@ local function run_xset_cmd(self, cmd, cmd_args, n, w, pexpire)
         end
     end
 
-    if nok < w then
-        return nil, "QuorumNotEnough", to_str('w=', w, ', ok=', nok)
-    end
+    return nok
 end
 
-function _M.hget(self, args, n, r)
-    return run_xget_cmd(self, 'hget', args, n, r)
+function _M.hget(self, args, n)
+    return run_xget_cmd(self, 'hget', args, n)
 end
 
-function _M.hset(self, args, n, w, expire)
-    return run_xset_cmd(self, 'hset', args, n, w, expire)
+function _M.hset(self, args, n, expire)
+    return run_xset_cmd(self, 'hset', args, n, expire)
 end
 
-function _M.get(self, args, n, r)
-    return run_xget_cmd(self, 'get', args, n, r)
+function _M.get(self, args, n)
+    return run_xget_cmd(self, 'get', args, n)
 end
 
-function _M.set(self, args, n, w, expires)
-    return run_xset_cmd(self, 'set', args, n, w, expires)
+function _M.set(self, args, n, expires)
+    return run_xset_cmd(self, 'set', args, n, expires)
 end
 
 function _M.new( _, name, get_redis_servers, opts)
@@ -222,8 +217,7 @@ function _M.new( _, name, get_redis_servers, opts)
             servers = {},
             chash = nil,
             get_redis_servers = get_redis_servers,
-            optimize_choose_servers =
-                opts.optimize_choose_servers or optimize_choose_servers,
+            optimize_choose_servers = opts.optimize_choose_servers
         }
     end
 
