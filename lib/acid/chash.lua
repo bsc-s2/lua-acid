@@ -355,6 +355,10 @@ function _M.choose_server(self, key, opts)
 
     local nr_choose = opts.nr_choose or 1
 
+    if nr_choose < 1 then
+        return {}
+    end
+
     if nr_choose > #self.server_names then
         return nil, 'ServerNotEnough', string.format(
                 'server number: %d is less than %d',
