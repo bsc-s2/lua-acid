@@ -19,19 +19,19 @@ local ERR_CODE = {
     InvalidSignature = ngx.HTTP_FORBIDDEN,
 }
 
--- http method, redis opeartion, count of args, need value args, optional args name
+-- http method, count of args, need value args, optional args name
 local redis_cmd_model = {
     -- get(key)
-    GET  = {'GET', 'get',  1, false, {}},
+    GET  = {'GET', 1, false, {}},
 
     -- set(key, val, expire=nil)
-    SET  = {'PUT', 'set',  2, true, {'expire'}},
+    SET  = {'PUT', 2, true, {'expire'}},
 
     -- hget(hashname, hashkey)
-    HGET = {'GET', 'hget', 2, false, {}},
+    HGET = {'GET', 2, false, {}},
 
     -- hset(hashname, hashkey, val, expire=nil)
-    HSET = {'PUT', 'hset', 3, true, {'expire'}},
+    HSET = {'PUT', 3, true, {'expire'}},
 }
 
 local redis_cmd_names = tableutil.keys(redis_cmd_model)
@@ -139,7 +139,7 @@ local function get_cmd_args()
         return nil, 'InvalidCommand', to_str('just support: ', redis_cmd_names)
     end
 
-    local http_method, cmd, nargs, needed_value, _ = unpack(cmd_model)
+    local http_method, nargs, needed_value, _ = unpack(cmd_model)
 
     if http_method ~= ngx.var.request_method then
         return nil, 'InvalidRequest',
@@ -162,7 +162,7 @@ local function get_cmd_args()
     local qs = ngx.req.get_uri_args()
 
     return {
-        cmd = cmd,
+        cmd = string.lower(cmd),
         cmd_args = cmd_args,
         expire = tonumber(qs.expire),
         nwr = {
