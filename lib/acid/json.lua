@@ -14,6 +14,10 @@ local function convert_nil(o)
         return nil
     end
 
+    if type(o) ~= 'table' then
+        return o
+    end
+
     for k, v in pairs(o) do
         if v == nil or v == cjson.null then
             o[k] = nil

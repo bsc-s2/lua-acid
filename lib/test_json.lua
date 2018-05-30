@@ -22,6 +22,7 @@ function test.dec(t)
             {'{"a":1, "b":2}', nil, {a=1, b=2}},
             {'{"a":1, "b":2, "c":null}', nil, {a=1, b=2}},
             {'{"a":1, "b":2, "c":null}', {use_nil=false}, {a=1, b=2, c=cjson.null}},
+            {'3', {use_nil=true}, 3},
         }
 
     for _, case in ipairs(cases) do
