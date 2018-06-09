@@ -3,7 +3,8 @@ local acid_nwr = require("acid.nwr")
 local strutil = require("acid.strutil")
 local tableutil = require("acid.tableutil")
 local redis_chash = require("acid.redis_chash")
-local aws_authenticator = require("resty.awsauth.aws_authenticator")
+local aws_auth = require("acid.aws_auth")
+local http_resp = require("acid.http_resp")
 
 local _M = { _VERSION = "0.1" }
 local mt = { __index = _M }
@@ -35,35 +36,6 @@ local redis_cmd_model = {
 }
 
 local redis_cmd_names = tableutil.keys(redis_cmd_model)
-
-local function get_secret_key(access_key, secret_key)
-    return function(ctx)
-        if ctx.access_key ~= access_key then
-            return nil, 'InvalidAccessKey', 'access key does not exists: ' .. ctx.access_key
-        end
-
-        return secret_key
-    end
-end
-
-local function check_auth(self)
-    if ngx.var.server_addr == '127.0.0.1'
-        or self.access_key == nil
-        or self.secret_key == nil then
-        return
-    end
-
-    local authenticator = aws_authenticator.new(self.get_secret_key)
-    local ctx, err_code, err_msg = authenticator:authenticate()
-    if err_code ~= nil then
-        ngx.log(ngx.INFO, err_code, ':', err_msg)
-        return nil, 'InvalidSignature', 'signature is not correct'
-    end
-
-    if ctx.anonymous == true then
-        return nil, 'RequestForbidden', 'anonymous user are not allowed'
-    end
-end
 
 local function output(rst, err_code, err_msg)
     local status, body, headers = 200, '', {}
@@ -177,7 +149,6 @@ function _M.new(_, access_key, secret_key, get_redis_servers, opts)
     local obj = {
         access_key = access_key,
         secret_key = secret_key,
-        get_secret_key = get_secret_key(access_key, secret_key),
         redis_chash = redis_chash:new(
             "cluster_redisproxy", get_redis_servers, opts)
     }
@@ -186,7 +157,7 @@ function _M.new(_, access_key, secret_key, get_redis_servers, opts)
 end
 
 function _M.proxy(self)
-    local _, err_code, err_msg = check_auth(self)
+    local _, err_code, err_msg = aws_auth.check(self.access_key, self.secret_key)
     if err_code ~= nil then
         return output(nil, err_code, err_msg)
     end
