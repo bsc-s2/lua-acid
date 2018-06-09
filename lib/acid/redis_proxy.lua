@@ -1,4 +1,3 @@
-local acid_json = require("acid.json")
 local acid_nwr = require("acid.nwr")
 local strutil = require("acid.strutil")
 local tableutil = require("acid.tableutil")
@@ -36,46 +35,6 @@ local redis_cmd_model = {
 }
 
 local redis_cmd_names = tableutil.keys(redis_cmd_model)
-
-local function output(rst, err_code, err_msg)
-    local status, body, headers = 200, '', {}
-
-    local request_id = ngx.var.requestid
-
-    if err_code ~= nil then
-        ngx.log( ngx.WARN, "requestid: ", request_id,
-             " err_code: ", err_code, " err_msg: ", err_msg )
-
-        status = ERR_CODE[err_code] or ngx.HTTP_BAD_REQUEST
-
-        headers["Content-Type"] = "application/json"
-
-        local Error = {
-                  Code      = err_code,
-                  Message   = err_msg,
-                  RequestId = request_id,
-                }
-        body = acid_json.enc( Error )
-    else
-        rst = rst or {}
-
-        headers['X-REDIS-ADDR'] = rst.addr
-        body = rst.value or ''
-    end
-
-    ngx.header["request-id"] = ngx.var.requestid
-    headers['Content-Length'] = #body
-
-    ngx.status = status
-
-    for k, v in pairs(headers) do
-        ngx.header[k] = v
-    end
-
-    ngx.say(body)
-    ngx.eof()
-    ngx.exit(ngx.HTTP_OK)
-end
 
 local function read_cmd_value()
     local headers = ngx.req.get_headers()
@@ -157,14 +116,16 @@ function _M.new(_, access_key, secret_key, get_redis_servers, opts)
 end
 
 function _M.proxy(self)
+    local output_opts = {code_status = ERR_CODE}
+
     local _, err_code, err_msg = aws_auth.check(self.access_key, self.secret_key)
     if err_code ~= nil then
-        return output(nil, err_code, err_msg)
+        return http_resp.output(nil, err_code, err_msg, output_opts)
     end
 
     local args, err_code, err_msg = get_cmd_args()
     if err_code ~= nil then
-        return output(nil, err_code, err_msg)
+        return http_resp.output(nil, err_code, err_msg, output_opts)
     end
 
     local cmd, cmd_args, nwr, expire =
@@ -181,7 +142,7 @@ function _M.proxy(self)
         rst, err_code, err_msg = self.redis_chash[cmd](self.redis_chash, cmd_args, nwr[3])
     end
 
-    return output(rst, err_code, err_msg)
+    return http_resp.output(rst, err_code, err_msg, output_opts)
 end
 
 return _M
