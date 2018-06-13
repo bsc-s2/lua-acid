@@ -18,7 +18,7 @@ function _M.check(ak, sk)
         return
     end
 
-    local authenticator = aws_authenticator.new(get_secret_key)
+    local authenticator = aws_authenticator.new(get_secret_key(ak, sk))
     local ctx, err_code, err_msg = authenticator:authenticate()
     if err_code ~= nil then
         return nil, 'InvalidSignature', err_msg
