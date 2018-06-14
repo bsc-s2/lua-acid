@@ -5,7 +5,7 @@ local _M = {}
 local function get_secret_key(ak, sk)
     return function(ctx)
         if ctx.access_key ~= ak then
-            return nil, 'InvalidAccessKey',
+            return nil, 'InvalidAccessKeyId',
                 'access key does not exists: ' .. ctx.access_key
         end
 
@@ -25,7 +25,7 @@ function _M.check(ak, sk)
     end
 
     if ctx.anonymous == true then
-        return nil, 'RequestForbidden', 'anonymous user are not allowed'
+        return nil, 'AccessDenied', 'anonymous user are not allowed'
     end
 end
 
