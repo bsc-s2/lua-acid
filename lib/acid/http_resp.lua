@@ -79,7 +79,9 @@ function _M.output(rst, err_code, err_msg, opts)
         ngx.log( ngx.WARN, "requestid: ", request_id,
              " err_code: ", err_code, " err_msg: ", err_msg )
 
-        status = code_status[err_code] or ngx.HTTP_BAD_REQUEST
+        status = code_status[err_code]
+            or aws_errorcode[err_code]
+            or ngx.HTTP_BAD_REQUEST
 
         headers["Content-Type"] = "application/json"
 
