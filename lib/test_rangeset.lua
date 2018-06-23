@@ -1,7 +1,7 @@
 local rangeset = require("acid.rangeset")
 
 
-function test.new(t)
+function test.new_rangedict(t)
     local cases = {
         {{{3, 4, "foo"}, {1, 2, "bar"}}, "ValueError", "range must be smaller than next one"},
         {{{1, nil, "foo"}, {10, 20, "bar"}}, "ValueError", "range must be smaller than next one"},
@@ -21,7 +21,7 @@ function test.new(t)
     }
 
     for _, case in ipairs(cases) do
-        local _, err, errmsg = rangeset.new(case[1])
+        local _, err, errmsg = rangeset.new_rangedict(case[1])
         t:eq(case[2], err)
         t:eq(case[3], errmsg)
     end
@@ -109,7 +109,7 @@ function test.get(t)
     }
 
     for _, case in ipairs(cases) do
-        local ranges, err, errmsg = rangeset.new(case[1])
+        local ranges, err, errmsg = rangeset.new_rangedict(case[1])
         t:eq(nil, err)
         t:eq(nil, errmsg)
 

@@ -80,7 +80,7 @@ end
 
 
 
-function _M.new(ranges)
+function _M.new_rangedict(ranges)
     local rngs = tableutil.dup(ranges, true)
     for i = 1, #rngs - 1, 1 do
         local curr = rngs[i]
