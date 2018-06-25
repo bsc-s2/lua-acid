@@ -13,12 +13,19 @@ local function get_secret_key(ak, sk)
     end
 end
 
-function _M.check(ak, sk)
+local function bucket_from_host(host)
+    return host, nil, nil
+end
+
+function _M.check(ak, sk, get_bucket_from_host, shared_dict, opts)
     if ak == nil or sk == nil then
         return
     end
 
-    local authenticator = aws_authenticator.new(get_secret_key(ak, sk))
+    get_bucket_from_host = get_bucket_from_host or bucket_from_host
+
+    local authenticator = aws_authenticator.new(
+        get_secret_key(ak, sk), get_bucket_from_host, shared_dict, opts)
     local ctx, err_code, err_msg = authenticator:authenticate()
     if err_code ~= nil then
         return nil, 'InvalidSignature', err_msg
