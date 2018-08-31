@@ -73,6 +73,17 @@ local function cmp_val(a, b, none_cmp_finite)
 end
 
 
+local function cmp_pos(key, a)
+    if a[1] ~= nil and a[1] > key then
+        return -1
+    elseif a[2] ~= nil and a[2] <= key then
+        return 1
+    else
+        return 0
+    end
+end
+
+
 local function has(range, val)
      return (cmp_val(range[1], val, -1) <= 0
              and cmp_val(val, range[2], 1) < 0)
@@ -96,12 +107,11 @@ end
 
 
 function _M.get(self, pos)
-    local rng = {pos, nil}
     local opts = {
-        cmp = cmp
+        cmp = cmp_pos
     }
 
-    local ok, idx = bisect.search(self, rng, opts)
+    local ok, idx = bisect.search(self, pos, opts)
     if not ok or not has(self[idx], pos) then
         return nil, "KeyError", strutil.to_str(pos, " not in range")
     end
