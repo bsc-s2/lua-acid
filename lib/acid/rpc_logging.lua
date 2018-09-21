@@ -55,6 +55,7 @@ function _M.new_entry(service_key, opt)
             count = {
                 -- recvbody = nil,
                 -- sendbody = nil,
+                -- entry = nil,
             },
         },
 
@@ -81,6 +82,7 @@ function _M.new_entry(service_key, opt)
             count = {
                 -- recvbody = nil,
                 -- sendbody = nil,
+                -- entry = nil,
             },
         },
     }
@@ -146,6 +148,14 @@ function _M.set_time_val(entry, updown, field, val)
     entry[updown].time[field] = val
 end
 
+function _M.set_entry_val(entry, updown, val)
+
+    if entry == nil then
+        return
+    end
+
+    entry[updown].count['entry'] = val
+end
 
 function _M.incr_stat(entry, updown, field, size)
     _M.incr_time(entry, updown, field)
@@ -245,8 +255,21 @@ function _M.add_log(entry)
 end
 
 
-function _M.get_logs()
-    return ngx.ctx.rpc_logs or {}
+function _M.get_logs(service_key)
+    local rpc_logs = ngx.ctx.rpc_logs
+    if service_key == nil then
+        return rpc_logs
+    end
+
+    local logs = {}
+
+    for _, e in ipairs(rpc_logs or {}) do
+        if e.service_key == service_key then
+            table.insert(logs, e)
+        end
+    end
+
+    return logs
 end
 
 
@@ -317,7 +340,8 @@ function _M.entry_str(e)
         if st then
             addfield(s, 'count:{', '')
             addfield(s, 'sendbody:', st.sendbody, ',')
-            addfield(s, 'recvbody:', st.recvbody)
+            addfield(s, 'recvbody:', st.recvbody, ',')
+            addfield(s, 'entry:', st.entry)
             addfield(s, '},', '')
         end
 
@@ -357,7 +381,8 @@ function _M.entry_str(e)
         if st then
             addfield(s, 'count:{', '')
             addfield(s, 'sendbody:', st.sendbody, ',')
-            addfield(s, 'recvbody:', st.recvbody)
+            addfield(s, 'recvbody:', st.recvbody, ',')
+            addfield(s, 'entry:', st.entry)
             addfield(s, '},', '')
         end
 
