@@ -80,7 +80,7 @@ function _M.output(rst, err_code, err_msg, opts)
              " err_code: ", err_code, " err_msg: ", err_msg )
 
         if ngx.headers_sent then
-            ngx.log(ngx.WARN, 'has send response headers')
+            ngx.log(ngx.WARN, 'has sent response headers')
             return
         end
 
