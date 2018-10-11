@@ -2,6 +2,8 @@
 [ base: ]
 
 git-subrepo             baishancloud/git-subrepo            master  git-subrepo
+py/ututil.py            bsc-s2/pykit                        master  ututil.py
+py/utdocker.py          bsc-s2/pykit                        master  utdocker.py
 
 [ base: lib/acid ]
 thirdpart/mimes.json    baishancloud/mimetype               master   mimes.json
