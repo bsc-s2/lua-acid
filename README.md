@@ -22,6 +22,7 @@ It is meant to be a underlaying code base for building a distributed system.
 | :--                                         | :--                                                     | :--             |
 | [acid.async_cache](doc/acid/async_cache.md) | shared-dict based cache, update asynchronously.         | well tested     |
 | [acid.chash](doc/acid/chash.md)             | consistent hash module.                                 | well tested     |
+| [acid.counter](doc/acid/counter.md)         | hot event counter.                                      | well tested     |
 | [acid.strutil](doc/acid/strutil.md)         | string operation functions.                             | well tested     |
 | [acid.tableutil](doc/acid/tableutil.md)     | table operation functions.                              | well tested     |
 | [acid.unittest](doc/acid/unittest.md)       | unittest engine that looks for test functions in a dir. | well tested     |
