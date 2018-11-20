@@ -5,7 +5,7 @@ local _M = {_VERSION = '1.0'}
 local _mt = { __index = _M }
 
 
-local default_timeout = 0.01  -- second
+local default_probability = 0.01
 
 
 local function _probability(p)
@@ -14,10 +14,10 @@ local function _probability(p)
 end
 
 
-function _M:new(storage, least_tps, timeout)
+function _M.new(_, storage, least_tps, probability)
 
-    if timeout == nil then
-        timeout = default_timeout
+    if probability == nil then
+        probability = default_probability
     end
 
     -- to record events whose tps > least_tps
@@ -25,22 +25,16 @@ function _M:new(storage, least_tps, timeout)
     -- to let this event persistent in storage, the timeout must:
     --      timeout >= 1 / perceived tps
     -- thus timeout = 1 / actual tps / probability
-    local p = 1 / timeout / least_tps
+    local timeout = 1 / least_tps / probability
 
-    if p > 1 then
-        p = 1
-    elseif p < 0.001 * 0.001 then
-        p = 0.001 * 0.001
-    end
-
-    local self = {
+    local s = {
         storage=storage,
-        probability=p,
+        probability=probability,
         least_tps=least_tps,
         timeout=timeout,
     }
 
-    return setmetatable(self, _mt)
+    return setmetatable(s, _mt)
 end
 
 
@@ -50,7 +44,7 @@ function _M:incr(key)
         return nil, nil, nil
     end
 
-    local rst, err, forcible = self.storage:incr(
+    local rst, err, _ = self.storage:incr(
             key,
             1, -- incr by 1
             0, -- initial value
