@@ -61,7 +61,7 @@ print(c:get('foo')) -- high probability 0
 ##  acid.counter.new
 
 **syntax**:
-`acid.counter:new(storage, least_tps, timeout)`
+`acid.counter:new(storage, least_tps, probability)`
 
 **arguments**:
 
@@ -73,11 +73,12 @@ print(c:get('foo')) -- high probability 0
     specifies times per second threshold to record.
     If an event happens not frequent enough it won't be record.
 
--   `timeout`:
-    optional to specify the timeout time of records in storage.
+-   `probability`:
+    optional to specify the probability to records in storage.
 
-    By default it is `0.01` second, and the probability to record a event is
-    calculated by: `p = 1 / timeout / least_tps`.
+    By default it is `0.01`, thus only `1%` of the events are recorded.
+    and the timeout of record is calculated by:
+    `timeout = 1 / probability / least_tps`.
 
 **return**:
 a counter instance.
