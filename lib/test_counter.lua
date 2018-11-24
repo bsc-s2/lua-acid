@@ -8,26 +8,24 @@ local dd  = test.dd
 function _new_storage()
     local storage = {
         stat={
-            incr=0,
+            set=0,
             get=0,
         },
         tbl={},
     }
 
-    storage.incr = function(self, key, val, init, init_ttl)
-        self.stat.incr = self.stat.incr + 1
-        local curr = (self.tbl[key] or {}).val or 0
-        self.tbl[key] = {
-            val=curr + val,
-            expire_at=ngx.now() + init_ttl,
-        }
+    storage.set = function(self, key, val, expire)
+        self.stat.set = self.stat.set + 1
+        self.tbl[key] = {val=val, expire_at=ngx.now() + expire}
+
+        return true
     end
 
     storage.get = function(self, key)
         self.stat.get = self.stat.get + 1
         local curr = self.tbl[key]
         if curr == nil then
-            return 0
+            return nil
         end
 
         if ngx.now() > curr.expire_at then
@@ -53,35 +51,37 @@ function test.new(t)
 end
 
 
-function test.more_than_least_tps(t)
-    local sto = _new_storage()
+function test.least_tps(t)
 
-    local c = counter:new(sto, 1000, 0.1)
-    -- c.timeout = 0.01
+    for i, tps, expected_left, expected_right, desc in t:case_iter(3, {
+        {800, 0, 100, 'tps < 1000 will not be recorded'},
+        {1200, 1000, 1400, 'tps > 1000 will be recorded'},
+    }) do
 
-    for _ = 0, 20 do
-        ngx.sleep(1/1200)
-        c:incr('foo')
+        local sto = _new_storage()
+
+        local p = 0.05
+        local n = 1000
+        local c = counter:new(sto, 1000, p)
+        -- c.timeout = 0.01
+
+        for _ = 0, n do
+            ngx.sleep(1 / tps)
+            c:incr('foo')
+        end
+
+        local rst = c:get('foo')
+        dd('curr tps:', rst)
+
+        t:eq(true, expected_left <= rst)
+        t:eq(true, rst <= expected_right)
+
+        -- probability to call storage:incr is 0.1
+        dd('N.O. of set:', c.storage.stat.set)
+        dd(p * n * 0.8)
+        dd(p * n * 1.2)
+        t:eq(true, c.storage.stat.set >= p * n * 0.8)
+        t:eq(true, c.storage.stat.set <= p * n * 1.2)
     end
 
-    -- probability to call storage:incr is 0.1
-    t:eq(true, c.storage.stat.incr >= 2)
-    t:eq(true, c.storage.stat.incr <= 5)
-
-    t:neq(0, c:get('foo'))
-end
-
-
-function test.less_than_least_tps(t)
-    local sto = _new_storage()
-
-    local c = counter:new(sto, 1000, 0.1)
-    -- c.timeout = 0.01
-
-    for _ = 0, 20 do
-        c:incr('foo')
-        ngx.sleep(1/800)
-    end
-
-    t:eq(0, c:get('foo'))
 end

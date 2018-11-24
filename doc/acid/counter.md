@@ -67,7 +67,7 @@ print(c:get('foo')) -- high probability 0
 
 -   `storage`:
     a `ngx.shared.DICT` like object.
-    It must provide `incr` and `get` method.
+    It must provide `set` and `get` method.
 
 -   `least_tps`:
     specifies times per second threshold to record.
