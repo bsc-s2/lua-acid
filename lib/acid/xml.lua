@@ -27,26 +27,6 @@ local entity_to_char = {
 }
 
 
-function _M.xml_escape(str)
-    local char_to_entity_ref = function(c)
-        if char_to_entity[c] ~= nil then
-            return char_to_entity[c]
-        end
-
-        local byte = string.byte(c)
-        if byte <= 0x20 then
-            return string.format('&#x%02X;', byte)
-        end
-
-        return c
-    end
-
-    local escaped_str = string.gsub(str, '.', char_to_entity_ref)
-
-    return escaped_str
-end
-
-
 function _M.xml_unescape(str)
     local entity_ref_to_str = function(entity_ref)
         if entity_to_char[entity_ref] ~= nil then
@@ -83,7 +63,7 @@ local function escape_by_char(str)
         end
 
         local byte = string.byte(c)
-        if byte > 0x20 and byte < 0x7F then
+        if byte >= 0x20 and byte < 0x7F then
             return c
         end
 
@@ -97,14 +77,29 @@ end
 
 
 function _M.xml_safe_encode(str)
-    local _, err, _ = utf8.code_point(str)
+    local code_points, err, _ = utf8.code_point(str)
     if err ~= nil then
-        str = escape_by_char(str)
-    else
-        str = _M.xml_escape(str)
+        return escape_by_char(str)
     end
 
-    return str
+    local escaped_strs = {}
+
+    local _, cp
+    for _, cp in ipairs(code_points) do
+        if cp < 0x80 then
+
+            local c = string.char(cp)
+            if char_to_entity[c] ~= nil then
+                c = char_to_entity[c]
+            end
+
+            table.insert(escaped_strs, c)
+        else
+            table.insert(escaped_strs, string.format('&#%d;', cp))
+        end
+    end
+
+    return table.concat(escaped_strs)
 end
 
 
