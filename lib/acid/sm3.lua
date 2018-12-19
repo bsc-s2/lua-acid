@@ -1,6 +1,24 @@
-local ffi = require("ffi")
 
-local crypto = ffi.load('crypto')
+local ffi = require("ffi")
+local strutil = require("acid.strutil")
+
+local crypto = nil
+local lib_fname = 'libcrypto'
+
+for _, p in ipairs(strutil.split(package.cpath, ';')) do
+    local lib_cpath = string.gsub(p, '%?', lib_fname)
+
+    local ok
+    ok, crypto = pcall(ffi.load, lib_cpath)
+    if ok and crypto ~= nil then
+        break
+    end
+end
+
+if crypto == nil then
+    crypto = ffi.load(lib_fname)
+end
+
 local setmetatable = setmetatable
 
 local _M = {}
