@@ -89,10 +89,10 @@ function _M.is_inn(ip)
 end
 
 
-function _M.choose_pub(ips)
+function _M.choose(ips, clz)
     local rst = {}
     for _, ip in ipairs(ips) do
-        if _M.ip_class(ip) == PUB then
+        if _M.ip_class(ip) == clz then
             table_insert(rst, ip)
         end
     end
@@ -101,15 +101,13 @@ function _M.choose_pub(ips)
 end
 
 
-function _M.choose_inn(ips)
-    local rst = {}
-    for _, ip in ipairs(ips) do
-        if _M.ip_class(ip) == INN then
-            table_insert(rst, ip)
-        end
-    end
+function _M.choose_pub(ips)
+    return _M.choose(ips, PUB)
+end
 
-    return rst
+
+function _M.choose_inn(ips)
+    return _M.choose(ips, INN)
 end
 
 

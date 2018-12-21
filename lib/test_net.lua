@@ -139,12 +139,16 @@ function test.ip_class_and_xxx(t)
 
             t:eqlist({inp}, net.choose_pub({inp, '192.168.0.0'}))
             t:eqlist({inp}, net.choose_pub({'192.168.0.0', inp}))
+            t:eqlist({inp}, net.choose({inp, '192.168.0.0'}, 'PUB'))
+            t:eqlist({inp}, net.choose({'192.168.0.0', inp}, 'PUB'))
         else
             t:eq(false, net.is_pub(inp))
             t:eq(true, net.is_inn(inp))
 
             t:eqlist({inp}, net.choose_inn({inp, '1.1.1.1'}))
             t:eqlist({inp}, net.choose_inn({'1.1.1.1', inp}))
+            t:eqlist({inp}, net.choose({inp, '1.1.1.1'}, 'INN'))
+            t:eqlist({inp}, net.choose({'1.1.1.1', inp}, 'INN'))
         end
     end
 end

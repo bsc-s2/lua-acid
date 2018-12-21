@@ -30,6 +30,37 @@ Utility functions for network related operation.
 
 #   Methods
 
+
+##  net.choose
+
+**syntax**:
+`net.choose(ips, clz)`
+
+Choose public ips or inner ips.
+
+**arguments**:
+
+-   `ips`:
+    is a list-style table of ips.
+
+-   `clz`:
+    is the type of ip to choose, `net.PUB` or `net.INN`.
+
+**return**:
+a new list-style table of ips.
+
+
+##  net.choose_pub net.choose_inn
+
+**syntax**:
+`net.choose_pub(ips)`
+`net.choose_inn(ips)`
+
+These two are shortcuts of `net.choose(ips, net.PUB)`
+and `net.choose(ips, net.INN)`.
+
+
+
 ##  net.ip_to_binary
 
 **syntax**:
