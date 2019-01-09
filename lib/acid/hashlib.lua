@@ -33,7 +33,9 @@ local schemas = {
                 D = str_to_unsiged_clong,
                 Nl = str_to_unsiged_clong,
                 Nh = str_to_unsiged_clong,
-                data = function(val) return ffiutil.tbl_to_carray('MD5_LONG[MD5_LBLOCK]', val, str_to_unsiged_clong) end,
+                data = function(val)
+                    return ffiutil.tbl_to_carray('MD5_LONG[MD5_LBLOCK]', val, str_to_unsiged_clong)
+                end,
                 num = tonumber
             }
         },
@@ -45,7 +47,9 @@ local schemas = {
                 D = clong_to_str,
                 Nl = clong_to_str,
                 Nh = clong_to_str,
-                data = function(val) return ffiutil.carray_to_tbl(val, ffi.C.MD5_LBLOCK, clong_to_str) end,
+                data = function(val)
+                    return ffiutil.carray_to_tbl(val, ffi.C.MD5_LBLOCK, clong_to_str)
+                end,
                 num = tonumber
             }
         }
@@ -62,7 +66,9 @@ local schemas = {
                 h4 = str_to_unsiged_clong,
                 Nl = str_to_unsiged_clong,
                 Nh = str_to_unsiged_clong,
-                data = function(val) return ffiutil.tbl_to_carray('SHA_LONG[SHA_LBLOCK]', val, str_to_unsiged_clong) end,
+                data = function(val)
+                    return ffiutil.tbl_to_carray('SHA_LONG[SHA_LBLOCK]', val, str_to_unsiged_clong)
+                end,
                 num = tonumber
             }
         },
@@ -75,7 +81,9 @@ local schemas = {
                 h4 = clong_to_str,
                 Nl = clong_to_str,
                 Nh = clong_to_str,
-                data = function(val) return ffiutil.carray_to_tbl(val, ffi.C.SHA_LBLOCK, clong_to_str) end,
+                data = function(val)
+                    return ffiutil.carray_to_tbl(val, ffi.C.SHA_LBLOCK, clong_to_str)
+                end,
                 num = tonumber
             }
         }
@@ -85,20 +93,28 @@ local schemas = {
         algorithm = resty_sha256,
         dec = {
             {
-                h = function(val) return ffiutil.tbl_to_carray('SHA_LONG[8]', val, str_to_unsiged_clong) end,
+                h = function(val)
+                    return ffiutil.tbl_to_carray('SHA_LONG[8]', val, str_to_unsiged_clong)
+                end,
                 Nl = str_to_unsiged_clong,
                 Nh = str_to_unsiged_clong,
-                data = function(val) return ffiutil.tbl_to_carray('SHA_LONG[SHA_LBLOCK]', val, str_to_unsiged_clong) end,
+                data = function(val)
+                    return ffiutil.tbl_to_carray('SHA_LONG[SHA_LBLOCK]', val, str_to_unsiged_clong)
+                end,
                 num = tonumber,
                 md_len = tonumber
             }
         },
         enc = {
             {
-                h = function(val) return ffiutil.carray_to_tbl(val, 8, clong_to_str) end,
+                h = function(val)
+                    return ffiutil.carray_to_tbl(val, 8, clong_to_str)
+                end,
                 Nl = clong_to_str,
                 Nh = clong_to_str,
-                data = function(val) return ffiutil.carray_to_tbl(val, ffi.C.SHA_LBLOCK, clong_to_str) end,
+                data = function(val)
+                    return ffiutil.carray_to_tbl(val, ffi.C.SHA_LBLOCK, clong_to_str)
+                end,
                 num = tonumber,
                 md_len = tonumber
             }
@@ -113,7 +129,10 @@ function _M.new(algorithm)
     local schema = schemas[algorithm]
 
     if schema == nil then
-        return nil, 'UnsupportedAlgorithm', string.format('unsupported algorithm %s, we support %s', algorithm, to_str(supported))
+        return nil, 'UnsupportedAlgorithm', string.format(
+                'unsupported algorithm %s, we support %s',
+                algorithm,
+                to_str(supported))
     end
 
     local hasher = schema['algorithm']:new()
