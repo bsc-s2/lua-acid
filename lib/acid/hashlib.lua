@@ -25,7 +25,7 @@ local schemas = {
     md5 = {
         ctype = 'MD5_CTX[1]',
         algorithm = resty_md5,
-        enc = {
+        dec = {
             {
                 A = str_to_unsiged_clong,
                 B = str_to_unsiged_clong,
@@ -37,7 +37,7 @@ local schemas = {
                 num = tonumber
             }
         },
-        dec = {
+        enc = {
             {
                 A = clong_to_str,
                 B = clong_to_str,
@@ -53,7 +53,7 @@ local schemas = {
     sha1 = {
         ctype = 'SHA_CTX[1]',
         algorithm = resty_sha1,
-        enc = {
+        dec = {
             {
                 h0 = str_to_unsiged_clong,
                 h1 = str_to_unsiged_clong,
@@ -66,7 +66,7 @@ local schemas = {
                 num = tonumber
             }
         },
-        dec = {
+        enc = {
             {
                 h0 = clong_to_str,
                 h1 = clong_to_str,
@@ -83,7 +83,7 @@ local schemas = {
     sha256 = {
         ctype = 'SHA256_CTX[1]',
         algorithm = resty_sha256,
-        enc = {
+        dec = {
             {
                 h = function(val) return ffiutil.tbl_to_carray('SHA_LONG[8]', val, str_to_unsiged_clong) end,
                 Nl = str_to_unsiged_clong,
@@ -93,7 +93,7 @@ local schemas = {
                 md_len = tonumber
             }
         },
-        dec = {
+        enc = {
             {
                 h = function(val) return ffiutil.carray_to_tbl(val, 8, clong_to_str) end,
                 Nl = clong_to_str,
@@ -152,9 +152,9 @@ end
 
 function _M.deserialize(self, ctx)
 
-    local ctype = self.schema['ctype']
+    local ctype = self.schema.ctype
 
-    local enc_schema = self.schema['enc']
+    local enc_schema = self.schema.dec
 
     local cdata_ctx, err, errmsg = ffiutil.tbl_to_cdata(ctype, ctx, enc_schema)
 
@@ -162,16 +162,16 @@ function _M.deserialize(self, ctx)
         return nil, err, errmsg
     end
 
-    self.hasher['_ctx'] = cdata_ctx
+    self.hasher._ctx = cdata_ctx
 
     return true, nil, nil
 end
 
 function _M.serialize(self)
 
-    local dec_schema = self.schema['dec']
+    local dec_schema = self.schema.enc
 
-    local ctx, err, errmsg = ffiutil.cdata_to_tbl(self.hasher['_ctx'], dec_schema)
+    local ctx, err, errmsg = ffiutil.cdata_to_tbl(self.hasher._ctx, dec_schema)
 
     if err ~= nil then
         return nil, err, errmsg
