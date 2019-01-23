@@ -1,4 +1,5 @@
 local bit = require('bit')
+local config = require('acid.config')
 local strutil = require('acid.strutil')
 local tableutil = require('acid.tableutil')
 
@@ -13,13 +14,7 @@ local tableutil_extends = tableutil.extends
 local PUB = 'PUB'
 local INN = 'INN'
 
-local _intra_patterns = {
-    '^172[.]1[6-9][.]',
-    '^172[.]2[0-9][.]',
-    '^172[.]3[0-1][.]',
-    '^10[.]',
-    '^192[.]168[.]',
-}
+local inner_ip_patterns = config.inner_ip_patterns
 
 local binary_masks = {}
 local reverse_binary_masks = {}
@@ -68,7 +63,7 @@ function _M.ip_class(ip)
         return INN
     end
 
-    for _, ptn in ipairs(_intra_patterns) do
+    for _, ptn in ipairs(inner_ip_patterns) do
 
         if string_match(ip, ptn)then
             return INN
