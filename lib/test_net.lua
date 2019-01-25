@@ -1,4 +1,5 @@
 local net = require('acid.net')
+local config = require('acid.config')
 
 local dd = test.dd
 
@@ -411,4 +412,53 @@ function test.parse_cidr(t)
         t:eq(expected[2], max)
     end
 
+end
+
+function test.test_inner_ip_patterns(t)
+
+    old = config.inner_ip_patterns
+
+    config.inner_ip_patterns = {'^172[.]18[.]2[.]3[2-9]$', '^172[.]18[.]2[.]4[0-7]$'}
+
+    local cases = {
+        {'172.18.2.36', 'INN'},
+        {'172.18.2.37', 'INN'},
+        {'172.18.2.47', 'INN'},
+
+        {'172.18.2.31', 'PUB'},
+        {'172.18.2.48', 'PUB'},
+        {'172.18.2.49', 'PUB'},
+    }
+
+    for ii, c in ipairs(cases) do
+
+        local inp, expected = t:unpack(c)
+        local msg = 'case: ' .. tostring(ii) .. '-th '
+        dd(msg, c)
+
+        local rst = net.ip_class(inp)
+        dd('rst: ', rst)
+
+        t:eq(expected, rst, msg)
+
+        if expected == 'PUB' then
+            t:eq(true, net.is_pub(inp))
+            t:eq(false, net.is_inn(inp))
+
+            t:eqlist({inp}, net.choose_pub({inp, '172.18.2.36'}))
+            t:eqlist({inp}, net.choose_pub({'172.18.2.36', inp}))
+            t:eqlist({inp}, net.choose({inp, '172.18.2.36'}, 'PUB'))
+            t:eqlist({inp}, net.choose({'172.18.2.36', inp}, 'PUB'))
+        else
+            t:eq(false, net.is_pub(inp))
+            t:eq(true, net.is_inn(inp))
+
+            t:eqlist({inp}, net.choose_inn({inp, '172.18.2.31'}))
+            t:eqlist({inp}, net.choose_inn({'172.18.2.31', inp}))
+            t:eqlist({inp}, net.choose({inp, '172.18.2.31'}, 'INN'))
+            t:eqlist({inp}, net.choose({'172.18.2.31', inp}, 'INN'))
+        end
+    end
+
+    config.inner_ip_patterns = old
 end
