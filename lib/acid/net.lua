@@ -14,8 +14,6 @@ local tableutil_extends = tableutil.extends
 local PUB = 'PUB'
 local INN = 'INN'
 
-local inner_ip_patterns = config.inner_ip_patterns
-
 local binary_masks = {}
 local reverse_binary_masks = {}
 
@@ -63,7 +61,7 @@ function _M.ip_class(ip)
         return INN
     end
 
-    for _, ptn in ipairs(inner_ip_patterns) do
+    for _, ptn in ipairs(config.inner_ip_patterns) do
 
         if string_match(ip, ptn)then
             return INN
