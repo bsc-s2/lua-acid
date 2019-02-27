@@ -45,7 +45,10 @@ local function exec_callbacks()
         local cb_array = callbacks[index]
 
         for _, cb in ipairs(cb_array) do
-            cb.func(unpack(cb.args))
+            local ok, rst = pcall(cb.func, unpack(cb.args))
+            if not ok then
+                ngx.log(ngx.ERR, 'callback crash: ', rst)
+            end
         end
     end
 

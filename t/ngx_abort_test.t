@@ -279,6 +279,10 @@ GET /t
             local ngx_abort = require("acid.ngx_abort")
 
             local a = 1
+            local cb_crash = function()
+                assert(false, "cb_crash, a is " .. tostring(a))
+            end
+
             local add = function(to_add)
                 a = a + to_add
                 ngx.log(ngx.INFO, "after add, a is ", a)
@@ -290,7 +294,21 @@ GET /t
             end
 
             local _, err, errmsg = ngx_abort.add_callback_with_opts(
+                    cb_crash, {position="last"})
+            if err ~= nil then
+                ngx.log(ngx.ERR, "add callback error")
+                return
+            end
+
+            local _, err, errmsg = ngx_abort.add_callback_with_opts(
                     multiply, {position="last"})
+            if err ~= nil then
+                ngx.log(ngx.ERR, "add callback error")
+                return
+            end
+
+            local _, err, errmsg = ngx_abort.add_callback_with_opts(
+                    cb_crash, {position=50})
             if err ~= nil then
                 ngx.log(ngx.ERR, "add callback error")
                 return
@@ -326,6 +344,8 @@ GET /t
 --- error_log eval
 [
     "after add, a is 2",
+    "cb_crash, a is 2",
     "after add, a is 4",
+    "cb_crash, a is 4",
     "after multiply, a is 8",
 ]
