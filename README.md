@@ -65,6 +65,14 @@ It is meant to be a underlaying code base for building a distributed system.
 This package needs perl command `prove` to run unittest:
 
 ```
+# install in centos 7
+$ yum install -y perl-CPAN perl-Test-Harness
+
+```
+
+run test:
+
+```
 $ sudo cpan Test::Nginx
 
 # optional, setup nginx path:
@@ -72,7 +80,12 @@ $ export PATH=$PATH:/usr/local/Cellar/openresty/1.11.2.3/nginx/sbin
 
 # test all
 $ prove
+
+# test modules with verbose mode
+# prove t/ngx_abort_test.t t/ngx_abort.t -v
 ```
+
+check nginx.conf and logs used in test under `t/servroot/conf`, `t/servroot/logs`.
 
 
 # lua-poxos
