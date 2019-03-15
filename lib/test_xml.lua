@@ -177,6 +177,48 @@ function test.from_xml(t)
     end
 end
 
+function test.from_xml_parse_large_file(t)
+    -- <?xml version="1.0" encoding="UTF-8"?>
+    -- <Delete>
+    --     <Object>
+    --          <Key>Key</Key>
+    --          <VersionId>VersionId</VersionId>
+    --     </Object>
+    --     <Object>
+    --          <Key>Key</Key>
+    --     </Object>
+    --     ...
+    -- </Delete>
+    data = {
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<Delete>',
+    }
+    data_size = #data[1] + #data[2]
+
+    -- at least 100KB
+    while data_size < 100 * 1024 do
+        item_fmt = '<Object>' ..
+                   '<Key>test_key_%d</Key>' ..
+                   '<VersionId>test_key_%d_version</VersionId>' ..
+                   '</Object>'
+
+        item_index = #data - 2
+        data_item = string.format(item_fmt, item_index, item_index)
+
+        data_size = data_size + #data_item
+        table.insert(data, data_item)
+    end
+    table.insert(data, '</Delete>')
+
+    xml_str = table.concat(data)
+    ngx.log(ngx.DEBUG,
+            string.format('generate #%d items, size %d', #data - 3, #xml_str))
+
+    local _, err, errmsg = xml.from_xml(xml_str)
+    t:eq(nil, err, errmsg)
+    t:eq(nil, errmsg, errmsg)
+end
+
 
 function test.invalid_xml(t)
     for _, xml_str, desc in t:case_iter(1, {

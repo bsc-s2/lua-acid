@@ -38,5 +38,6 @@ __DATA__
     }
 --- request
 GET /t
+--- timeout: 0.2
 --- response_body_like
 .*tests all passed.*

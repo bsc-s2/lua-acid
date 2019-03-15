@@ -449,7 +449,7 @@ end
 
 function _M.from_xml(str)
     str = string_gsub(str, '<!--(.-)-->', '')
-    str = string_gsub(str, '<?(.-)?>', '')
+    str = string_gsub(str, '<[?](.-)[?]>', '')
     local segment = {
         start_i = 1,
         end_i = #str,
