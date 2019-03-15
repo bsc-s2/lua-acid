@@ -68,11 +68,11 @@ function test.to_xml(t)
         },
         {
             { a={ '测试', '<>&'..char(34)..char(39)..char(0x20) } },
-            '<r><a>测试</a><a>&lt;&gt;&amp;&quot;&apos;&#x20;</a></r>',
+            '<r><a>&#27979;&#35797;</a><a>&lt;&gt;&amp;&quot;&apos; </a></r>',
         },
         {
             { [char(0xEF)]={ __attr={['<'] = '>'}, [char(0x00)]=char(0x01) } },
-            '<r><&#xEF; &lt;="&gt;"><&#x00;>&#x01;</&#x00;></&#xEF;></r>',
+            '<r><&#xEF; &lt;="&gt;"><\0>\1</\0></&#xEF;></r>',
         },
     }) do
 
