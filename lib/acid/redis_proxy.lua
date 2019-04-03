@@ -1,7 +1,7 @@
 local acid_nwr = require("acid.nwr")
 local strutil = require("acid.strutil")
 local tableutil = require("acid.tableutil")
-local redis_chash = require("acid.redis_chash")
+local chash_redis = require("acid.chash_redis")
 local aws_auth = require("acid.aws_auth")
 local http_resp = require("acid.http_resp")
 
@@ -108,7 +108,7 @@ function _M.new(_, access_key, secret_key, get_redis_servers, opts)
     local obj = {
         access_key = access_key,
         secret_key = secret_key,
-        redis_chash = redis_chash:new(
+        chash_redis = chash_redis:new(
             "cluster_redisproxy", get_redis_servers, opts)
     }
 
@@ -134,12 +134,12 @@ function _M.proxy(self)
     local nok, rst, err_code, err_msg
     if cmd == 'set' or cmd == 'hset' then
         nok, err_code, err_msg =
-            self.redis_chash[cmd](self.redis_chash, cmd_args, nwr[1], expire)
+            self.chash_redis[cmd](self.chash_redis, cmd_args, nwr[1], expire)
         if err_code == nil then
             _, err_code, err_msg = acid_nwr.assert_w_ok(nwr, nok)
         end
     else
-        rst, err_code, err_msg = self.redis_chash[cmd](self.redis_chash, cmd_args, nwr[3])
+        rst, err_code, err_msg = self.chash_redis[cmd](self.chash_redis, cmd_args, nwr[3])
     end
 
     return http_resp.output(rst, err_code, err_msg, output_opts)
