@@ -1,9 +1,8 @@
-local strutil = require("acid.strutil")
-local tableutil = require("acid.tableutil")
-local acid_redis = require("acid.redis")
-local ngx_timer = require("acid.ngx_timer")
-local acid_chash = require( "acid.chash" )
-local semaphore = require("ngx.semaphore")
+local strutil         = require("acid.strutil")
+local tableutil       = require("acid.tableutil")
+local acid_redis      = require("acid.redis")
+local acid_json       = require("acid.json")
+local acid_chash_conf = require("acid.chash_conf")
 
 local to_str = strutil.to_str
 local str_split = strutil.split
@@ -11,83 +10,11 @@ local str_split = strutil.split
 local _M = { _VERSION = "0.1" }
 local mt = { __index = _M }
 
---redis_conf = {
-    --['cluster_redis'] = {
-        --expires = 0,
-        --updates = 0,
-        --semaphore = semaphore.new(1),
-        --servers = {},
-        --chash = nil,
-        --get_redis_servers = get_redis_servers,
-    --}
---}
---
 local redis_conf = {}
-local servers_expires_seconds = 600
-local servers_updates_seconds = 300
 
-local function update_chash(self)
-    local conf = self.conf
-
-    local _, err = conf.semaphore:wait(1)
-    if err then
-        ngx.log(ngx.INFO, err, " other timer is updating servers")
-        return
-    end
-
-    local now = ngx.time()
-    if now < conf.updates then
-        ngx.log(ngx.INFO, "servers were updated by other timer")
-
-        conf.semaphore:post(1)
-        return
-    end
-
-    local servers = self.conf.get_redis_servers()
-    if servers == nil then
-        conf.semaphore:post(1)
-        return
-    end
-
-    local now = ngx.time()
-    if conf.chash == nil then
-       conf.chash = acid_chash.new(servers)
-    else
-        conf.chash:update_server(servers)
-    end
-
-    conf.servers = servers
-
-    conf.expires = now + servers_expires_seconds
-    conf.updates = now + servers_updates_seconds
-
-    ngx.log(ngx.INFO, "consistent hash built")
-    conf.semaphore:post(1)
-end
-
-local function get_chash(self)
-    local conf = self.conf
-    local now = ngx.time()
-
-    if now >= conf.updates then
-        if conf.updates == 0 then
-            update_chash(self)
-        else
-            ngx_timer.at(0.01, update_chash, self)
-        end
-    end
-
-    if now < conf.expires then
-        return conf.chash
-    else
-        ngx.log(ngx.ERR, "consistent servers was expired")
-    end
-
-    return nil
-end
 
 local function get_redis_addrs(self, k, n)
-    local chash = get_chash(self)
+    local chash = self.chash_conf:get_chash()
     if chash == nil then
         return {}
     end
@@ -97,8 +24,8 @@ local function get_redis_addrs(self, k, n)
         return nil, err_code, err_msg
     end
 
-    if self.conf.optimize_choose_servers ~= nil then
-        return self.conf.optimize_choose_servers(addrs)
+    if self.optimize_choose_servers ~= nil then
+        return self.optimize_choose_servers(addrs)
     end
 
     return addrs
@@ -194,6 +121,79 @@ function _M.hget(self, args, n)
     return run_xget_cmd(self, 'hget', args, n)
 end
 
+function _M.hkeys(self, args, n)
+    local rst, err, errmsg = run_xget_cmd(self, 'hkeys', args, n)
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("hkeys run cmd error ", err, ":", errmsg))
+        return nil, err, errmsg
+    end
+
+    local val, err = acid_json.enc(rst.value)
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("hkeys json encode the result error:", err))
+        return nil, "JsonEncodeError", err
+    end
+
+    rst.value = val
+    return rst
+end
+
+function _M.hvals(self, args, n)
+    local rst, err, errmsg = run_xget_cmd(self, 'hvals', args, n)
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("hvals run cmd error ", err, ":", errmsg))
+        return nil, err, errmsg
+    end
+
+    local vals = {}
+    for _, v in ipairs(rst.value) do
+        v, err = acid_json.dec(v)
+        if err ~= nil then
+            ngx.log(ngx.ERR, to_str("hvals json decode the result error:", err))
+            return nil, "JsonDecodeError", err
+        end
+        table.insert(vals, v)
+    end
+
+    local json_vals, err = acid_json.enc(vals)
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("hvals json encode the result error:", err))
+        return nil, "JsonEncodeError", err
+    end
+
+    rst.value = json_vals
+    return rst
+end
+
+function _M.hgetall(self, args, n)
+    local rst, err, errmsg = run_xget_cmd(self, 'hgetall', args, n)
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("hgetall run cmd error ", err, ":", errmsg))
+        return nil, err, errmsg
+    end
+
+    local vals = {}
+    for i=1, #(rst.value), 2 do
+        local k = rst.value[i]
+        local v = rst.value[i + 1]
+        v, err = acid_json.dec(v)
+        if err ~= nil then
+            ngx.log(ngx.ERR, to_str("hgetall json decode the result error:", err))
+            return nil, "JsonDecodeError", err
+        end
+        vals[k] = v
+    end
+
+    local json_vals, err = acid_json.enc(vals)
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("hgetall json encode the result error:", err))
+        return nil, "JsonEncodeError", err
+    end
+
+    rst.value = json_vals
+    return rst
+end
+
 function _M.hset(self, args, n, expire)
     return run_xset_cmd(self, 'hset', args, n, expire)
 end
@@ -210,22 +210,15 @@ function _M.new( _, name, get_redis_servers, opts)
     local opts = opts or {}
 
     if redis_conf[name] == nil then
-        redis_conf[name] = {
-            expires = 0,
-            updates = 0,
-            semaphore = semaphore.new(1),
-            servers = {},
-            chash = nil,
-            get_redis_servers = get_redis_servers,
-            optimize_choose_servers = opts.optimize_choose_servers
-        }
+        redis_conf[name] = acid_chash_conf.new({get_servers=get_redis_servers})
     end
 
     local obj = {
-        conf = redis_conf[name],
+        chash_conf = redis_conf[name],
+        optimize_choose_servers = opts.optimize_choose_servers,
     }
 
-    return setmetatable( obj, mt )
+    return setmetatable(obj, mt)
 end
 
 return _M

@@ -23,7 +23,7 @@ __DATA__
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -72,7 +72,7 @@ ok
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -121,7 +121,7 @@ ok
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -175,7 +175,7 @@ GET /t
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -230,7 +230,7 @@ GET /t
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -285,7 +285,7 @@ GET /t
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -334,7 +334,7 @@ ok
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -383,7 +383,7 @@ ok
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -437,7 +437,7 @@ GET /t
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")
@@ -491,7 +491,7 @@ GET /t
     location /t {
         content_by_lua '
             local rp = require("acid.redis_proxy_cli")
-            local cli = rp:new("127.0.0.1", ngx.var.server_port, {nwr={3,2,2},ak_sk={"ak","sk"}})
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
 
             if cli == nil then
                 ngx.log(ngx.ERR, " create client error")

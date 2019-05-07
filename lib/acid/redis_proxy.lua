@@ -32,6 +32,15 @@ local redis_cmd_model = {
 
     -- hset(hashname, hashkey, val, expire=nil)
     HSET = {'PUT', 3, true, {'expire'}},
+
+    -- hkeys(hashname)
+    HKEYS = {'GET', 1, false, {}},
+
+    -- hvals(hashname)
+    HVALS = {'GET', 1, false, {}},
+
+    -- hgetall(hashname)
+    HGETALL = {'GET', 1, false, {}},
 }
 
 local redis_cmd_names = tableutil.keys(redis_cmd_model)

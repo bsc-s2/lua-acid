@@ -4,7 +4,7 @@
 --      ak_sk = {'accesskey', 'secret_key'},
 --      timeouts = {1, 1, 1},
 --  }
---  local cli = redis_proxy_cli:new(ip, port, opts)
+--  local cli = redis_proxy_cli:new({{ip, port}}, opts)
 --
 --  "retry(another N times) is optional"
 --  cli:get(key, retry)
@@ -43,10 +43,13 @@ local to_str = strutil.to_str
 
 -- cmd: {"http method", "args count", "optional args names"}
 local cmds = {
-    get  = {"GET", 2, {}},
-    set  = {"PUT", 4, {"expire"}},
-    hget = {"GET", 3, {}},
-    hset = {"PUT", 5, {"expire"}},
+    get     = {"GET", 2, {}},
+    set     = {"PUT", 4, {"expire"}},
+    hget    = {"GET", 3, {}},
+    hset    = {"PUT", 5, {"expire"}},
+    hkeys   = {"GET", 2, {}},
+    hvals   = {"GET", 2, {}},
+    hgetall = {"GET", 2, {}},
 }
 
 
@@ -94,12 +97,12 @@ local function _make_req_uri(rp_cli, params, opts, qs_values)
 end
 
 
-local function _req(rp_cli, request)
+local function _req(rp_cli, ip, port, request)
     local req = tableutil.dup(request, true)
     req['headers'] = req['headers'] or {}
 
     if req['headers']['Host'] == nil then
-        req['headers']['Host'] = string.format('%s:%s', rp_cli.ip, rp_cli.port)
+        req['headers']['Host'] = string.format('%s:%s', ip, port)
     end
 
     if req['body'] ~= nil then
@@ -111,7 +114,7 @@ local function _req(rp_cli, request)
         return nil, err, errmsg
     end
 
-    local cli = http_cli:new(rp_cli.ip, rp_cli.port, rp_cli.timeouts)
+    local cli = http_cli:new(ip, port, rp_cli.timeouts)
     local req_opts = {
         method  = req['verb'],
         headers = req['headers'],
@@ -137,6 +140,50 @@ local function _req(rp_cli, request)
     end
 
     return res, nil, nil
+end
+
+
+local function _send_req(rp_cli, request)
+    local rst, err, errmsg
+    for _, h in ipairs(rp_cli.hosts) do
+        local ip, port = h[1], h[2]
+        rst, err, errmsg = _req(rp_cli, ip, port, request)
+        if err == nil then
+            break
+        end
+    end
+
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("failed to send req to hosts:",
+            rp_cli.hosts, " err:", err, ",", errmsg))
+        return nil, err, errmsg
+    end
+
+    if request.verb == "GET" or #(rp_cli.proxy_hosts) == 0 then
+        return rst, nil, nil
+    end
+
+    for _, hosts in ipairs(rp_cli.proxy_hosts) do
+        ngx.log(ngx.INFO, to_str("send req to proxy hosts:", hosts))
+        for _, h in ipairs(hosts) do
+            local ip, port = h[1], h[2]
+            rst, err, errmsg = _req(rp_cli, ip, port, request)
+            if err == nil then
+                break
+            end
+        end
+        if err ~= nil then
+            break
+        end
+    end
+
+    if err ~= nil then
+        ngx.log(ngx.ERR, to_str("failed to send req to proxy hosts:",
+            rp_cli.proxy_hosts, " err:", err, ",", errmsg))
+        return nil, err, errmsg
+    end
+
+    return rst, nil, nil
 end
 
 
@@ -173,6 +220,8 @@ end
 
 
 local function _do_cmd(rp_cli, cmd, ...)
+    ngx.log(ngx.INFO, to_str("start do cmd:", cmd))
+
     local cmd_info = cmds[cmd]
     if cmd_info == nil then
         local support_keys = tableutil.keys(cmds)
@@ -198,7 +247,7 @@ local function _do_cmd(rp_cli, cmd, ...)
 
     retry = retry or 0
     for _ = 1, retry + 1 do
-        res, err, errmsg = _req(rp_cli, req)
+        res, err, errmsg = _send_req(rp_cli, req)
         if err == nil then
             break
         end
@@ -220,7 +269,7 @@ local function _do_cmd(rp_cli, cmd, ...)
 end
 
 
-function _M.new(_, ip, port, opts)
+function _M.new(_, hosts, opts)
     opts = opts or {}
     local nwr = opts.nwr or {3, 2, 2}
     local ak_sk = opts.ak_sk or {}
@@ -228,15 +277,15 @@ function _M.new(_, ip, port, opts)
     local access_key, secret_key = ak_sk[1], ak_sk[2]
 
     return setmetatable({
-        ver        = '/redisproxy/v1',
-        ip         = ip,
-        port       = port,
-        n          = n,
-        w          = w,
-        r          = r,
-        access_key = access_key,
-        secret_key = secret_key,
-        timeouts   = opts.timeouts,
+        ver         = '/redisproxy/v1',
+        hosts       = hosts,
+        proxy_hosts = opts.proxy_hosts or {},
+        n           = n,
+        w           = w,
+        r           = r,
+        access_key  = access_key,
+        secret_key  = secret_key,
+        timeouts    = opts.timeouts,
     }, mt)
 end
 
