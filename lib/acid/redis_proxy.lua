@@ -114,11 +114,13 @@ local function get_cmd_args()
 end
 
 function _M.new(_, access_key, secret_key, get_redis_servers, opts)
+    opts = opts or {}
     local obj = {
         access_key = access_key,
         secret_key = secret_key,
         chash_redis = chash_redis:new(
-            "cluster_redisproxy", get_redis_servers, opts)
+            "cluster_redisproxy", get_redis_servers, opts),
+        before_call_cb = opts.before_call_cb,
     }
 
     return setmetatable( obj, mt )
@@ -135,6 +137,10 @@ function _M.proxy(self)
     local args, err_code, err_msg = get_cmd_args()
     if err_code ~= nil then
         return http_resp.output(nil, err_code, err_msg, output_opts)
+    end
+
+    if self.before_call_cb ~= nil then
+        self.before_call_cb(self, args)
     end
 
     local cmd, cmd_args, nwr, expire =
