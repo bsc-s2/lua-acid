@@ -143,6 +143,23 @@ local function _req(rp_cli, ip, port, request)
 end
 
 
+local function can_proxy(proxy_hosts, verb, err)
+    if #proxy_hosts == 0 then
+        return false
+    end
+
+    if verb == 'PUT' and err == nil then
+        return true
+    end
+
+    if verb == 'GET' and err ~= nil then
+        return true
+    end
+
+    return false
+end
+
+
 local function _send_req(rp_cli, request)
     local rst, err, errmsg
     for _, h in ipairs(rp_cli.hosts) do
@@ -153,14 +170,8 @@ local function _send_req(rp_cli, request)
         end
     end
 
-    if err ~= nil then
-        ngx.log(ngx.ERR, to_str("failed to send req to hosts:",
-            rp_cli.hosts, " err:", err, ",", errmsg))
-        return nil, err, errmsg
-    end
-
-    if request.verb == "GET" or #(rp_cli.proxy_hosts) == 0 then
-        return rst, nil, nil
+    if not can_proxy(rp_cli.proxy_hosts, request.verb, err) then
+        return rst, err, errmsg
     end
 
     for _, hosts in ipairs(rp_cli.proxy_hosts) do
@@ -172,18 +183,14 @@ local function _send_req(rp_cli, request)
                 break
             end
         end
-        if err ~= nil then
+
+        if not can_proxy(rp_cli.proxy_hosts, request.verb, err) then
             break
         end
     end
 
-    if err ~= nil then
-        ngx.log(ngx.ERR, to_str("failed to send req to proxy hosts:",
-            rp_cli.proxy_hosts, " err:", err, ",", errmsg))
-        return nil, err, errmsg
-    end
-
-    return rst, nil, nil
+    ngx.log(ngx.INFO, to_str("finish send req to proxy hosts error:", err, ",", errmsg))
+    return rst, err, errmsg
 end
 
 
