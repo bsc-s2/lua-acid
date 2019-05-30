@@ -154,7 +154,12 @@ function _M.proxy(self)
             _, err_code, err_msg = acid_nwr.assert_w_ok(nwr, nok)
         end
     else
-        rst, err_code, err_msg = self.chash_redis[cmd](self.chash_redis, cmd_args, nwr[3])
+        local r = nwr[3]
+        -- merge the result, read all nodes
+        if cmd == "hkeys" or cmd == "hvals" or cmd == "hgetall" then
+            r = nwr[1]
+        end
+        rst, err_code, err_msg = self.chash_redis[cmd](self.chash_redis, cmd_args, r)
     end
 
     return http_resp.output(rst, err_code, err_msg, output_opts)

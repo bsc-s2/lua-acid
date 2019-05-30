@@ -71,12 +71,55 @@ local function run_cmd_on_redis(ip, port, cmd, cmd_args, pexpire)
     return redis_cli[cmd](redis_cli, unpack(cmd_args))
 end
 
+local function is_merge_cmd(cmd)
+    if cmd == 'hgetall' or cmd == 'hkeys' then
+        return true
+    end
+
+    return false
+end
+
+local function merge_result(cmd, addr, values)
+    local rst = {}
+    local err
+    if cmd == "hkeys" then
+        for _, val in ipairs(values) do
+            for _, k in ipairs(val) do
+                if not tableutil.has(rst, k) then
+                    table.insert(rst, k)
+                end
+            end
+        end
+    end
+
+    if cmd == "hgetall" then
+        for _, val in ipairs(values) do
+            for i=1, #(val), 2 do
+                local k = val[i]
+                local v = val[i + 1]
+                if rst[k] == nil then
+                    v, err = acid_json.dec(v)
+                    if err ~= nil then
+                        ngx.log(ngx.ERR, to_str("hgetall json decode the result error:", err))
+                        return nil, "JsonDecodeError", err
+                    end
+                    rst[k] = v
+                end
+            end
+        end
+    end
+
+    return {value=rst, addr=addr}
+end
+
 local function run_xget_cmd(self, cmd, cmd_args, n)
     local addrs, err_code, err_msg = get_redis_addrs(self, cmd_args[1], n)
     if err_code ~= nil then
         return nil, err_code, err_msg
     end
 
+    local values = {}
+    local first_addr
     for _, addr in ipairs(addrs) do
         local ipport = str_split(addr, ':')
 
@@ -87,8 +130,19 @@ local function run_xget_cmd(self, cmd, cmd_args, n)
         end
 
         if val ~= nil and val ~= ngx.null then
-            return {value=val, addr=addr}
+            if first_addr == nil then
+                first_addr = addr
+            end
+            if not is_merge_cmd(cmd) then
+                return {value=val, addr=addr}
+            else
+                table.insert(values, val)
+            end
         end
+    end
+
+    if is_merge_cmd(cmd) and #values > 0 then
+        return merge_result(cmd, first_addr, values)
     end
 
     return nil, 'NotFound', to_str('cmd=', cmd, ', args=', cmd_args)
@@ -124,40 +178,34 @@ end
 function _M.hkeys(self, args, n)
     local rst, err, errmsg = run_xget_cmd(self, 'hkeys', args, n)
     if err ~= nil then
-        ngx.log(ngx.ERR, to_str("hkeys run cmd error ", err, ":", errmsg))
-        return nil, err, errmsg
+        return nil, err ,errmsg
     end
 
-    local val, err = acid_json.enc(rst.value)
+    local json_val, err = acid_json.enc(rst.value)
     if err ~= nil then
-        ngx.log(ngx.ERR, to_str("hkeys json encode the result error:", err))
+        ngx.log(ngx.ERR, "hkeys json encode error:", err)
         return nil, "JsonEncodeError", err
     end
 
-    rst.value = val
+    rst.value = json_val
     return rst
 end
 
 function _M.hvals(self, args, n)
-    local rst, err, errmsg = run_xget_cmd(self, 'hvals', args, n)
+    -- can not merge results in different nodes, use hgetall
+    local rst, err, errmsg = run_xget_cmd(self, 'hgetall', args, n)
     if err ~= nil then
-        ngx.log(ngx.ERR, to_str("hvals run cmd error ", err, ":", errmsg))
-        return nil, err, errmsg
+        return nil, err ,errmsg
     end
 
     local vals = {}
-    for _, v in ipairs(rst.value) do
-        v, err = acid_json.dec(v)
-        if err ~= nil then
-            ngx.log(ngx.ERR, to_str("hvals json decode the result error:", err))
-            return nil, "JsonDecodeError", err
-        end
+    for k, v in pairs(rst.value) do
         table.insert(vals, v)
     end
 
     local json_vals, err = acid_json.enc(vals)
     if err ~= nil then
-        ngx.log(ngx.ERR, to_str("hvals json encode the result error:", err))
+        ngx.log(ngx.ERR, "hvals json encode error:", err)
         return nil, "JsonEncodeError", err
     end
 
@@ -168,29 +216,16 @@ end
 function _M.hgetall(self, args, n)
     local rst, err, errmsg = run_xget_cmd(self, 'hgetall', args, n)
     if err ~= nil then
-        ngx.log(ngx.ERR, to_str("hgetall run cmd error ", err, ":", errmsg))
-        return nil, err, errmsg
+        return nil, err ,errmsg
     end
 
-    local vals = {}
-    for i=1, #(rst.value), 2 do
-        local k = rst.value[i]
-        local v = rst.value[i + 1]
-        v, err = acid_json.dec(v)
-        if err ~= nil then
-            ngx.log(ngx.ERR, to_str("hgetall json decode the result error:", err))
-            return nil, "JsonDecodeError", err
-        end
-        vals[k] = v
-    end
-
-    local json_vals, err = acid_json.enc(vals)
+    local json_val, err = acid_json.enc(rst.value)
     if err ~= nil then
-        ngx.log(ngx.ERR, to_str("hgetall json encode the result error:", err))
+        ngx.log(ngx.ERR, "hgetall json encode error:", err)
         return nil, "JsonEncodeError", err
     end
 
-    rst.value = json_vals
+    rst.value = json_val
     return rst
 end
 
