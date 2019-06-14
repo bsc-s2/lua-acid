@@ -538,3 +538,89 @@ GET /t
 GET /t
 --- no_error_log
 [error]
+
+=== TEST 11: test del
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua '
+            local rp = require("acid.redis_proxy_cli")
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
+
+            if cli == nil then
+                ngx.log(ngx.ERR, " create client error")
+                return
+            end
+
+            local res, err, errmsg = cli:del("key")
+            if err ~= nil then
+                ngx.log(ngx.ERR, " del error", " err:", err, " msg:", errmsg)
+            end
+        ';
+    }
+
+    location /redisproxy/v1 {
+        content_by_lua '
+            local json = require("acid.json")
+            local qs = ngx.req.get_uri_args()
+
+            if ngx.var.request_method ~= "DELETE" then
+                ngx.log(ngx.ERR, "http method error")
+            end
+
+            if qs.n ~= "3" or qs.w ~= "2" or qs.r ~= "2" then
+                ngx.log(ngx.ERR, "nwr error")
+            end
+
+            if ngx.var.uri ~= "/redisproxy/v1/DEL/key" then
+                ngx.log(ngx.ERR, "uri error")
+            end
+        ';
+    }
+--- request
+GET /t
+--- no_error_log
+[error]
+
+=== TEST 13: test hdel
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua '
+            local rp = require("acid.redis_proxy_cli")
+            local cli = rp:new({{"127.0.0.1", ngx.var.server_port}}, {nwr={3,2,2},ak_sk={"ak","sk"}})
+
+            if cli == nil then
+                ngx.log(ngx.ERR, " create client error")
+                return
+            end
+
+            local res, err, errmsg = cli:hdel("hashname", "key")
+            if err ~= nil then
+                ngx.log(ngx.ERR, " hdel error", " err:", err, " msg:", errmsg)
+            end
+        ';
+    }
+
+    location /redisproxy/v1 {
+        content_by_lua '
+            local json = require("acid.json")
+            local qs = ngx.req.get_uri_args()
+
+            if ngx.var.request_method ~= "DELETE" then
+                ngx.log(ngx.ERR, "http method error")
+            end
+
+            if qs.n ~= "3" or qs.w ~= "2" or qs.r ~= "2" then
+                ngx.log(ngx.ERR, "nwr error")
+            end
+
+            if ngx.var.uri ~= "/redisproxy/v1/HDEL/hashname/key" then
+                ngx.log(ngx.ERR, "uri error")
+            end
+        ';
+    }
+--- request
+GET /t
+--- no_error_log
+[error]

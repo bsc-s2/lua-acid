@@ -41,15 +41,17 @@ local mt = { __index  = _M }
 
 local to_str = strutil.to_str
 
--- cmd: {"http method", "args count", "optional args names"}
+-- cmd: {"redis operation", "http method", "args count", "optional args names"}
 local cmds = {
-    get     = {"GET", 2, {}},
-    set     = {"PUT", 4, {"expire"}},
-    hget    = {"GET", 3, {}},
-    hset    = {"PUT", 5, {"expire"}},
-    hkeys   = {"GET", 2, {}},
-    hvals   = {"GET", 2, {}},
-    hgetall = {"GET", 2, {}},
+    get     = {"get",     "GET",    2, {}},
+    set     = {"set",     "PUT",    4, {"expire"}},
+    hget    = {"hget",    "GET",    3, {}},
+    hset    = {"hset",    "PUT",    5, {"expire"}},
+    hkeys   = {"keys",    "GET",    2, {}},
+    hvals   = {"hvals",   "GET",    2, {}},
+    hgetall = {"hgetall", "GET",    2, {}},
+    delete  = {"del",     "DELETE", 2, {}},
+    hdel    = {"hdel",    "DELETE", 3, {}},
 }
 
 
@@ -236,8 +238,8 @@ local function _do_cmd(rp_cli, cmd, ...)
     end
 
     local args = {...}
-    local http_mtd, args_cnt, opts = cmd_info[1], cmd_info[2], cmd_info[3]
-    local path, qs_values, body, retry = _parse_args(cmd, args, args_cnt, http_mtd, opts)
+    local http_mtd, args_cnt, opts = cmd_info[2], cmd_info[3], cmd_info[4]
+    local path, qs_values, body, retry = _parse_args(cmd_info[1], args, args_cnt, http_mtd, opts)
 
     local req = {
         verb = http_mtd,

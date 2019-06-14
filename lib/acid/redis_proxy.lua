@@ -153,11 +153,16 @@ function _M.proxy(self)
         args.cmd, args.cmd_args, args.nwr, args.expire
 
     local nok, rst, err_code, err_msg
-    if cmd == 'set' or cmd == 'hset' or cmd == 'del' or cmd == 'hdel' then
+    if cmd == 'set' or cmd == 'hset' then
         nok, err_code, err_msg =
             self.chash_redis[cmd](self.chash_redis, cmd_args, nwr[1], expire)
         if err_code == nil then
-            _, err_code, err_msg = acid_nwr.assert_w_ok(nwr, nok)
+            _, err_code, err_msg = acid_nwr.assert_nwr_ok(nwr, nok, 2)
+        end
+    elseif cmd == 'del' or cmd == 'hdel' then
+        nok, err_code, err_msg = self.chash_redis[cmd](self.chash_redis, cmd_args, nwr[1])
+        if err_code == nil then
+            _, err_code, err_msg = acid_nwr.assert_nwr_ok(nwr, nok, 1)
         end
     else
         local r = nwr[3]
