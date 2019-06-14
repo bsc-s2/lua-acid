@@ -171,6 +171,37 @@ local function run_xset_cmd(self, cmd, cmd_args, n, pexpire)
     return nok
 end
 
+local function run_xdel_cmd(self, cmd, cmd_args, n)
+    local addrs, err_code, err_msg = get_redis_addrs(self, cmd_args[1], n)
+    if err_code ~= nil then
+        return 0, err_code, err_msg
+    end
+
+    local nok = 0
+    for _, addr in ipairs(addrs) do
+        local ipport = str_split(addr, ':')
+
+        local _, err_code, err_msg =
+            run_cmd_on_redis(ipport[1], ipport[2], cmd, cmd_args)
+
+        if err_code ~= nil then
+            return nok, err_code, err_msg
+        end
+
+        nok = nok + 1
+    end
+
+    return nok, nil, nil
+end
+
+function _M.del(self, args, n)
+    return run_xdel_cmd(self, 'del', args, n)
+end
+
+function _M.hdel(self, args, n)
+    return run_xdel_cmd(self, 'hdel', args, n)
+end
+
 function _M.hget(self, args, n)
     return run_xget_cmd(self, 'hget', args, n)
 end

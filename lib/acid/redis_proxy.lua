@@ -41,6 +41,12 @@ local redis_cmd_model = {
 
     -- hgetall(hashname)
     HGETALL = {'GET', 1, false, {}},
+
+    -- del(key)
+    DEL = {'DELETE', 1, false, {}},
+
+    -- hdel(hashname, key)
+    HDEL = {'DELETE', 2, false, {}}
 }
 
 local redis_cmd_names = tableutil.keys(redis_cmd_model)
@@ -147,7 +153,7 @@ function _M.proxy(self)
         args.cmd, args.cmd_args, args.nwr, args.expire
 
     local nok, rst, err_code, err_msg
-    if cmd == 'set' or cmd == 'hset' then
+    if cmd == 'set' or cmd == 'hset' or cmd == 'del' or cmd == 'hdel' then
         nok, err_code, err_msg =
             self.chash_redis[cmd](self.chash_redis, cmd_args, nwr[1], expire)
         if err_code == nil then
