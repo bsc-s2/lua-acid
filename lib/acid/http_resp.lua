@@ -74,6 +74,9 @@ function _M.output(rst, err_code, err_msg, opts)
     local status, body, headers = 200, '', {}
 
     local request_id = ngx.var.requestid
+    if (request_id or '') == '' then
+        request_id = ngx.ctx.requestid
+    end
 
     if err_code ~= nil then
         ngx.log( ngx.WARN, "requestid: ", request_id,
