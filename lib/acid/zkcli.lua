@@ -2,6 +2,7 @@ local strutil      = require("acid.strutil")
 local struct       = require("acid.struct")
 local bit          = require("bit")
 local hashlib      = require('acid.hashlib')
+local rpc_logging  = require('acid.rpc_logging')
 
 local _M = { _VERSION = '1.0' }
 local mt = { __index  = _M }
@@ -465,12 +466,23 @@ function _M.submit(self, req)
         return nil, err, errmsg
     end
 
+    rpc_logging.reset_start(self.log)
     local _, err, errmsg = send_request(self.sock, req, self:_get_xid())
     if err ~= nil then
+        rpc_logging.set_err(self.log, err .. ',' .. errmsg)
         return nil, "SendReqError", err .. "," .. errmsg
     end
+    rpc_logging.incr_time(self.log, 'upstream', 'send')
+    rpc_logging.reset_start(self.log)
 
-    return self:read_response(req, self.xid)
+    local rst, err, errmsg = self:read_response(req, self.xid)
+    if err ~= nil then
+        rpc_logging.set_err(self.log, err .. ',' .. errmsg)
+        return nil, err, errmsg
+    end
+    rpc_logging.incr_time(self.log, 'downstream', 'recv')
+
+    return rst
 end
 
 
@@ -478,20 +490,28 @@ function _M.connect(self, ip, port)
     local _, err, errmsg
     _, err = self.sock:connect(ip, port)
     if err ~= nil then
+        rpc_logging.set_err(self.log, err)
         return nil , 'SocketConnectError', to_str("conn:", err)
     end
+    rpc_logging.set_time(self.log, 'upstream', 'conn')
+    rpc_logging.reset_start(self.log)
 
     local conn_req = connect_req(self.zxid, self.conn_timeout, self.session_id, self.pwd, self.read_only)
     _, err, errmsg = send_request(self.sock, conn_req)
     if err ~= nil then
+        rpc_logging.set_err(self.log, err .. ',' .. errmsg)
         return nil, 'SendConnectReqError', err .. "," .. errmsg
     end
+    rpc_logging.incr_time(self.log, 'upstream', 'send')
+    rpc_logging.reset_start(self.log)
 
     local res
     res, err = self.sock:receive(4)
     if err ~= nil then
+        rpc_logging.set_err(self.log, err)
         return nil, 'RecvConnectResLenError', err
     end
+    rpc_logging.incr_time(self.log, 'downstream', 'recv')
 
     local len = struct.unpack_int32({stream=res, offset=1})
     res, err = self.sock:receive(len)
@@ -513,6 +533,9 @@ end
 function _M.start(self)
     local err, errmsg
     for _, host_port in ipairs(self.hosts) do
+        self.log = rpc_logging.new_entry(self.log_service, {ip=host_port[1], port=host_port[2]})
+        rpc_logging.add_log(self.log)
+
         local ip, port = host_port[1], host_port[2]
         _, err, errmsg = self:connect(ip, port)
         if err == nil then
@@ -526,15 +549,22 @@ function _M.start(self)
 
     for _, auth in ipairs(self.auth_data) do
         local req = auth_req(0, auth[1], auth[2])
+
+        rpc_logging.reset_start(self.log)
         _, err ,errmsg = send_request(self.sock, req, self.auth_xid)
         if err ~= nil then
+            rpc_logging.set_err(self.log, err .. ',' .. errmsg)
             return nil, err, errmsg
         end
+        rpc_logging.incr_time(self.log, 'upstream', 'send')
+        rpc_logging.reset_start(self.log)
 
         _, err, errmsg = self:read_response(req, self.auth_xid)
         if err ~= nil then
+            rpc_logging.set_err(self.log, err .. ',' .. errmsg)
             return nil, err, errmsg
         end
+        rpc_logging.incr_time(self.log, 'downstream', 'recv')
     end
 end
 
@@ -725,6 +755,7 @@ function _M.new(_, hosts, timeout, auth_data, opts)
         read_only = opts.read_only,
         pwd = zero_16bytes,
         xid = 0,
+        log_service = 'zookeeper',
     }, mt)
 end
 
