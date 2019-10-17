@@ -552,7 +552,7 @@ GET /t
                 return
             end
 
-            local res, err, errmsg = cli:del("key")
+            local res, err, errmsg = cli:delete("key")
             if err ~= nil then
                 ngx.log(ngx.ERR, " del error", " err:", err, " msg:", errmsg)
             end

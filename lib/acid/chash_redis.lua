@@ -178,6 +178,8 @@ local function run_xdel_cmd(self, cmd, cmd_args, n)
     end
 
     local nok = 0
+    local rst_msgs = {}
+
     for _, addr in ipairs(addrs) do
         local ipport = str_split(addr, ':')
 
@@ -185,10 +187,14 @@ local function run_xdel_cmd(self, cmd, cmd_args, n)
             run_cmd_on_redis(ipport[1], ipport[2], cmd, cmd_args)
 
         if err_code ~= nil then
-            return nok, err_code, err_msg
+            tableutil.insert(rst_msgs, to_str(err_code) .. '::' .. to_str(err_msg))
+        else
+            nok = nok + 1
         end
+    end
 
-        nok = nok + 1
+    if #rst_msgs > 0 then
+        return nok, 'NotDeleteAllError', to_str(rst_msgs)
     end
 
     return nok, nil, nil

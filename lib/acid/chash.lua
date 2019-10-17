@@ -416,7 +416,7 @@ end
 
 
 function _M.update_server(self, servers)
-    tableutil.update(self.servers, servers)
+    self.servers = tableutil.dup(servers, true)
 
     self.server_names = tableutil.keys(self.servers)
 
