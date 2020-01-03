@@ -24,6 +24,7 @@ function _M.new(_, storage, least_tps, probability)
     -- for an event, the perceived tps = actual tps * probability
     -- to let this event persistent in storage, the timeout must:
     --      timeout >= 1 / perceived tps
+
     -- thus timeout = 1 / actual tps / probability
     local timeout = 1 / least_tps / probability
 
@@ -38,9 +39,11 @@ function _M.new(_, storage, least_tps, probability)
 end
 
 
-function _M:incr(key)
+function _M:incr(key, force)
 
-    if not _probability(self.probability) then
+    force = force == true
+
+    if not force and not _probability(self.probability) then
         return nil, nil, nil
     end
 
@@ -55,6 +58,34 @@ function _M:incr(key)
     end
 
     return rst, nil, nil
+end
+
+-- compatible ngx_lua version is lower than v0.10.12rc2
+function _M:c_incr(key, force)
+
+    force = force == true
+
+    if not force and not _probability(self.probability) then
+        return nil, nil, nil
+    end
+
+    local cnt, err = self.storage:incr(key, 1)
+    if err == nil then
+        return cnt
+    end
+
+    cnt = 1
+    local is_ok = self.storage:safe_add(key, cnt, self.timeout)
+    if is_ok == true then
+        return cnt
+    end
+
+    cnt, err = self.storage:incr(key, 1)
+    if cnt == nil then
+        return nil, 'CounterIncrError', err
+    end
+
+    return cnt, nil, nil
 end
 
 
