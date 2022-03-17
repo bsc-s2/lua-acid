@@ -546,20 +546,20 @@ function _M.parse_request_range(range, file_size)
     end
 
     if not string.find(range, 'bytes=') or file_size == 0 then
-        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+        return nil, 'InvalidRange', 'request range ' .. tostring(range)
                                         .. ' file size: ' .. tostring(file_size)
     end
 
     s = string.find(range, '=')
     elts = strutil.split( range:sub(s+1), '-' )
     if #elts ~= 2 then
-        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+        return nil, 'InvalidRange', 'request range ' .. tostring(range)
     end
 
     r_start = tonumber( elts[1] )
     r_end = tonumber( elts[2] )
     if r_start == nil and r_end == nil then
-        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+        return nil, 'InvalidRange', 'request range ' .. tostring(range)
     end
 
     if file_size == nil then
@@ -582,7 +582,7 @@ function _M.parse_request_range(range, file_size)
     end
 
     if r_start > r_end then
-        return nil, 'RangeNotSatisfiable', 'request range ' .. tostring(range)
+        return nil, 'InvalidRange', 'request range ' .. tostring(range)
     end
 
     return { ['start'] = r_start, ['end'] = r_end }, nil, nil
