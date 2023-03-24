@@ -473,3 +473,41 @@ keep-alive
 1
 --- no_error_log
 [error]
+
+
+=== TEST 12: test request option header case sensitive
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua '
+            local httpclient = require("acid.httpclient")
+
+            local cli = httpclient:new( "127.0.0.1", ngx.var.server_port)
+            local err, errmes = cli:request( "/b", {headers = {host = "partition.bscstorage.com"},
+                                                    header_case_sensitive = true})
+            if err ~= nil then
+                ngx.log(ngx.ERR, "requset error")
+                return
+            end
+
+            ngx.say(cli.status)
+            return
+        ';
+    }
+
+    location /b {
+        content_by_lua '
+            local hdr = ngx.req.get_headers(0)
+            if hdr["host"] ~= "partition.bscstorage.com" then
+                ngx.status = 400
+            else
+                ngx.status = 200
+            end
+        ';
+    }
+--- request
+GET /t
+--- response_body
+200
+--- no_error_log
+[error]
