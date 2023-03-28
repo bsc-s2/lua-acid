@@ -24,6 +24,85 @@ function test.proc_cache(t)
     end
 end
 
+function test.proc_cache_stale(t)
+    local shared_data = {}
+
+    local func = function(val, err, errmsg)
+        return val, err, errmsg
+    end
+
+    local cases = {
+        {
+            { args = {shared_data, 'stale1', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale1', func, {exptime=1, args={nil, 'RuntimeError', ''}}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 1},
+        },
+        {
+            { args = {shared_data, 'stale2', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale2', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = { 'v1', nil, nil },
+              before_sleep_ts = 1},
+        },
+        {
+            { args = {shared_data, 'stale3', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale3', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = { 'v1', nil, nil },
+              before_sleep_ts = 1},
+            { args = {shared_data, 'stale3', func, {exptime=1, args={'v2', nil, nil},
+                                                use_stale_val_if_error=true}},
+              ret = { 'v2', nil, nil },
+              before_sleep_ts = 2},
+        },
+        {
+            { args = {shared_data, 'stale4', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale4', func, {exptime=1, args={nil, 'RuntimeError', ''}}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 1},
+            { args = {shared_data, 'stale4', func, {exptime=1, args={'v2', nil, nil}}},
+              ret = { 'v2', nil, nil },
+              before_sleep_ts = 0},
+        },
+        {
+            { args = {shared_data, 'stale5', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale5', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 3},
+        },
+        {
+            { args = {shared_data, 'stale6', func, {exptime=1, args={'v1', nil, nil}}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale6', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 1},
+        },
+    }
+
+    for _, case in ipairs(cases) do
+        for _, item in ipairs(case) do
+            if item.before_sleep_ts ~= nil then
+                ngx.sleep(item.before_sleep_ts)
+            end
+            local val, err, errmes = cache.cacheable(t:unpack(item.args))
+            t:eqlist({val, err, errmes}, item.ret, '')
+        end
+    end
+end
+
 function test.ngx_shdict_cache(t)
     local shared_data = ngx.shared.test_shared
 
@@ -45,6 +124,85 @@ function test.ngx_shdict_cache(t)
     for _, case in ipairs(cases) do
         local val, err, errmes = cache.cacheable(t:unpack(case.args))
         t:eqlist({val, err, errmes}, case.ret, '')
+    end
+end
+
+function test.ngx_shdict_cache_stale(t)
+    local shared_data = ngx.shared.test_shared
+
+    local func = function(val, err, errmsg)
+        return val, err, errmsg
+    end
+
+    local cases = {
+        {
+            { args = {shared_data, 'stale1', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale1', func, {exptime=1, args={nil, 'RuntimeError', ''}}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 1},
+        },
+        {
+            { args = {shared_data, 'stale2', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale2', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = { 'v1', nil, nil },
+              before_sleep_ts = 1},
+        },
+        {
+            { args = {shared_data, 'stale3', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale3', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = { 'v1', nil, nil },
+              before_sleep_ts = 1},
+            { args = {shared_data, 'stale3', func, {exptime=1, args={'v2', nil, nil},
+                                                use_stale_val_if_error=true}},
+              ret = { 'v2', nil, nil },
+              before_sleep_ts = 2},
+        },
+        {
+            { args = {shared_data, 'stale4', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale4', func, {exptime=1, args={nil, 'RuntimeError', ''}}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 1},
+            { args = {shared_data, 'stale4', func, {exptime=1, args={'v2', nil, nil}}},
+              ret = { 'v2', nil, nil },
+              before_sleep_ts = 0},
+        },
+        {
+            { args = {shared_data, 'stale5', func, {exptime=1, args={'v1', nil, nil},
+                                                stale_exptime=2}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale5', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 3},
+        },
+        {
+            { args = {shared_data, 'stale6', func, {exptime=1, args={'v1', nil, nil}}},
+              ret = { 'v1', nil, nil }},
+            { args = {shared_data, 'stale6', func, {exptime=1, args={nil, 'RuntimeError', ''},
+                                                use_stale_val_if_error=true}},
+              ret = {nil, 'RuntimeError', ''},
+              before_sleep_ts = 1},
+        },
+    }
+
+    for _, case in ipairs(cases) do
+        for _, item in ipairs(case) do
+            if item.before_sleep_ts ~= nil then
+                ngx.sleep(item.before_sleep_ts)
+            end
+            local val, err, errmes = cache.cacheable(t:unpack(item.args))
+            t:eqlist({val, err, errmes}, item.ret, '')
+        end
     end
 end
 

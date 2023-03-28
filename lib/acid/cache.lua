@@ -26,10 +26,13 @@ _M.accessor = {
                 return nil
             end
 
+            local use_stale = opts.use_stale or nil
             local val = dict[key]
 
             ngx.log(ngx.DEBUG, "get [", key, "] value from proc cache: ", to_str(val))
-            if val ~= nil and val.expires > ngx.time() then
+
+            if val ~= nil and (val.expires > ngx.time() or
+                        (use_stale == true and val.stale_expires > ngx.time())) then
                 if opts.dup ~= false then
                     return tableutil.dup( val.data, true )
                 end
@@ -47,7 +50,11 @@ _M.accessor = {
                 return
             end
 
-            val = { expires = ngx.time() + (opts.exptime or 60),
+            local expires = ngx.time() + (opts.exptime or 60)
+            local stale_expires = expires + (opts.stale_exptime or 0)
+
+            val = { expires = expires,
+                    stale_expires = stale_expires,
                     data = val }
 
             dict[key] = val
@@ -62,10 +69,14 @@ _M.accessor = {
                 return nil
             end
 
-            local val = dict:get( key )
-            ngx.log(ngx.DEBUG, "get [", key, "] value from shdict cache: ", to_str(val))
-            if val ~= nil then
+            local use_stale = opts.use_stale or nil
+            -- NOTICE: The expires value may be nil, when nginx reload is executed
+            -- and no flags is specified in the previous shdict set.
+            local val, expires = dict:get( key )
 
+            ngx.log(ngx.DEBUG, "get [", key, "] value from shdict cache: ", to_str(val))
+            if val ~= nil and (expires == nil or
+                    (expires > ngx.time() or use_stale == true)) then
                 val = json.dec( val )
 
                 return val
@@ -82,7 +93,10 @@ _M.accessor = {
                 return
             end
 
-            dict:set( key, json.enc(val), opts.exptime or 60 )
+            local expires = ngx.time() + (opts.exptime or 60)
+            local exptime = (opts.exptime or 60) + (opts.stale_exptime or 0)
+
+            dict:set( key, json.enc(val), exptime, expires)
         end,
     },
 }
@@ -164,6 +178,13 @@ function _M.cacheable_nolock( dict, key, func, opts )
 
     val, err_code, err_msg = func(unpack(opts.args or {}))
     if err_code ~= nil then
+        if opts.use_stale_val_if_error == true then
+            opts.use_stale = true
+            val = opts.accessor.get( dict, key, opts )
+            if val ~= nil then
+                return val
+            end
+        end
         return nil, err_code, err_msg
     end
 

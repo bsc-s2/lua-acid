@@ -40,3 +40,4 @@ __DATA__
 GET /t
 --- response_body_like
 .*tests all passed.*
+--- timeout: 60
