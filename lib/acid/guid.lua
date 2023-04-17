@@ -43,9 +43,9 @@ function _M.new(shared_guid, shared_lock, len_ts, len_seq, len_mid)
             'shared dict is not exists: %s,%s', shared_guid, shared_lock)
     end
 
-    if not typeutil.check_int_range(len_ts, 1, max_len_ts)
-        or not typeutil.check_int_range(len_seq, 1)
-        or not typeutil.check_int_range(len_mid, 1) then
+    if not typeutil.check_integer_range(len_ts, 1, max_len_ts)
+        or not typeutil.check_integer_range(len_seq, 1)
+        or not typeutil.check_integer_range(len_mid, 1) then
 
         return nil, 'InvalidLength', string.format(
             'lengths of guid parts are not integer or beyond range, %s, %s, %s',
@@ -82,7 +82,7 @@ end
 function _M.generate(self, mid, max_wait_ms)
     max_wait_ms = max_wait_ms or 500
 
-    if not typeutil.check_int_range(mid, 0, self.max_mid) then
+    if not typeutil.check_integer_range(mid, 0, self.max_mid) then
         return nil, 'InvalidMachineId', string.format(
             'mid %s is beyond range [0, %d]', tostring(mid), self.max_mid)
     end
