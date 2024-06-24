@@ -322,8 +322,21 @@ function _M.send_request( self, uri, opts )
 
     local body = opts.body or ''
     local headers = opts.headers or {}
-    headers.Host = headers.Host or self.ip
-    if #body > 0 and headers['Content-Length'] == nil then
+    local host = headers['Host']
+    local content_length = headers['Content-Length']
+    local range = headers['Range']
+
+    if opts.header_case_sensitive then
+        host = headers['host'] or host
+        content_length = headers['content-length'] or content_length
+        range = headers['range'] or range
+    end
+
+    if host == nil then
+        headers['Host'] = self.ip
+    end
+
+    if content_length == nil and #body > 0 then
         headers['Content-Length'] = #body
     end
 
@@ -342,8 +355,8 @@ function _M.send_request( self, uri, opts )
             uri = self.uri,
         })
 
-        if headers['Range'] ~= nil then
-            local r, err, _ = _M.parse_request_range(headers['Range'], nil)
+        if range ~= nil then
+            local r, err, _ = _M.parse_request_range(range, nil)
             if err == nil then
                 self.log.range = {from = r.start, to = r['end']}
             end
