@@ -17,6 +17,15 @@ local has_logging = true
 --   status = cli.status
 --   headers = cli.headers
 --   buf = cli:read_body( size )
+--or
+--   local cli = httpclient:new( ip, port, timeout )
+--   cli:send_request( uri, {method='GET', headers={}, body=''} )
+--   cli:read_100_continue()
+--   cli:send_body( body )
+--   cli:finish_request()
+--   status = cli.status
+--   headers = cli.headers
+--   buf = cli:read_body( size )
 
 local to_str = strutil.to_str
 
@@ -63,41 +72,42 @@ local function _discard_lines_until( self, sequence )
     return nil, nil, nil
 end
 
-local function _load_resp_status( self )
-    local status
-    local line
-    local err_code
-    local err_msg
-    local elems
-    local _
+local function _read_status_line( self )
+    local line, err_msg = _read_line( self )
+    if err_msg ~= nil then
+        return nil, 'SocketReadError', to_str('read status line:', err_msg)
+    end
 
-    while true do
-        line, err_msg = _read_line( self )
-        if err_msg ~= nil then
-            return nil, 'SocketReadError', to_str('read status line:', err_msg)
-        end
+    local elems = strutil.split( line, ' ' )
+    if table.getn(elems) < 3 then
+        return nil, 'BadStatus', to_str('invalid status line:', line)
+    end
 
-        elems = strutil.split( line, ' ' )
-        if table.getn(elems) < 3 then
-            return nil, 'BadStatus', to_str('invalid status line:', line)
-        end
+    local status = tonumber( elems[2] )
 
-        status = tonumber( elems[2] )
-
-        if status == nil or status < 100 or status > 999 then
-            return nil, 'BadStatus', to_str('invalid status value:', status)
-        elseif 100 <= status and status < 200 then
-            _, err_code, err_msg = _discard_lines_until( self, '' )
-            if err_code ~= nil then
-                return nil, err_code, to_str('read header:', err_msg )
-            end
-        else
-            self.status = status
-            break
+    if status == nil or status < 100 or status > 999 then
+        return nil, 'BadStatus', to_str('invalid status value:', status)
+    elseif 100 <= status and status < 200 then
+        local _, err_code, err_msg = _discard_lines_until( self, '' )
+        if err_code ~= nil then
+            return nil, err_code, to_str('read status line:', err_msg )
         end
     end
 
-    return nil, nil, nil
+    return status, nil, nil
+end
+
+local function _load_resp_status( self )
+    while true do
+        local status, err_code, err_msg = _read_status_line( self )
+        if err_code ~= nil then
+            return nil, err_code, err_msg
+        end
+
+        if status >= 200 then
+            return status, nil, nil
+        end
+    end
 end
 
 local function _load_resp_headers( self )
@@ -393,6 +403,32 @@ function _M.send_request( self, uri, opts )
     return nil, nil, nil
 end
 
+function _M.read_100_continue( self )
+    rpc_logging.reset_start(self.log)
+
+    local status, err_code, err_msg = _read_status_line( self )
+    if err_code ~= nil then
+        rpc_logging.incr_time(self.log, 'upstream', 'recv')
+        rpc_logging.set_status(self.log, status)
+        rpc_logging.set_err(self.log, err_code)
+
+        return nil, err_code, err_msg
+    end
+
+    if status == 100 then
+        return status, nil, nil
+    elseif status >= 200 then
+        rpc_logging.incr_time(self.log, 'upstream', 'recv')
+        rpc_logging.set_status(self.log, status)
+        rpc_logging.set_err(self.log, err_code)
+
+        -- normal status, set status to self.status
+        self.status = status
+    end
+
+    return status, 'UnexpectedStatus', to_str('status:', status)
+end
+
 function _M.send_body( self, body )
     local bytes = 0
     local err_msg
@@ -420,19 +456,24 @@ end
 
 function _M.finish_request( self )
     local _
+    local status
     local err_code
     local err_msg
 
-    rpc_logging.reset_start(self.log)
+    if self.status == nil then
+        rpc_logging.reset_start(self.log)
 
-    _, err_code, err_msg = _load_resp_status( self )
+        status, err_code, err_msg = _load_resp_status( self )
 
-    rpc_logging.incr_time(self.log, 'upstream', 'recv')
-    rpc_logging.set_status(self.log, self.status)
-    rpc_logging.set_err(self.log, err_code)
+        rpc_logging.incr_time(self.log, 'upstream', 'recv')
+        rpc_logging.set_status(self.log, status)
+        rpc_logging.set_err(self.log, err_code)
 
-    if err_code ~= nil then
-        return nil, err_code, err_msg
+        if err_code ~= nil then
+            return nil, err_code, err_msg
+        end
+
+        self.status = status
     end
 
     rpc_logging.reset_start(self.log)

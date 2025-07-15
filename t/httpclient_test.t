@@ -473,3 +473,109 @@ keep-alive
 1
 --- no_error_log
 [error]
+
+=== TEST 12: test 100-continue code
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua '
+            local httpclient = require("acid.httpclient")
+
+            local cli = httpclient:new( "127.0.0.1", ngx.var.server_port)
+            local err, errmes = cli:send_request("/b", {method="PUT", headers={["Expect"]="100-continue"}})
+            local status, err, errmes = cli:read_100_continue()
+            if err ~= nil then
+                ngx.log(ngx.ERR, "requset error", status, err, errmes)
+                return
+            end
+
+            local err, errmes = cli:finish_request()
+            if err ~= nil then
+                ngx.log(ngx.ERR, "requset error", err, errmes)
+                return
+            end
+
+            if cli.headers["x-header-t"] ~= "x-val" then
+                ngx.say("x-header-t is not equal x-val")
+                return
+            end
+
+            local recv_body = cli:read_body(1024*1024*10)
+            if "xxx" ~= recv_body then
+                ngx.say("bad")
+                return
+            end
+
+            ngx.say(cli.status)
+            return
+        ';
+    }
+
+    location /b {
+        content_by_lua '
+            ngx.status = 200
+            ngx.header["x-header-t"] = "x-val"
+            ngx.print("xxx")
+        ';
+    }
+--- request
+GET /t
+--- response_body
+200
+--- no_error_log
+[error]
+
+=== TEST 13: test 100-continue code without expect header
+--- http_config eval: $::HttpConfig
+--- config
+    location /t {
+        content_by_lua '
+            local httpclient = require("acid.httpclient")
+
+            local cli = httpclient:new( "127.0.0.1", ngx.var.server_port)
+            local err, errmes = cli:send_request("/b", {method="PUT"})
+            local status, err, errmes = cli:read_100_continue()
+            if err ~= nil then
+                if err == "UnexpectedStatus" and status == 200 then
+                   -- pass
+                else
+                    ngx.log(ngx.ERR, "requset error", status, err, errmes)
+                    return
+                end
+            end
+
+            local err, errmes = cli:finish_request()
+            if err ~= nil then
+                ngx.log(ngx.ERR, "requset error2", err, errmes)
+                return
+            end
+
+            if cli.headers["x-header-t"] ~= "x-val" then
+                ngx.say("x-header-t is not equal x-val")
+                return
+            end
+
+            local recv_body = cli:read_body(1024*1024*10)
+            if "xxx" ~= recv_body then
+                ngx.say("bad")
+                return
+            end
+
+            ngx.say(cli.status)
+            return
+        ';
+    }
+
+    location /b {
+        content_by_lua '
+            ngx.status = 200
+            ngx.header["x-header-t"] = "x-val"
+            ngx.print("xxx")
+        ';
+    }
+--- request
+GET /t
+--- response_body
+200
+--- no_error_log
+[error]
